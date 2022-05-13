@@ -1,0 +1,34 @@
+{
+  "name": "nextapp",
+  "version": "1.0.0",
+  "description": "NextApp project for IS2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FrancescoGentile/nextapp.git"
+  },
+  "keywords": [],
+  "author": "NextApp team",
+  "contributors": [
+    {
+      "name": "Lorenzo Cereser",
+      "email": "lorenzo.cereser@studenti.unitn.it"
+    },
+    {
+      "name": "Manuela Corte Pause",
+      "email": "manuela.cortepause@studenti.unitn.it"
+    },
+    {
+      "name": "Riccardo Gennaro",
+      "email": "riccardo.gennaro@studenti.unitn.it"
+    },
+    {
+      "name": "Francesco Gentile",
+      "email": "francesco.gentile@studenti.unitn.it"
+    }
+  ],
+  "license": "MIT"
+}
