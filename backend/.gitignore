@@ -71,3 +71,9 @@ common/autoinstallers/*/.npmrc
 backend/**/node_modules
 backend/**/.rush 
 backend/**/*.build.log
+
+#project
+backend/**/node_modules
+backend/**/dist
+backend/**/.rush 
+backend/**/*.build.log
