@@ -394,6 +394,10 @@
     {
       "packageName": "@nextapp/common",
       "projectFolder": "src/common"
+    },
+    {
+      "packageName": "@nextapp/room",
+      "projectFolder": "src/modules/room"
     }
     // {
     //   /**
