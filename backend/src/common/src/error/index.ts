@@ -62,3 +62,40 @@ export class InternalServerError extends NextError {
     );
   }
 }
+
+// ---------------------------------------
+// --------------- REQUEST ---------------
+// ---------------------------------------
+
+enum RequestErrorTypes {
+  INVALID_REQUEST = 1,
+  NOT_FOUND = 2,
+}
+
+function get_request_type(type: RequestErrorTypes): string {
+  return `request-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidRequestError extends NextError {
+  public constructor(format: any, options?: ErrorOptions) {
+    super(
+      get_request_type(RequestErrorTypes.INVALID_REQUEST),
+      StatusCodes.BAD_REQUEST,
+      'Invalid request',
+      format,
+      options
+    );
+  }
+}
+
+export class NotFoundError extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_request_type(RequestErrorTypes.NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Resource not found',
+      undefined,
+      options
+    );
+  }
+}
