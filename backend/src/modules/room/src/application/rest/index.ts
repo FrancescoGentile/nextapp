@@ -17,29 +17,34 @@ function init_request(
   };
 }
 
-function handle_error(req: Request, res: Response, next?: NextFunction) {
-  try {
-    next!();
-  } catch (e) {
-    if (e instanceof NextError) {
-      res.status(e.code).send(e);
-    } else {
-      const error = new InternalServerError();
-      res.status(error.code).send(error);
-    }
+function handle_error(
+  e: Error,
+  req: Request,
+  res: Response,
+  _next?: NextFunction
+) {
+  let error;
+  if (e instanceof NextError) {
+    error = e;
+  } else {
+    error = new InternalServerError();
   }
+
+  error.instance = req.url;
+  res.status(error.code).json(error);
 }
 
-export function init_rest_api(room_service: RoomInfoService): express.Router {
+export function init_rest_api(room_service: RoomInfoService) {
   const router = express.Router();
 
   router.use(express.urlencoded() as any);
   router.use(express.json() as any);
 
-  router.use(handle_error);
   router.use(init_request(room_service));
 
   router.use(init_room_routes());
+
+  router.use(handle_error);
 
   return router;
 }

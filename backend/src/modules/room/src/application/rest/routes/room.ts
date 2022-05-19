@@ -9,6 +9,7 @@ import { toJson } from 'json-joi-converter';
 import express from 'express';
 import { RoomNotFound } from '../../../domain/errors';
 import { Room, RoomID } from '../../../domain/models/room';
+import { asyncHandler } from '../utils';
 
 async function get_room(request: Request, response: Response) {
   const id = RoomID.from_string(request.params.room_id);
@@ -16,7 +17,7 @@ async function get_room(request: Request, response: Response) {
   if (rooms.length === 0) {
     throw new RoomNotFound(id.to_string());
   }
-  response.status(StatusCodes.OK).send(rooms[0]);
+  response.status(StatusCodes.OK).json(rooms[0]);
 }
 
 async function get_rooms(request: Request, response: Response) {
@@ -28,7 +29,7 @@ async function get_rooms(request: Request, response: Response) {
 
   const ids: RoomID[] = value.map((id: string) => RoomID.from_string(id));
   const rooms = await request.room_service!.get_rooms(ids);
-  response.status(StatusCodes.OK).send(rooms);
+  response.status(StatusCodes.OK).json(rooms);
 }
 
 async function create_room(request: Request, response: Response) {
@@ -65,10 +66,10 @@ async function delete_room(request: Request, response: Response) {
 export function init_room_routes(): express.Router {
   const router = express.Router();
 
-  router.get('/rooms/:room_id', get_room);
-  router.get('/rooms', get_rooms);
-  router.post('/rooms', create_room);
-  router.delete('/rooms/:room_id', delete_room);
+  router.get('/rooms/:room_id', asyncHandler(get_room));
+  router.get('/rooms', asyncHandler(get_rooms));
+  router.post('/rooms', asyncHandler(create_room));
+  router.delete('/rooms/:room_id', asyncHandler(delete_room));
 
   return router;
 }
