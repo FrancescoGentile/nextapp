@@ -132,11 +132,24 @@ export class RoomDeletionNotAuthorized extends NextError {
 // ---------------------------------------------------------------
 
 enum BookingErrorTypes {
-  INVALID_BOOKING_INTERVAL = 1,
+  INVALID_BOOKING_ID = 1,
+  INVALID_BOOKING_INTERVAL,
 }
 
 function get_booking_type(type: BookingErrorTypes): string {
   return `booking-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidBookingID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_booking_type(BookingErrorTypes.INVALID_BOOKING_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid booking id',
+      `${id} is not a valid booking id.`,
+      options
+    );
+  }
 }
 
 export class InvalidBookingInterval extends NextError {

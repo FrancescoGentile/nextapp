@@ -6,23 +6,36 @@ import { customAlphabet } from 'nanoid';
 import { UserID } from '@nextapp/common/user';
 import { DateTime, Interval } from 'luxon';
 import { RoomID, Room } from './room';
-import { InvalidBookingInterval } from '../errors';
+import { InvalidBookingID, InvalidBookingInterval } from '../errors';
 
 /**
- * Identifier for a booking.
+ * Identifier for a booking. It is a string of 10 digits.
  */
 export class BookingID {
   public static readonly LENGTH = 10;
 
-  public constructor(private readonly id: string) {}
+  private constructor(private readonly id: string) {}
 
   /**
-   * Returns a BookingID of 10 digits.
+   * Generates a random BookingID.
    * @returns
    */
   public static generate(): BookingID {
     const nanoid = customAlphabet('1234567890', BookingID.LENGTH);
     return new BookingID(nanoid());
+  }
+
+  /**
+   * Creates a BookingID from a string.
+   * This method throw an error if the given string is not a valid id.
+   * @param id
+   * @returns
+   */
+  public static from_string(id: string): BookingID {
+    if (/^[0-9]{10}$/.test(id)) {
+      return new BookingID(id);
+    }
+    throw new InvalidBookingID(id);
   }
 
   public to_string(): string {
