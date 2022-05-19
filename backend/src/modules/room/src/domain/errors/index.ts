@@ -14,6 +14,10 @@ enum RoomErrorTypes {
   INVALID_NAME = 1,
   INVALID_SEAT_NUMBER,
   INVALID_FLOOR,
+  NAME_ALREADY_USED,
+  ROOM_NOT_FOUND,
+  ROOM_CREATION_NOT_AUTHORIZED,
+  ROOM_DELETION_NOT_AUTHORIZED,
 }
 
 function get_room_type(type: RoomErrorTypes): string {
@@ -57,6 +61,54 @@ export class InvalidFloor extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid floor',
       `Floor must be integer, greater than or equal to ${min_floor} and less than or equal to ${max_floor}`,
+      options
+    );
+  }
+}
+
+export class RoomNameAlreadyUsed extends NextError {
+  public constructor(name: string, options?: ErrorOptions) {
+    super(
+      get_room_type(RoomErrorTypes.NAME_ALREADY_USED),
+      StatusCodes.CONFLICT,
+      'Name already used',
+      `${name} is already assigned to anther room. Try another name.`,
+      options
+    );
+  }
+}
+
+export class RoomNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_room_type(RoomErrorTypes.ROOM_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Room not found',
+      `Room with id ${id} was not found.`,
+      options
+    );
+  }
+}
+
+export class RoomCreationNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_room_type(RoomErrorTypes.ROOM_CREATION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to create a room',
+      'You have to be a system adiministator to create a room.',
+      options
+    );
+  }
+}
+
+export class RoomDeletionNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_room_type(RoomErrorTypes.ROOM_DELETION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to delete a room',
+      'You have to be a system adiministator to delete a room.',
       options
     );
   }
