@@ -11,12 +11,27 @@ export { InternalServerError } from '@nextapp/common/error';
 // ---------------------------------------------------------------
 
 enum RoomErrorTypes {
-  INVALID_SEAT_NUMBER = 1,
+  INVALID_NAME = 1,
+  INVALID_SEAT_NUMBER,
   INVALID_FLOOR,
 }
 
 function get_room_type(type: RoomErrorTypes): string {
   return `room-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidRoomName extends NextError {
+  public constructor(name: string, options?: ErrorOptions) {
+    super(
+      get_room_type(RoomErrorTypes.INVALID_NAME),
+      StatusCodes.BAD_REQUEST,
+      'Invalid room name',
+      `${name} does not meet on or both of the following conditions:\
+      length between 5 and 100 characters,\
+      only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
+      options
+    );
+  }
 }
 
 export class InvalidSeatNumber extends NextError {

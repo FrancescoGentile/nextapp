@@ -3,7 +3,7 @@
 //
 
 import { customAlphabet } from 'nanoid';
-import { InvalidFloor, InvalidSeatNumber } from '../errors';
+import { InvalidFloor, InvalidRoomName, InvalidSeatNumber } from '../errors';
 
 /**
  * Identifier for a room.
@@ -39,6 +39,9 @@ export class Room {
   // it will set by the repository to assure that it is unique
   public id?: RoomID;
 
+  // each room has a unique name
+  // name must be a string between 5 and 30 characters
+  // consisting only of digits, Latin letters, '_' and '-'
   public readonly name: string;
 
   // Description should be a string or an object who properties
@@ -58,7 +61,7 @@ export class Room {
 
   /**
    * This constructor fails if the passed argument do not meet
-   * the constraints on seats and floor.
+   * the constraints on name, seats and floor.
    * @param name
    * @param details
    * @param seats
@@ -72,13 +75,13 @@ export class Room {
     floor: number,
     id?: RoomID
   ) {
+    if (/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
+      throw new InvalidRoomName(name);
+    }
     if (!Number.isInteger(seats) || seats < 1) {
       throw new InvalidSeatNumber();
-    } else if (
-      !Number.isInteger(floor) ||
-      floor < 0 ||
-      floor > Room.MAX_FLOOR
-    ) {
+    }
+    if (!Number.isInteger(floor) || floor < 0 || floor > Room.MAX_FLOOR) {
       throw new InvalidFloor(0, Room.MAX_FLOOR);
     }
 
