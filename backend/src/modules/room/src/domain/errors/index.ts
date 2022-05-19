@@ -46,3 +46,27 @@ export class InvalidFloor extends NextError {
     );
   }
 }
+
+// ---------------------------------------------------------------
+// --------------------------- BOOKING ---------------------------
+// ---------------------------------------------------------------
+
+enum BookingErrorTypes {
+  INVALID_BOOKING_INTERVAL = 1,
+}
+
+function get_booking_type(type: BookingErrorTypes): string {
+  return `booking-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidBookingInterval extends NextError {
+  public constructor(details: any, options?: ErrorOptions) {
+    super(
+      get_booking_type(BookingErrorTypes.INVALID_BOOKING_INTERVAL),
+      StatusCodes.BAD_REQUEST,
+      'Invalid booking interval',
+      details,
+      options
+    );
+  }
+}
