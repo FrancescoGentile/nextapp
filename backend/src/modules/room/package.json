@@ -27,6 +27,7 @@
   "dependencies": {
     "@nextapp/common": "^1.0.0",
     "nanoid": "^3.3.4",
-    "luxon": "^2.4.0"
+    "luxon": "^2.4.0",
+    "eventemitter3": "^4.0.7"
   }
 }
