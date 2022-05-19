@@ -60,7 +60,13 @@ export class Neo4jRoomRepository implements RoomRepository {
         const { id, name, details, seats, floor } =
           record.get('room').properties;
         rooms.push(
-          new Room(name, details, seats.toNumber(), floor, new RoomID(id))
+          new Room(
+            name,
+            details,
+            seats.toNumber(),
+            floor,
+            RoomID.from_string(id)
+          )
         );
       });
 

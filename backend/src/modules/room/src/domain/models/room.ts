@@ -3,23 +3,35 @@
 //
 
 import { customAlphabet } from 'nanoid';
-import { InvalidFloor, InvalidRoomName, InvalidSeatNumber } from '../errors';
+import {
+  InvalidFloor,
+  InvalidRoomID,
+  InvalidRoomName,
+  InvalidSeatNumber,
+} from '../errors';
 
 /**
- * Identifier for a room.
+ * Identifier for a room. It is a string of 10 digits.
  */
 export class RoomID {
   public static readonly LENGTH = 10;
 
-  public constructor(private readonly id: string) {}
+  private constructor(private readonly id: string) {}
 
   /**
-   * Returns a RoomID of 10 digits.
+   * Generate a random RoomID.
    * @returns
    */
   public static generate(): RoomID {
     const nanoid = customAlphabet('1234567890', RoomID.LENGTH);
     return new RoomID(nanoid());
+  }
+
+  public static from_string(id: string): RoomID {
+    if (/^[0-9]{10}$/.test(id)) {
+      return new RoomID(id);
+    }
+    throw new InvalidRoomID(id);
   }
 
   public to_string(): string {
@@ -94,5 +106,15 @@ export class Room {
 
   public set_id(id: RoomID) {
     this.id = id;
+  }
+
+  public toJson() {
+    return {
+      id: this.id,
+      name: this.name,
+      details: this.details,
+      seats: this.seats,
+      floor: this.floor,
+    };
   }
 }

@@ -11,7 +11,8 @@ export { InternalServerError } from '@nextapp/common/error';
 // ---------------------------------------------------------------
 
 enum RoomErrorTypes {
-  INVALID_NAME = 1,
+  INVALID_ID = 1,
+  INVALID_NAME,
   INVALID_SEAT_NUMBER,
   INVALID_FLOOR,
   NAME_ALREADY_USED,
@@ -22,6 +23,18 @@ enum RoomErrorTypes {
 
 function get_room_type(type: RoomErrorTypes): string {
   return `room-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidRoomID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_room_type(RoomErrorTypes.INVALID_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid room id',
+      `${id} is not a valid id for a room`,
+      options
+    );
+  }
 }
 
 export class InvalidRoomName extends NextError {
