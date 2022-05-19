@@ -1464,7 +1464,7 @@ packages:
     dev: false
 
   file:projects/room.tgz:
-    resolution: {integrity: sha512-dxpomYVAKLNEF+Tmev1lm6aZwc1oOXHiQF42i0s5jbkX96FsHI5y9Hjpb4nC0isj48ePravHJYY7HetduggDtQ==, tarball: file:projects/room.tgz}
+    resolution: {integrity: sha512-K02IUfB27l9Nlgkjp+/AVb+/8OCdJ2CKuedfHVQkgWQs6p77B4Fs1QHFvIqCYIMvP9WkHSCeZMuJu1DkTdja0w==, tarball: file:projects/room.tgz}
     name: '@rush-temp/room'
     version: 0.0.0
     dependencies:
@@ -1475,6 +1475,7 @@ packages:
       eslint-config-airbnb-typescript: 17.0.0_4eb8c70bc5bbd52cf9eb81e35d170581
       eslint-config-prettier: 8.5.0_eslint@8.15.0
       eslint-plugin-import: 2.26.0_eslint@8.15.0
+      nanoid: 3.3.4
       prettier: 2.6.2
       typescript: 4.6.4
     transitivePeerDependencies:
