@@ -107,14 +107,4 @@ export class Room {
   public set_id(id: RoomID) {
     this.id = id;
   }
-
-  public toJson() {
-    return {
-      id: this.id,
-      name: this.name,
-      details: this.details,
-      seats: this.seats,
-      floor: this.floor,
-    };
-  }
 }
