@@ -5,6 +5,7 @@
 import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { RoomID, Room } from '../../domain/models/room';
+import { SearchOptions } from '../../domain/models/search';
 import { RoomRepository } from '../../domain/ports/room.repository';
 
 export class Neo4jRoomRepository implements RoomRepository {
@@ -31,6 +32,16 @@ export class Neo4jRoomRepository implements RoomRepository {
           `CREATE CONSTRAINT ROOM_unique_room_name IF NOT EXISTS
            FOR (r:ROOM_Room)
            REQUIRE r.name IS UNIQUE`
+        )
+      );
+
+      await session.close();
+      session = driver.session();
+      await session.writeTransaction((tx) =>
+        tx.run(
+          `CREATE INDEX ROOM_floor_index IF NOT EXISTS 
+           FOR (r:ROOM_Room) 
+           ON (r.floor)`
         )
       );
 
@@ -72,6 +83,59 @@ export class Neo4jRoomRepository implements RoomRepository {
 
       return rooms;
     } catch (e) {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async search_rooms(options: SearchOptions): Promise<RoomID[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (r:ROOM_Room)
+           RETURN r.id
+           ORDER BY r.id as id
+           SKIP $skip
+           LIMIT $limit`,
+          { skip: options.offset, limit: options.limit }
+        )
+      );
+
+      const ids = res.records.map((record) =>
+        RoomID.from_string(record.get('id'))
+      );
+      return ids;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async search_rooms_by_floor(
+    floor: number,
+    options: SearchOptions
+  ): Promise<RoomID[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (r:ROOM_Room { floor: $floor })
+           RETURN r.id
+           ORDER BY r.id as id
+           SKIP $skip
+           LIMIT $limit`,
+          { floor: int(floor), skip: options.offset, limit: options.limit }
+        )
+      );
+
+      const ids = res.records.map((record) =>
+        RoomID.from_string(record.get('id'))
+      );
+      return ids;
+    } catch {
       throw new InternalServerError();
     } finally {
       await session.close();
