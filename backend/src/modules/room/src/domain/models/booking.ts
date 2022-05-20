@@ -79,7 +79,15 @@ export class BookingInterval {
   ): BookingInterval {
     const utc_start = start.toUTC();
     const utc_end = end.toUTC();
-    const utc_interval = Interval.fromDateTimes(utc_start, utc_end);
+    let utc_interval;
+    try {
+      utc_interval = Interval.fromDateTimes(utc_start, utc_end);
+    } catch {
+      throw new InvalidBookingInterval(
+        `The interval start cannot be after its end.`
+      );
+    }
+
     return BookingInterval.from_utc_interval(utc_interval, after_now);
   }
 
@@ -121,14 +129,14 @@ export class BookingInterval {
       length > BookingInterval.MAX_INTERVAL
     ) {
       throw new InvalidBookingInterval(
-        `A booking interval should have a min length of ${BookingInterval.MIN_INTERVAL}\
-        minutes and a maximum length of ${this.MAX_INTERVAL} minutes.`
+        `A booking interval should have a min length of ${BookingInterval.MIN_INTERVAL} ` +
+          `minutes and a maximum length of ${this.MAX_INTERVAL} minutes.`
       );
     }
 
-    if (after_now && interval.start.diff(DateTime.now()).seconds < 0) {
+    if (after_now && interval.start.diff(DateTime.utc()).milliseconds < 0) {
       throw new InvalidBookingInterval(
-        'Cannot create a booking the current instant of time.'
+        'Cannot make a new booking in the past.'
       );
     }
 
