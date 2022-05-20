@@ -11,8 +11,16 @@ export default defineComponent({
   methods:{
     handleSubmit(){
       // login based on email instead of username to use fake json backend
-      console.log("login method")
-      this.$router.push("/dashboard")
+      let email = this.email
+      let password = this.password
+      this.$store.dispatch("login",{
+        email,
+        password
+      }).then(()=>{
+        this.$router.push("/dashboard")
+      }).catch(err=>{
+        console.log(err)
+      })
     }
   }
 
