@@ -3,7 +3,7 @@
 //
 
 import { InvalidRequestError, StatusCodes } from '@nextapp/common/error';
-import { Request, Response } from 'express-serve-static-core';
+import { NextFunction, Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import { toJson } from 'json-joi-converter';
 import express from 'express';
@@ -15,7 +15,7 @@ import { API_VERSION, asyncHandler } from '../utils';
 import { Booking, BookingID } from '../../../domain/models/booking';
 import { SearchOptions } from '../../../domain/models/options';
 
-const BASE_PATH = '/user/me/bookings';
+const BASE_PATH = '/users/me/bookings';
 
 function booking_to_json(booking: Booking): any {
   return {
@@ -44,21 +44,25 @@ async function search_bookings(request: Request, response: Response) {
   const off = offset !== undefined ? offset : SearchOptions.DEFAULT_OFFSET;
   const lim = limit !== undefined ? limit : SearchOptions.DEFAULT_LIMIT;
 
-  const options = SearchOptions.caller(off, lim);
+  const options = SearchOptions.build(off, lim);
   const bookings = await request.booking_service!.search_bookings(
     request.user_id!,
     options
   );
 
   response
-    .send(StatusCodes.OK)
+    .status(StatusCodes.OK)
     .json(bookings.map((id) => `${API_VERSION}${BASE_PATH}/${id.to_string()}`));
 }
 
-async function get_bookings(request: Request, response: Response) {
+async function get_bookings(
+  request: Request,
+  response: Response,
+  next?: NextFunction
+) {
   if (request.query.id === undefined) {
     // user did not specify any ids
-    await search_bookings(request, response);
+    next!();
   } else {
     // user specified at least one id
     const schema = Joi.array().items(Joi.string());
@@ -83,7 +87,7 @@ async function create_booking(request: Request, response: Response) {
   // However, the business logic is responsible for the validatiom.
   const schema = Joi.object({
     room_id: Joi.string().required(),
-    start: Joi.date(),
+    start: Joi.date().required(),
     end: Joi.date().required(),
   });
 
@@ -101,7 +105,8 @@ async function create_booking(request: Request, response: Response) {
 
   response
     .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}/users/me/bookings/${id.to_string()}`);
+    .location(`${API_VERSION}/users/me/bookings/${id.to_string()}`)
+    .send();
 }
 
 async function delete_booking(request: Request, response: Response) {
@@ -116,7 +121,11 @@ export function init_booking_routes(): express.Router {
   const router = express.Router();
 
   router.get(`${BASE_PATH}/:booking_id`, asyncHandler(get_booking));
-  router.get(BASE_PATH, asyncHandler(get_bookings));
+  router.get(
+    BASE_PATH,
+    asyncHandler(get_bookings),
+    asyncHandler(search_bookings)
+  );
   router.post(BASE_PATH, asyncHandler(create_booking));
   router.delete(`${BASE_PATH}/:booking_id`, asyncHandler(delete_booking));
 
