@@ -89,3 +89,34 @@ export function check_availability(
 
   return true;
 }
+
+/**
+ * Returns for each slot of time from the start of interval to its end
+ * how many places are available in the room given the current bookings.
+ * @param room
+ * @param current_bookings
+ * @param interval
+ */
+export function get_availability(
+  room: Room,
+  current_bookings: Booking[],
+  interval: NextInterval
+): number[] {
+  const steps: number[] = [];
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const booking of current_bookings) {
+    const { offset, length } = interval.overlaps(booking.interval);
+    if (offset !== undefined) {
+      for (let index = offset; index < offset + length; index += 1) {
+        if (steps[index] === undefined) {
+          steps[index] = room.seats - 1;
+        } else {
+          steps[index] -= 1;
+        }
+      }
+    }
+  }
+
+  return steps;
+}
