@@ -5,7 +5,12 @@
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
 import { DateTime } from 'luxon';
-import { DateTime as NeoDateTime, Driver, int, Integer } from 'neo4j-driver';
+import {
+  DateTime as NeoDateTime,
+  Driver,
+  int,
+  Integer,
+} from 'neo4j-driver-core';
 import {
   BookingID,
   Booking,
@@ -61,8 +66,8 @@ export class Neo4jBookingRepository implements BookingRepository {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (user:ROOM_User {id: $user})-[booking:ROOM_BOOKING]->(room:ROOM_Room)
-             WHERE booking.id in $ids
-             RETURN room.id as room, booking.id as id, booking.start as start, booking.end as end`,
+           WHERE booking.id in $ids
+           RETURN room.id as room, booking.id as id, booking.start as start, booking.end as end`,
           { user, ids }
         )
       );
@@ -93,7 +98,7 @@ export class Neo4jBookingRepository implements BookingRepository {
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (u:ROOM_User)-[b:ROOM_BOOKING]->[r:ROOM_Room { id: $id }]
+          `MATCH (u:ROOM_User)-[b:ROOM_BOOKING]->(r:ROOM_Room { id: $id })
            WHERE ($start <= b.start < b.end) OR ($start < b.end <= $end)
            RETURN u.id as uid, b.id as bid, b.start as start, b.end as end`,
           {
@@ -131,8 +136,8 @@ export class Neo4jBookingRepository implements BookingRepository {
            WHERE u.id = $id
            RETURN b.id as id
            ORDER BY b.id
-           LIMIT $limit
-           SKIP $skip`,
+           SKIP $skip
+           LIMIT $limit`,
           {
             id: user_id.to_string(),
             limit: int(options.limit),
@@ -161,7 +166,7 @@ export class Neo4jBookingRepository implements BookingRepository {
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (u:ROOM_User { id: $id })-[b:ROOM_BOOKING]->[r:ROOM_Room]
+          `MATCH (u:ROOM_User { id: $id })-[b:ROOM_BOOKING]->(r:ROOM_Room)
            WHERE ($start <= b.start < b.end) OR ($start < b.end <= $end)
            RETURN b.id as id`,
           {
