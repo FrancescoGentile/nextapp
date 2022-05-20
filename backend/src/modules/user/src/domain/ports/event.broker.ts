@@ -3,12 +3,12 @@
 //
 
 import {
-  UserRegisteredEvent
+  UserCreatedEvent
 } from '../events/events.index';
 
 export interface EventBroker {
 
-  on_user_registered(listener: (event: UserRegisteredEvent) => void, 
+  on_user_registered(listener: (event: UserCreatedEvent) => void, 
     context?: any
     ): void;
 

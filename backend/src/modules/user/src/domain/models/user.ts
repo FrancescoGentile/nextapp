@@ -2,43 +2,14 @@
 //
 //
 
-import { UserRole } from "@nextapp/common/user";
-import { customAlphabet } from 'nanoid';
+import { UserID, UserRole } from "@nextapp/common/user";
 import { 
     Username, 
     Password 
 } from "./user.credentials";
 import { DateTime } from 'luxon';
-import { InvalidUserID } from '../errors/errors.index';
 
-export class UserID{
-    public static readonly LENGTH = 10;
-    private constructor(private readonly id: string) {}
-
-    /**
-     * Generate a random UserID.
-     * @returns
-     */
-    public static generate(): UserID {
-      const nanoid = customAlphabet('1234567890', UserID.LENGTH);
-      return new UserID(nanoid());
-    }
-  
-    public static from_string(id: string): UserID {
-      if (/^[0-9]{10}$/.test(id)) {
-        return new UserID(id);
-      }
-      throw new InvalidUserID(id);
-    }
-  
-    public to_string(): string {
-      return this.id;
-    }
-  
-    public equals(other: UserID): boolean {
-      return this.id === other.id;
-    }
-  }
+// TODO: check first_name, last_name not empty
 
 export class User{
 
@@ -54,12 +25,14 @@ export class User{
     private password_ready: boolean = false;
 
     public constructor(
-        id: UserID,
         first_name: string,
         last_name: string,
         isAdmin: boolean,
+        //username: Username,
         username: string,
-        password:string,
+        //password: Password,
+        password: string,
+        id?: UserID,
         middle_name?: string
     ){  
         this.username = Username.from_string(username);
@@ -76,7 +49,7 @@ export class User{
             this.userRole = UserRole.SIMPLE;
         }
         this.middle_name = middle_name ?? "";
-        this.id = UserID.generate();
+        this.id = id;
         this.timestamp = DateTime.utc();
     }
 
@@ -85,7 +58,7 @@ export class User{
     //     return this.password;
     // }
 
-    //TODO: check password ready
+    //TODO: change password type
 
     public toJson() {
         if (this.userRole === UserRole.SYS_ADMIN) {

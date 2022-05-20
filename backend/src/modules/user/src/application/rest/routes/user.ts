@@ -30,6 +30,7 @@ async function register_user(request:Request, response: Response) {
     value.password,
     value.middle_name
   );
+  
   const id = await request.user_service!.register_user(request.user_id, requestedUser);
 
   response.status(StatusCodes.CREATED).location(request.path + id.to_string());
