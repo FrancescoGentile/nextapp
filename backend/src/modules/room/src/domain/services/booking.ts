@@ -11,17 +11,13 @@ import {
   RoomNotAvailable,
   RoomNotFound,
 } from '../errors';
-import {
-  BookingID,
-  Booking,
-  BookingInterval,
-  check_availability,
-} from '../models/booking';
+import { BookingID, Booking, check_availability } from '../models/booking';
 import { SearchOptions } from '../models/search';
 import { RoomID } from '../models/room';
 import { BookingRepository } from '../ports/booking.repository';
 import { BookingService } from '../ports/booking.service';
 import { RoomRepository } from '../ports/room.repository';
+import { NextInterval } from '../models/interval';
 
 export class NextBookingService implements BookingService {
   public constructor(
@@ -49,7 +45,7 @@ export class NextBookingService implements BookingService {
     start: DateTime,
     end: DateTime
   ): Promise<BookingID> {
-    const interval = BookingInterval.from_dates(start, end, true);
+    const interval = NextInterval.from_dates(start, end, true);
     const [rooms, bookings] = await Promise.all([
       this.room_repo.get_rooms([room_id]),
       this.booking_repo.get_bookings_by_room_interval(room_id, interval),
@@ -60,7 +56,7 @@ export class NextBookingService implements BookingService {
     }
     const room = rooms[0];
     const booking: Booking = { user: user_id, room: room_id, interval };
-    const available = check_availability(room, bookings, booking);
+    const available = check_availability(room, bookings, booking.interval);
     if (!available) {
       throw new RoomNotAvailable(room_id.to_string(), interval.interval);
     }

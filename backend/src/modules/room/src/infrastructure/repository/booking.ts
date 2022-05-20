@@ -11,14 +11,11 @@ import {
   int,
   Integer,
 } from 'neo4j-driver-core';
-import {
-  BookingID,
-  Booking,
-  BookingInterval,
-} from '../../domain/models/booking';
+import { BookingID, Booking } from '../../domain/models/booking';
 import { SearchOptions } from '../../domain/models/search';
 import { RoomID } from '../../domain/models/room';
 import { BookingRepository } from '../../domain/ports/booking.repository';
+import { NextInterval } from '../../domain/models/interval';
 
 function luxon_to_neo4j(dt: DateTime): NeoDateTime {
   return new NeoDateTime<Integer>(
@@ -37,13 +34,10 @@ function neo4j_to_luxon(dt: NeoDateTime): DateTime {
   return DateTime.fromISO(dt.toString());
 }
 
-function neo4j_to_interval(
-  start: NeoDateTime,
-  end: NeoDateTime
-): BookingInterval {
+function neo4j_to_interval(start: NeoDateTime, end: NeoDateTime): NextInterval {
   const s = neo4j_to_luxon(start);
   const e = neo4j_to_luxon(end);
-  return BookingInterval.from_dates(s, e, false);
+  return NextInterval.from_dates(s, e, false);
 }
 
 export class Neo4jBookingRepository implements BookingRepository {
@@ -92,7 +86,7 @@ export class Neo4jBookingRepository implements BookingRepository {
 
   public async get_bookings_by_room_interval(
     room_id: RoomID,
-    interval: BookingInterval
+    interval: NextInterval
   ): Promise<Booking[]> {
     const session = this.driver.session();
     try {
@@ -103,8 +97,8 @@ export class Neo4jBookingRepository implements BookingRepository {
            RETURN u.id as uid, b.id as bid, b.start as start, b.end as end`,
           {
             id: room_id.to_string(),
-            start: luxon_to_neo4j(interval.interval.start),
-            end: luxon_to_neo4j(interval.interval.end),
+            start: luxon_to_neo4j(interval.start),
+            end: luxon_to_neo4j(interval.end),
           }
         )
       );
@@ -160,7 +154,7 @@ export class Neo4jBookingRepository implements BookingRepository {
 
   public async search_bookings_by_user_interval(
     user_id: UserID,
-    interval: BookingInterval
+    interval: NextInterval
   ): Promise<BookingID[]> {
     const session = this.driver.session();
     try {
@@ -171,8 +165,8 @@ export class Neo4jBookingRepository implements BookingRepository {
            RETURN b.id as id`,
           {
             id: user_id.to_string(),
-            start: luxon_to_neo4j(interval.interval.start),
-            end: luxon_to_neo4j(interval.interval.end),
+            start: luxon_to_neo4j(interval.start),
+            end: luxon_to_neo4j(interval.end),
           }
         )
       );
@@ -209,8 +203,8 @@ export class Neo4jBookingRepository implements BookingRepository {
                 user_id: booking.user.to_string(),
                 room_id: booking.room.to_string(),
                 booking_id: id.to_string(),
-                start: luxon_to_neo4j(booking.interval.interval.start),
-                end: luxon_to_neo4j(booking.interval.interval.end),
+                start: luxon_to_neo4j(booking.interval.start),
+                end: luxon_to_neo4j(booking.interval.end),
               }
             )
           );

@@ -130,10 +130,10 @@ export class RoomDeletionNotAuthorized extends NextError {
 
 enum BookingErrorTypes {
   INVALID_BOOKING_ID = 1,
-  INVALID_BOOKING_INTERVAL,
   BOOKING_NOT_FOUND,
   ROOM_NOT_AVAILABLE,
   OVERLAPPING_BOOKING,
+  INVALID_INTERVAL,
 }
 
 function get_booking_type(type: BookingErrorTypes): string {
@@ -147,18 +147,6 @@ export class InvalidBookingID extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid booking id',
       `${id} is not a valid booking id.`,
-      options
-    );
-  }
-}
-
-export class InvalidBookingInterval extends NextError {
-  public constructor(details: any, options?: ErrorOptions) {
-    super(
-      get_booking_type(BookingErrorTypes.INVALID_BOOKING_INTERVAL),
-      StatusCodes.BAD_REQUEST,
-      'Invalid booking interval',
-      details,
       options
     );
   }
@@ -196,6 +184,18 @@ export class OverlappingBooking extends NextError {
       'Overlapping booking',
       `You already have a booking that overlaps with the one you are trying to make. ` +
         `To continue, change interval or delete the previous booking (id: ${booking_id}).`,
+      options
+    );
+  }
+}
+
+export class InvalidInterval extends NextError {
+  public constructor(details: any, options?: ErrorOptions) {
+    super(
+      get_booking_type(BookingErrorTypes.INVALID_INTERVAL),
+      StatusCodes.BAD_REQUEST,
+      'Invalid search interval',
+      details,
       options
     );
   }
