@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@kyvg/vue3-notification": "^2.3.4",
     "@popperjs/core": "^2.11.5",
     "axios": "^0.27.2",
     "bootstrap": "^5.1.3",

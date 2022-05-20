@@ -20,6 +20,7 @@ export default defineComponent({
         this.$router.push("/dashboard")
       }).catch(err=>{
         console.log(err)
+
       })
     }
   }
@@ -43,11 +44,6 @@ export default defineComponent({
           <div class="form-floating mb-3">
             <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
             <label for="floatingPassword">Password</label>
-          </div>
-          <div class="text-center mb-2">
-            <label>
-              <router-link to="/register">First time? Click here to signup</router-link>
-            </label>
           </div>
           <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
         </form>

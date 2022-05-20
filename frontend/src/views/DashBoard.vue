@@ -2,13 +2,18 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
+  computed:{
+    user() {
+      return this.$store.getters.getUser;
+    }
+  }
 })
 
 
 </script>
 
 <template>
-    <p> User dashboard</p>
+    <p> {{user.username}} dashboard</p>
 </template>
 
 <style scoped>
