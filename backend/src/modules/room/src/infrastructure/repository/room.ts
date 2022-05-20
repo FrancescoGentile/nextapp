@@ -62,16 +62,16 @@ export class Neo4jRoomRepository implements RoomRepository {
         rooms.push(
           new Room(
             name,
-            details,
-            seats.toNumber(),
-            floor,
+            JSON.parse(details),
+            seats.toInt(),
+            floor.toInt(),
             RoomID.from_string(id)
           )
         );
       });
 
       return rooms;
-    } catch {
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -84,7 +84,9 @@ export class Neo4jRoomRepository implements RoomRepository {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const id = RoomID.generate();
-        const { name, details } = room;
+        const { name } = room;
+        const details =
+          room.details === undefined ? null : JSON.stringify(room.details);
         const seats = int(room.seats);
         const floor = int(room.floor);
 
@@ -109,6 +111,10 @@ export class Neo4jRoomRepository implements RoomRepository {
             error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'
           ) {
             throw e;
+          }
+          // there is already a room with the same name
+          if (error.message.includes(name)) {
+            return undefined;
           }
         }
       }
