@@ -90,7 +90,7 @@ export class Room {
     if (!Number.isInteger(seats) || seats < 1) {
       throw new InvalidSeatNumber();
     }
-    if (!BuildingInfo.FLOORS.includes(floor)) {
+    if (!BuildingInfo.is_valid(floor)) {
       throw new InvalidFloor(BuildingInfo.FLOORS);
     }
 
