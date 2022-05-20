@@ -13,7 +13,7 @@ import { RoomNotFound } from '../../../domain/errors';
 import { RoomID } from '../../../domain/models/room';
 import { API_VERSION, asyncHandler } from '../utils';
 import { Booking, BookingID } from '../../../domain/models/booking';
-import { SearchOptions } from '../../../domain/models/options';
+import { SearchOptions } from '../../../domain/models/search';
 
 const BASE_PATH = '/users/me/bookings';
 

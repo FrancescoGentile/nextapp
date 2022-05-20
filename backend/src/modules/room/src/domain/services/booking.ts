@@ -17,7 +17,7 @@ import {
   BookingInterval,
   check_availability,
 } from '../models/booking';
-import { SearchOptions } from '../models/options';
+import { SearchOptions } from '../models/search';
 import { RoomID } from '../models/room';
 import { BookingRepository } from '../ports/booking.repository';
 import { BookingService } from '../ports/booking.service';

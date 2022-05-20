@@ -4,7 +4,7 @@
 
 import { UserID } from '@nextapp/common/user';
 import { Booking, BookingID, BookingInterval } from '../models/booking';
-import { SearchOptions } from '../models/options';
+import { SearchOptions } from '../models/search';
 import { RoomID } from '../models/room';
 
 export interface BookingRepository {

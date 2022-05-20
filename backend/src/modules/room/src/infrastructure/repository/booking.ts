@@ -16,7 +16,7 @@ import {
   Booking,
   BookingInterval,
 } from '../../domain/models/booking';
-import { SearchOptions } from '../../domain/models/options';
+import { SearchOptions } from '../../domain/models/search';
 import { RoomID } from '../../domain/models/room';
 import { BookingRepository } from '../../domain/ports/booking.repository';
 
