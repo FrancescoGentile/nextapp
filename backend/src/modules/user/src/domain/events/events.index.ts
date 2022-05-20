@@ -3,8 +3,8 @@
 //
 
 import { NextEvent, ModuleID } from '@nextapp/common/event';
+import { UserID, UserRole } from '@nextapp/common/user';
 import { DateTime } from 'luxon';
-import { Username } from '../models/user.credentials';
 
 export class UserCreatedEvent implements NextEvent {
   public readonly name: string = 'user-registered';
@@ -13,7 +13,7 @@ export class UserCreatedEvent implements NextEvent {
 
   public readonly timestamp: DateTime = DateTime.utc();
 
-  public constructor(public readonly username: Username, public readonly email: string) {
+  public constructor(public readonly userID: UserID, public readonly userRole: UserRole) {
 
   }
 }

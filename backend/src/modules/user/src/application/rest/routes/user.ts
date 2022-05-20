@@ -5,6 +5,10 @@ import { Request, Response } from 'express-serve-static-core';
 import express from 'express';
 import { asyncHandler } from '../utils';
 import { User } from '../../../domain/models/user';
+import { 
+  Username,
+  Password
+ } from '../../../domain/models/user.credentials'
 
 async function register_user(request:Request, response: Response) {
 
@@ -22,12 +26,17 @@ async function register_user(request:Request, response: Response) {
     throw new InvalidRequestError(toJson(schema));
   }
 
+  //TODO: CHECK init Username and Password
+
+  const requestedUsername = Username.from_string(value.username);
+  const requestedPassword = await Password.from_clear(value.password, requestedUsername);
+
   const requestedUser = new User(
     value.first_name,
     value.last_name,
     value.isAdmin,
-    value.username,
-    value.password,
+    requestedUsername,
+    requestedPassword,
     value.middle_name
   );
   

@@ -20,27 +20,20 @@ export class User{
     public readonly last_name: string;
     public readonly middle_name: string;
     public readonly username: Username;
-    // private readonly password: Promise<Password>;
     private password?: Password;
-    private password_ready: boolean = false;
 
     public constructor(
         first_name: string,
         last_name: string,
         isAdmin: boolean,
-        //username: Username,
-        username: string,
-        //password: Password,
-        password: string,
+        username: Username,
+        password: Password,
         id?: UserID,
         middle_name?: string
     ){  
-        this.username = Username.from_string(username);
+        this.username = username;
         // this.password = Password.from_clear(password, this.username);
-        Password.from_clear(password, this.username).then((value) => {
-            this.password = value;
-            this.password_ready = true;
-        })
+        this.password = password
         this.first_name = first_name;
         this.last_name = last_name;
         if (isAdmin) {
@@ -53,12 +46,7 @@ export class User{
         this.timestamp = DateTime.utc();
     }
 
-    //returns Password asynchronously
-    // public async get_password(): Promise<Password> {
-    //     return this.password;
-    // }
-
-    //TODO: change password type
+    //TODO: check Password
 
     public toJson() {
         if (this.userRole === UserRole.SYS_ADMIN) {
