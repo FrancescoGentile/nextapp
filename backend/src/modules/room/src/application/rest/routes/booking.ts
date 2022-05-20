@@ -41,8 +41,8 @@ async function get_booking(request: Request, response: Response) {
 
 async function search_bookings(request: Request, response: Response) {
   const { offset, limit } = request.query;
-  const off = offset !== undefined ? offset : SearchOptions.DEFAULT_OFFSET;
-  const lim = limit !== undefined ? limit : SearchOptions.DEFAULT_LIMIT;
+  const off = offset ?? SearchOptions.DEFAULT_OFFSET;
+  const lim = limit ?? SearchOptions.DEFAULT_LIMIT;
 
   const options = SearchOptions.build(off, lim);
   const bookings = await request.booking_service!.search_bookings(
