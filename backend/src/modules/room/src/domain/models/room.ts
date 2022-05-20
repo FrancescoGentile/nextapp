@@ -87,7 +87,7 @@ export class Room {
     floor: number,
     id?: RoomID
   ) {
-    if (/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
+    if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
       throw new InvalidRoomName(name);
     }
     if (!Number.isInteger(seats) || seats < 1) {
