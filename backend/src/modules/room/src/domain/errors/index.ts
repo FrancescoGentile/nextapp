@@ -65,16 +65,12 @@ export class InvalidSeatNumber extends NextError {
 }
 
 export class InvalidFloor extends NextError {
-  public constructor(
-    min_floor: number,
-    max_floor: number,
-    options?: ErrorOptions
-  ) {
+  public constructor(floors: number[], options?: ErrorOptions) {
     super(
       get_room_type(RoomErrorTypes.INVALID_FLOOR),
       StatusCodes.BAD_REQUEST,
       'Invalid floor',
-      `Floor must be integer, greater than or equal to ${min_floor} and less than or equal to ${max_floor}`,
+      `Valid floors are ${floors.join('", "')}`,
       options
     );
   }

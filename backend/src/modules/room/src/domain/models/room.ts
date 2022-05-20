@@ -9,6 +9,7 @@ import {
   InvalidRoomName,
   InvalidSeatNumber,
 } from '../errors';
+import { BuildingInfo } from './building';
 
 /**
  * Identifier for a room. It is a string of 10 digits.
@@ -67,10 +68,6 @@ export class Room {
   // and less than or equal to MAX_FLOOR
   public readonly floor: number;
 
-  // This is the max floor at Nest. At the moment, we hardcode it
-  // but in a future version we will add it into the database
-  public static readonly MAX_FLOOR: number = 4;
-
   /**
    * This constructor fails if the passed argument do not meet
    * the constraints on name, seats and floor.
@@ -93,8 +90,8 @@ export class Room {
     if (!Number.isInteger(seats) || seats < 1) {
       throw new InvalidSeatNumber();
     }
-    if (!Number.isInteger(floor) || floor < 0 || floor > Room.MAX_FLOOR) {
-      throw new InvalidFloor(0, Room.MAX_FLOOR);
+    if (!BuildingInfo.FLOORS.includes(floor)) {
+      throw new InvalidFloor(BuildingInfo.FLOORS);
     }
 
     this.seats = seats;
