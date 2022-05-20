@@ -3,6 +3,7 @@
 //
 
 import { Room, RoomID } from '../models/room';
+import { SearchOptions } from '../models/search';
 
 export interface RoomRepository {
   /**
@@ -10,6 +11,22 @@ export interface RoomRepository {
    * @param ids
    */
   get_rooms(ids: RoomID[]): Promise<Room[]>;
+
+  /**
+   * Returns ids of the rooms saved in the repository.
+   * @param options
+   */
+  search_rooms(options: SearchOptions): Promise<RoomID[]>;
+
+  /**
+   * Returns the ids of the rooms in the given floor.
+   * @param floor
+   * @param options
+   */
+  search_rooms_by_floor(
+    floor: number,
+    options: SearchOptions
+  ): Promise<RoomID[]>;
 
   /**
    * Adds a room to the repository and
