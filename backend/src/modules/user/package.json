@@ -38,6 +38,9 @@
       "node-cache": "^5.1.2",
       "eventemitter3": "^4.0.7",
       "typed-emitter": "^2.1.0",
+      "express-serve-static-core": "^0.1.1",
+      "joi": "^17.6.0",
+      "json-joi-converter": "^17.2.1-f",
       "email-validator": "^2.0.4"
     }
   }

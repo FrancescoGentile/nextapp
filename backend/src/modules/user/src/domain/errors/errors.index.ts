@@ -10,6 +10,7 @@ enum UserErrorTypes {
   INVALID_USERNAME = 1,
   INVALID_PASSWORD,
   USED_USERNAME,
+  NOT_ADMIN
 }
 
 function get_error_type(type: UserErrorTypes): string {
@@ -49,6 +50,18 @@ export class UsernameAlreadyUsed extends NextError {
       StatusCodes.CONFLICT,
       'Username already used',
       `${username} is already used. Try to choose another username.`,
+      options,
+    );
+  }
+}
+
+export class NotAnAdmin extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_error_type(UserErrorTypes.NOT_ADMIN),
+      StatusCodes.UNAUTHORIZED,
+      'Not an admin',
+      `This action requires admin priviledges.`,
       options,
     );
   }

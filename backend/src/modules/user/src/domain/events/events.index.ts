@@ -4,7 +4,7 @@
 
 import { NextEvent, ModuleID } from '@nextapp/common/event';
 import { DateTime } from 'luxon';
-import { Username } from '../models/credentials';
+import { Username } from '../models/user.credentials';
 
 export class UserRegisteredEvent implements NextEvent {
   public readonly name: string = 'user-registered';
