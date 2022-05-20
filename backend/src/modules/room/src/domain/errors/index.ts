@@ -70,7 +70,7 @@ export class InvalidFloor extends NextError {
       get_room_type(RoomErrorTypes.INVALID_FLOOR),
       StatusCodes.BAD_REQUEST,
       'Invalid floor',
-      `Valid floors are ${floors.join('", "')}`,
+      `Valid floors are ${floors.join(', ')}`,
       options
     );
   }

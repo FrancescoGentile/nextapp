@@ -131,6 +131,10 @@ export class NextRoomInfoService implements RoomInfoService {
         }
       }
 
+      if (ids.length < opt.limit) {
+        return res;
+      }
+
       opt = SearchOptions.build(
         opt.offset + opt.limit,
         options.limit - res.length

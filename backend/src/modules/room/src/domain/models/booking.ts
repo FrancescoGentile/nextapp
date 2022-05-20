@@ -102,18 +102,15 @@ export function get_availability(
   current_bookings: Booking[],
   interval: NextInterval
 ): number[] {
-  const steps: number[] = [];
+  const slots = interval.interval.length('minutes') / NextInterval.SLOT_LENGTH;
+  const steps: number[] = Array.from({ length: slots }, () => room.seats);
 
   // eslint-disable-next-line no-restricted-syntax
   for (const booking of current_bookings) {
     const { offset, length } = interval.overlaps(booking.interval);
     if (offset !== undefined) {
       for (let index = offset; index < offset + length; index += 1) {
-        if (steps[index] === undefined) {
-          steps[index] = room.seats - 1;
-        } else {
-          steps[index] -= 1;
-        }
+        steps[index] -= 1;
       }
     }
   }

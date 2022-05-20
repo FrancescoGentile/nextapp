@@ -73,7 +73,7 @@ export class Neo4jRoomRepository implements RoomRepository {
         rooms.push(
           new Room(
             name,
-            JSON.parse(details),
+            details ? JSON.parse(details) : undefined,
             seats.toInt(),
             floor.toInt(),
             RoomID.from_string(id)
@@ -82,7 +82,7 @@ export class Neo4jRoomRepository implements RoomRepository {
       });
 
       return rooms;
-    } catch (e) {
+    } catch {
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -95,11 +95,11 @@ export class Neo4jRoomRepository implements RoomRepository {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (r:ROOM_Room)
-           RETURN r.id
-           ORDER BY r.id as id
+           RETURN r.id as id
+           ORDER BY r.id
            SKIP $skip
            LIMIT $limit`,
-          { skip: options.offset, limit: options.limit }
+          { skip: int(options.offset), limit: int(options.limit) }
         )
       );
 
@@ -107,7 +107,7 @@ export class Neo4jRoomRepository implements RoomRepository {
         RoomID.from_string(record.get('id'))
       );
       return ids;
-    } catch {
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -123,11 +123,15 @@ export class Neo4jRoomRepository implements RoomRepository {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (r:ROOM_Room { floor: $floor })
-           RETURN r.id
-           ORDER BY r.id as id
+           RETURN r.id as id
+           ORDER BY r.id
            SKIP $skip
            LIMIT $limit`,
-          { floor: int(floor), skip: options.offset, limit: options.limit }
+          {
+            floor: int(floor),
+            skip: int(options.offset),
+            limit: int(options.limit),
+          }
         )
       );
 

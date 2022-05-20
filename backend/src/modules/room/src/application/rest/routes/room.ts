@@ -63,7 +63,7 @@ async function search_rooms(request: Request, response: Response) {
   let ids;
   if (request.query.floor !== undefined) {
     ids = await request.room_service!.search_rooms_by_floor(
-      request.query.floor,
+      Number.parseFloat(request.query.floor),
       options
     );
   } else if (
