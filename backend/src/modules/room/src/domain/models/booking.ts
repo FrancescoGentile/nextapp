@@ -49,6 +49,7 @@ export class BookingID {
 
 /**
  * Model to represent an interval for a booking.
+ * The extremes of the interval are UTC dates and times.
  */
 export class BookingInterval {
   // minimum interval length in minutes
@@ -76,8 +77,10 @@ export class BookingInterval {
     end: DateTime,
     after_now: boolean = false
   ): BookingInterval {
-    const interval = Interval.fromDateTimes(start, end);
-    return BookingInterval.from_interval(interval, after_now);
+    const utc_start = start.toUTC();
+    const utc_end = end.toUTC();
+    const utc_interval = Interval.fromDateTimes(utc_start, utc_end);
+    return BookingInterval.from_utc_interval(utc_interval, after_now);
   }
 
   /**
@@ -89,6 +92,26 @@ export class BookingInterval {
    * @param after_now if the interval should be after now (default value = false)
    */
   public static from_interval(
+    interval: Interval,
+    after_now: boolean = false
+  ): BookingInterval {
+    const { start, end } = interval;
+    const utc_start = start.toUTC();
+    const utc_end = end.toUTC();
+    const utc_interval = Interval.fromDateTimes(utc_start, utc_end);
+    return BookingInterval.from_utc_interval(utc_interval, after_now);
+  }
+
+  /**
+   * Creates a booking interval given a luxon interval.
+   * This method assumes that the interval extremes are UTC dates and times.
+   * This method throws an error if the interval is shorter than MIN_INTERVAL minutes
+   * or longer than MAX_INTERVAL minutes or if it is not a multiple of n slots.
+   * If after_now is true, an error is thrown if the interval is not after the current time.
+   * @param interval
+   * @param after_now if the interval should be after now (default value = false)
+   */
+  private static from_utc_interval(
     interval: Interval,
     after_now: boolean = false
   ): BookingInterval {
