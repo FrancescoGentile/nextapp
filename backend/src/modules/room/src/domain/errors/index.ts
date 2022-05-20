@@ -3,6 +3,7 @@
 //
 
 import { NextError, StatusCodes } from '@nextapp/common/error';
+import { Interval } from 'luxon';
 
 export { InternalServerError } from '@nextapp/common/error';
 
@@ -134,6 +135,9 @@ export class RoomDeletionNotAuthorized extends NextError {
 enum BookingErrorTypes {
   INVALID_BOOKING_ID = 1,
   INVALID_BOOKING_INTERVAL,
+  BOOKING_NOT_FOUND,
+  ROOM_NOT_AVAILABLE,
+  OVERLAPPING_BOOKING,
 }
 
 function get_booking_type(type: BookingErrorTypes): string {
@@ -159,6 +163,43 @@ export class InvalidBookingInterval extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid booking interval',
       details,
+      options
+    );
+  }
+}
+
+export class BookingNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_booking_type(BookingErrorTypes.BOOKING_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Booking not found',
+      `You have no booking with id ${id}.`,
+      options
+    );
+  }
+}
+
+export class RoomNotAvailable extends NextError {
+  public constructor(id: string, interval: Interval, options?: ErrorOptions) {
+    super(
+      get_booking_type(BookingErrorTypes.ROOM_NOT_AVAILABLE),
+      StatusCodes.CONFLICT,
+      'Room not available',
+      `Room with id ${id} is already completely occupied in the time interval ${interval.toString()}.`,
+      options
+    );
+  }
+}
+
+export class OverlappingBooking extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_booking_type(BookingErrorTypes.OVERLAPPING_BOOKING),
+      StatusCodes.CONFLICT,
+      'Overlapping booking',
+      `You already have a booking that overlaps with the one you are trying to make.\
+       To continue, change interval or delete the previous booking.`,
       options
     );
   }
