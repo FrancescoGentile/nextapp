@@ -4,17 +4,14 @@ import { toJson } from 'json-joi-converter';
 import { Request, Response } from 'express-serve-static-core';
 import express from 'express';
 import { asyncHandler } from '../utils';
-import { User,
-  IdentityInfo,
-  UserInfo
-} from '../../../domain/models/user';
+import { User } from '../../../domain/models/user';
 
 async function register_user(request:Request, response: Response) {
 
   const schema = Joi.object({
-    name: Joi.string().required(),
+    first_name: Joi.string().required(),
     middle_name: Joi.string(),
-    surname: Joi.string().required(),
+    last_name: Joi.string().required(),
     isAdmin: Joi.boolean().required(),
     username: Joi.string().required(),
     password: Joi.string().required()
@@ -25,9 +22,14 @@ async function register_user(request:Request, response: Response) {
     throw new InvalidRequestError(toJson(schema));
   }
 
-  const identity = new IdentityInfo
-
-  const requestedUser = new User(value.name, value.details, value.seats, value.floor);
+  const requestedUser = new User(
+    value.first_name,
+    value.last_name,
+    value.isAdmin,
+    value.username,
+    value.password,
+    value.middle_name
+  );
   const id = await request.user_service!.register_user(request.user_id, requestedUser);
 
   response.status(StatusCodes.CREATED).location(request.path + id.to_string());

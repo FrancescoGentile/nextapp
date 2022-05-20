@@ -9,6 +9,7 @@ export { InternalServerError } from '@nextapp/common/error';
 enum UserErrorTypes {
   INVALID_USERNAME = 1,
   INVALID_PASSWORD,
+  INVALID_USERID,
   USED_USERNAME,
   NOT_ADMIN
 }
@@ -62,6 +63,18 @@ export class NotAnAdmin extends NextError {
       StatusCodes.UNAUTHORIZED,
       'Not an admin',
       `This action requires admin priviledges.`,
+      options,
+    );
+  }
+}
+
+export class InvalidUserID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_error_type(UserErrorTypes.INVALID_USERID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid user ID',
+      `${id} is not a valid id for a room`,
       options,
     );
   }

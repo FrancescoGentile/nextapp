@@ -3,8 +3,6 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { Username } from '../models/user.credentials';
-import { IdentityInfo } from '../models/user.info';
 import { User } from '../models/user';
 
 export interface UserInfoService {
