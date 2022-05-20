@@ -71,7 +71,7 @@ export class NextBookingService implements BookingService {
         interval
       );
     if (user_bookings.length !== 0) {
-      throw new OverlappingBooking();
+      throw new OverlappingBooking(user_bookings[0].to_string());
     }
 
     const id = await this.booking_repo.create_booking(booking);

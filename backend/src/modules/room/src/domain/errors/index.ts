@@ -44,9 +44,9 @@ export class InvalidRoomName extends NextError {
       get_room_type(RoomErrorTypes.INVALID_NAME),
       StatusCodes.BAD_REQUEST,
       'Invalid room name',
-      `${name} does not meet on or both of the following conditions:\
-      length between 5 and 100 characters,\
-      only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
+      `${name} does not meet on or both of the following conditions: ` +
+        `length between 5 and 100 characters, ` +
+        `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
       options
     );
   }
@@ -193,13 +193,13 @@ export class RoomNotAvailable extends NextError {
 }
 
 export class OverlappingBooking extends NextError {
-  public constructor(options?: ErrorOptions) {
+  public constructor(booking_id: string, options?: ErrorOptions) {
     super(
       get_booking_type(BookingErrorTypes.OVERLAPPING_BOOKING),
       StatusCodes.CONFLICT,
       'Overlapping booking',
-      `You already have a booking that overlaps with the one you are trying to make.\
-       To continue, change interval or delete the previous booking.`,
+      `You already have a booking that overlaps with the one you are trying to make. ` +
+        `To continue, change interval or delete the previous booking (id: ${booking_id}).`,
       options
     );
   }
