@@ -14,8 +14,8 @@
       "password": "$2a$10$5lm91ky47prtyBd.yZEzh./AExVoLw/O0LcsXWujPpQkCHXpyistu",
       "id": 0,
       "username": "user0",
-      "firstName": "name0",
-      "lastName": "surname0",
+      "firstName": "name",
+      "lastName": "surname",
       "role": "user"
     },
     {
@@ -35,6 +35,43 @@
       "firstName": "Name",
       "lastName": "Surname",
       "role": "user"
+    }
+  ],
+  "rooms": [
+    {
+      "id": 0,
+      "name": "Aula 1",
+      "floor": 1,
+      "totalSeats": 25,
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    {
+      "id": 1,
+      "name": "Aula 2",
+      "floor": 2,
+      "totalSeats": 10,
+      "description": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+    },
+    {
+      "id": 2,
+      "name": "Aula 3",
+      "floor": 1,
+      "totalSeats": 30,
+      "description": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    },
+    {
+      "id": 3,
+      "name": "Aula 4",
+      "floor": 2,
+      "totalSeats": 20,
+      "description": "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+    },
+    {
+      "id": 76,
+      "name": "Aula Prova",
+      "floor": "2",
+      "totalSeats": 30,
+      "description": "Room Description "
     }
   ]
 }

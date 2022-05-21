@@ -27,6 +27,12 @@ const routes = [
     path: "/settings",
     name: "settings",
     component: () => import("../views/SettingsPage.vue")
+  },
+  {
+    path: "/roomDetails/:id",
+    name: "roomDetails",
+    component: () => import("../views/RoomDetails.vue"),
+    props: true
   }
 ]
 
@@ -42,7 +48,7 @@ router.beforeEach((to, from, next) => {
     if(to.name === "home"){
       next({name: "dashboard"})
     }else{
-      if((to.name === "dashboardAdmin" && user.role !== "admin") ){
+      if((to.name === "dashboardAdmin" || to.name === "roomDetails") && user.role !== "admin") {
         next({name: "dashboard"})
       }else{
         next()
