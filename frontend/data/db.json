@@ -67,21 +67,14 @@
       "description": "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
     },
     {
-      "id": 76,
+      "id": 5,
       "name": "Aula Prova",
-      "floor": "2",
+      "floor": 2,
       "totalSeats": 30,
       "description": "Room Description "
     }
   ],
   "reservations": [
-    {
-      "id": 34,
-      "user": 1,
-      "room": 3,
-      "slot": 2,
-      "date": "13/5/2022"
-    },
     {
       "id": 24,
       "user": 0,
@@ -99,7 +92,7 @@
     {
       "id": 6,
       "user": 2,
-      "room": 3,
+      "room": 2,
       "slot": 7,
       "date": "25/5/2022"
     },
@@ -113,7 +106,7 @@
     {
       "id": 5,
       "user": 2,
-      "room": 3,
+      "room": 1,
       "slot": 8,
       "date": "24/5/2022"
     }

@@ -108,11 +108,14 @@ export default defineComponent({
 
       emptySeats(slot){
         let count = 0
-        this.roomReservations.forEach(reservation=>{
-          if(reservation.slot === slot){
-            count += 1
-          }
-        })
+        if(this.roomReservations != undefined){
+          this.roomReservations.forEach(reservation=>{
+            if(reservation.slot === slot){
+              count += 1
+            }
+          })
+        }
+
         return this.reservationRoom.totalSeats - count
       },
       /*
@@ -154,12 +157,11 @@ export default defineComponent({
 </script>
 
 <template>
-    <h1>Reserve room</h1>
-    <br>
+
     <div class="container">
         <div class="row">
             <div class="col">
-                <h3 class="text.start"> Please select a date:</h3>
+                <h3 class="text-start"> Please select a date:</h3>
             </div>
         </div>
         <div class="row">
@@ -175,7 +177,7 @@ export default defineComponent({
         </div>
 
         <div v-if="this.showRooms">
-            <p> Select room for date: {{ date.value }}</p>
+            <h3> Select room for date: {{ date.value }}</h3>
             <div class="row border align-items-center" v-for="room in rooms" :key="room.id">
                 <div class="col">
                     <h1>{{ room.name }}</h1>
@@ -188,7 +190,7 @@ export default defineComponent({
                 </div>
             </div>
         </div>
-
+      <br>
         <div class="row" v-if="showSlots">
             <div class="col">
                 <h3> Available slots for: {{ date.value }}</h3>
