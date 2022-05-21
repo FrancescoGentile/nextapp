@@ -32,7 +32,15 @@ export interface UserRepository {
     * Gets the user list.
     * @param user_id the user id who wants to get the list of all users
     */
+   
   get_user_list(): Promise<User[]>;
+
+  /**
+   * Gets the user information with the given id.
+   * @param user_id the id of the user to get
+   */
+  get_user_info(user_id: UserID): Promise<User>;
+
 
   /**
    * Returns the user role if they exist.
