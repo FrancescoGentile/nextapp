@@ -13,7 +13,7 @@ export interface UserRepository {
    * and returns a unique id associated to it.
    * @param user
    */
-  save_user(user: User): Promise<UserID>
+  create_user(user: User): Promise<UserID>
 
   /**
    * Returns if a user with the given username exists.

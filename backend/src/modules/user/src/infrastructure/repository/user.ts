@@ -44,7 +44,7 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-    save_user(user: User): Promise<UserID> {
+    create_user(user: User): Promise<UserID> {
         throw new Error('Method not implemented.');
     }
     check_username(username: Username): Promise<boolean> {
