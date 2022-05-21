@@ -6,7 +6,6 @@ import { UserID, UserRole } from '@nextapp/common/user';
 import { User } from '../models/user';
 
 export interface UserInfoService {
-  [x: string]: any;
     /**
    * Creates a new user with the passed information.
    * This method can throw an error if the given information are not correct.
@@ -31,4 +30,11 @@ export interface UserInfoService {
    */
   change_role(requester: UserID, admin_to_down: UserID, role: UserRole): Promise<void>;
 
+   /* Return the information of the user with the passed id.
+   * This method can throw an error if the user is not authorized to do so.
+   * @param requester the user who wants to get the information of the user
+   * with the passed id
+   * (only sys-admins can get the information of any user)
+   */
+  get_user_info(requester: UserID, id: UserID): Promise<User>
 }

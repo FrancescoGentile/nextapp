@@ -12,6 +12,7 @@ import { UserRepository } from '../../domain/ports/user.repository';
 export class Neo4jUserRepository implements UserRepository {
   public constructor(private readonly driver: Driver) {}
   
+  
   public static async create(driver: Driver): Promise<Neo4jUserRepository> {
     let session = driver.session();
     try {
@@ -60,6 +61,9 @@ export class Neo4jUserRepository implements UserRepository {
     throw new Error('Method not implemented.');
   }
   change_role(admin_to_down: UserID, role: UserRole): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  get_user_info(user_id: UserID): Promise<User> {
     throw new Error('Method not implemented.');
   }
 }

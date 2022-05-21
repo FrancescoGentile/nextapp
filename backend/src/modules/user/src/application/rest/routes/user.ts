@@ -58,6 +58,9 @@ async function change_role(request:Request, response: Response) {
     request.params.role
   );
   response.sendStatus(StatusCodes.OK);
+async function get_user_info(request:Request, response: Response) {
+  const user = await request.user_service!.get_user_info(request.user_id, request.params.id);
+  response.status(StatusCodes.OK).json(user);
 }
 
 
@@ -66,5 +69,6 @@ export function init_user_routes(): express.Router {
   router.post('/users', asyncHandler(register_user));
   router.get('/users', asyncHandler(get_user_list));
   router.put('/users/:user_id', asyncHandler(change_role));
+  router.get('/users/:id', asyncHandler(get_user_info));
   return router;
 }
