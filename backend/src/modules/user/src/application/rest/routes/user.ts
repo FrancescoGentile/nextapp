@@ -45,8 +45,15 @@ async function register_user(request:Request, response: Response) {
   response.status(StatusCodes.CREATED).location(request.path + id.to_string());
 }
 
+
+async function get_user_list(request:Request, response: Response) {
+  const users = await request.user_service!.get_user_list(request.user_id);
+  response.status(StatusCodes.OK).json(users);
+}
+
 export function init_user_routes(): express.Router {
   const router = express.Router();
   router.post('/users', asyncHandler(register_user));
+  router.get('/users', asyncHandler(get_user_list));
   return router;
 }
