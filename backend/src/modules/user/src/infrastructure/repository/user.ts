@@ -12,6 +12,8 @@ import { UserRepository } from '../../domain/ports/user.repository';
 export class Neo4jUserRepository implements UserRepository {
   public constructor(private readonly driver: Driver) {}
 
+  
+
   public static async create(driver: Driver): Promise<Neo4jUserRepository> {
     let session = driver.session();
     try {
@@ -44,13 +46,22 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-    create_user(user: User): Promise<UserID> {
-        throw new Error('Method not implemented.');
-    }
-    check_username(username: Username): Promise<boolean> {
-        throw new Error('Method not implemented.');
-    }
-    check_system_administrator(user_id: UserID): Promise<boolean> {
-        throw new Error('Method not implemented.');
-    }
+  create_user(user: User): Promise<UserID> {
+      throw new Error('Method not implemented.');
+  }
+  check_username(username: Username): Promise<boolean> {
+      throw new Error('Method not implemented.');
+  }
+  check_system_administrator(user_id: UserID): Promise<boolean> {
+      throw new Error('Method not implemented.');
+  }
+  get_user_list(): Promise<User[]> {
+    throw new Error('Method not implemented.');
+  }
+  get_user_role(user_id: UserID): Promise<UserRole | null> {
+    throw new Error('Method not implemented.');
+  }
+  admin_downgrade(admin_to_down: UserID): void {
+    throw new Error('Method not implemented.');
+  }
 }

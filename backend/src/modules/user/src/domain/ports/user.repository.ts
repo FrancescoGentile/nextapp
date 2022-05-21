@@ -38,6 +38,12 @@ export interface UserRepository {
    * Returns the user role if they exist.
    * @param user_id
    */
-   get_user_role(user_id: UserID): Promise<UserRole | null>;
+  get_user_role(user_id: UserID): Promise<UserRole | null>;
+
+  /**
+   * Returns void.
+   * @param admin_to_down admin to downgrade
+   */
+  admin_downgrade(admin_to_down: UserID): void
 
 }

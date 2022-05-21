@@ -46,4 +46,11 @@ export class NextUserInfoService implements UserInfoService {
         return role === UserRole.SYS_ADMIN;
       }
 
+    public async admin_downgrade(requester: UserID, admin_to_down: UserID): Promise<void> {
+        if (!(await this.is_admin(requester))) {
+            throw new NotAnAdmin();
+          }
+        this.user_repo.admin_downgrade(admin_to_down);
+    }
+
 }
