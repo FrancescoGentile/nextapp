@@ -7,6 +7,7 @@ export default createStore({
     user: JSON.parse(localStorage.getItem("user") || "{}"),
     token: localStorage.getItem("token") || "",
     rooms:[],
+    error: ""
   },
   getters: {
     isLoggedIn(state){
@@ -30,6 +31,9 @@ export default createStore({
     },
     setUsers(state, users) {
       state.users = users
+    },
+    setError(state, error){
+      state.error = error;
     }
 
   },

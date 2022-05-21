@@ -4,7 +4,7 @@
       "id": 2,
       "username": "example",
       "email": "example@gmail.com",
-      "password": "$2a$10$LMIwmXFemaWDlWx/RkCEbuA4yNn0lh4b1DWwiX.5/8FnPvg7qXn0q",
+      "password": "$2a$10$UScWI4EIfcSguYJKFkoSZ.LxMdQSXg1ORel4TYqkXKjtdiOnUq29.",
       "firstName": "name1",
       "lastName": "surname1",
       "role": "admin"
@@ -16,7 +16,7 @@
       "username": "user0",
       "firstName": "name0",
       "lastName": "surname0",
-      "role": "admin"
+      "role": "user"
     },
     {
       "email": "user1@gmail.com",
@@ -29,8 +29,8 @@
     },
     {
       "email": "prova@prova",
-      "password": "$2a$10$tEJVqPFZO/ngID1kIPHMZuHK0BV0ZvPn1TSyFSRA.sV9dw8l.Viga",
-      "id": 58,
+      "password": "$2a$10$fE8bUMn2E05.zYpMjCbbseVNXxvFUj0ymJweuwxnyFKxoehj3lC9u",
+      "id": 15,
       "username": "prova",
       "firstName": "Name",
       "lastName": "Surname",
