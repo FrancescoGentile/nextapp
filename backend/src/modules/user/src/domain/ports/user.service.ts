@@ -21,4 +21,13 @@ export interface UserInfoService {
    * (only sys-admins can get the list of all users)
    */
   get_user_list(requester: UserID): Promise<User[]>
+
+  /**
+   * Return the information of the user with the passed id.
+   * This method can throw an error if the user is not authorized to do so.
+   * @param requester the user who wants to get the information of the user
+   * with the passed id
+   * (only sys-admins can get the information of any user)
+   */
+  get_user_info(requester: UserID, id: UserID): Promise<User>
 }
