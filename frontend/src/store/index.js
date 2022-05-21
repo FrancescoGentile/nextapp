@@ -6,25 +6,29 @@ export default createStore({
   state: {
     user: JSON.parse(localStorage.getItem("user") || "{}"),
     token: localStorage.getItem("token") || "",
-    rooms:[],
+    rooms: [],
+    roomDetails: [],
     error: "",
   },
   getters: {
-    isLoggedIn(state){
+    isLoggedIn(state) {
       return !!state.token
     },
-    getUser(state){
+    getUser(state) {
       return state.user
     },
     getUsers(state) {
       return state.users
     },
-    getRooms(state){
+    getRooms(state) {
       return state.rooms
+    },
+    getRoomDetails(state) {
+      return state.roomDetails
     }
   },
   mutations: {
-    setLogin(state, {token, user}){
+    setLogin(state, {token, user}) {
       state.token = token
       state.user = user
     },
@@ -35,25 +39,27 @@ export default createStore({
     setUsers(state, users) {
       state.users = users
     },
-    setError(state, error){
+    setError(state, error) {
       state.error = error;
     },
-    setRooms(state, rooms){
+    setRooms(state, rooms) {
       state.rooms = rooms
+    },
+    setRoomDetails(state, room) {
+      state.roomDetails = room
     }
-
 
   },
   actions: {
-    login({commit},user){
-      return new Promise((resolve, reject)=>{
+    login({commit}, user) {
+      return new Promise((resolve, reject) => {
         axios.defaults.headers.common["Authorization"]
-        axios.post("http://localhost:3000/login",{
+        axios.post("http://localhost:3000/login", {
           email: user.email,
           password: user.password
-        }).then(response=>{
+        }).then(response => {
           const token = response.data.accessToken
-          const user  = response.data.user
+          const user = response.data.user
 
           localStorage.setItem('token', token)
           localStorage.setItem('user', JSON.stringify(user))
@@ -76,8 +82,8 @@ export default createStore({
       })
     },
 
-    logout({commit}){
-      return new Promise((resolve)=>{
+    logout({commit}) {
+      return new Promise((resolve) => {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         commit("setLogout")
@@ -88,7 +94,7 @@ export default createStore({
         })
 
         resolve()
-      }).catch(err =>{
+      }).catch(err => {
         notify({
           title: "Error",
           text: err.response.data
@@ -96,7 +102,7 @@ export default createStore({
       })
     },
 
-    addUser({ commit }, user) {
+    addUser({commit}, user) {
       return new Promise((resolve, reject) => {
         axios.post("http://localhost:3000/users", {
           id: user.id,
@@ -127,13 +133,13 @@ export default createStore({
       })
     },
 
-    users({ commit }) {
+    users({commit}) {
       return new Promise((resolve, reject) => {
         axios.get("http://localhost:3000/users"
         ).then(response => {
           let users = response.data
           //remove hashed passwords both for security and because axios doesn't like them with patch requsts
-          users.forEach(user =>{
+          users.forEach(user => {
             delete user.password
           })
           commit('setUsers', users)
@@ -148,7 +154,7 @@ export default createStore({
       })
     },
 
-    deleteUser({ commit }, id) {
+    deleteUser({commit}, id) {
       return new Promise((resolve, reject) => {
         axios.delete("http://localhost:3000/users/" + id
         ).then(response => {
@@ -168,7 +174,7 @@ export default createStore({
       })
     },
 
-    modifyUser({ commit }, user) {
+    modifyUser({commit}, user) {
       return new Promise((resolve, reject) => {
         axios.patch("http://localhost:3000/users/" + user.id, user
         ).then(response => {
@@ -188,7 +194,7 @@ export default createStore({
       })
     },
 
-    rooms({ commit }) {
+    rooms({commit}) {
       return new Promise((resolve, reject) => {
         axios.get("http://localhost:3000/rooms"
         ).then(response => {
@@ -207,19 +213,81 @@ export default createStore({
       })
     },
 
-    addRoom({commit}, room){
-      return new Promise((resolve, reject)=>{
+    addRoom({commit}, room) {
+      return new Promise((resolve, reject) => {
         axios.post("http://localhost:3000/rooms", room
-        ).then(response=>{
+        ).then(response => {
           resolve(response)
-        }).catch(err=>{
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+  roomDetails({commit}, roomId) {
+    return new Promise((resolve, reject) => {
+      axios.get("http://localhost:3000/rooms/" + roomId
+      ).then(response => {
+        const room = response.data
+        commit("setRoomDetails", room)
+        resolve(response)
+      }).catch(err => {
+        notify({
+          title: "Error",
+          text: err.response.data
+        })
+        commit("setError")
+        reject(err)
+      })
+    })
+  },
+
+    deleteRoom({commit}, id) {
+      return new Promise((resolve, reject) => {
+        axios.delete("http://localhost:3000/rooms/" + id
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: "Room deleted"
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    modifyRoom({commit}, room) {
+      console.log(room)
+      return new Promise((resolve, reject) => {
+        axios.patch("http://localhost:3000/rooms/" + room.id, room
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: "Room updated"
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
           commit("setError")
           reject(err)
         })
       })
     }
-  },
+},
   modules: {
   }
 })
-

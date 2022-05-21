@@ -5,8 +5,8 @@ export default {
     data() {
         return {
             users: [],
-            registeredUser: [],
-            selectedUser: []
+            registeredUser: {},
+            selectedUser: {}
         }
     },
     computed: {

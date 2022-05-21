@@ -5,17 +5,12 @@ export default {
   data() {
     return {
       rooms: [],
-      registeredRoom: [],
-      selectedUser: [],
-      modifiedUser: []
+      registeredRoom: {}
     }
   },
   computed: {
     loadedRooms() {
       return this.$store.getters.getRooms
-    },
-    user() {
-      return this.$store.getters.getUser
     }
   },
   mounted() {
@@ -29,7 +24,7 @@ export default {
   },
   methods: {
     addRoom() {
-      console.log(this.registeredRoom)
+      //console.log(this.registeredRoom)
       let id = Math.floor(Math.random() * 100)
       let name = this.registeredRoom.name
       let floor = parseInt(this.registeredRoom.floor)
@@ -49,6 +44,11 @@ export default {
       })
       this.registeredRoom = {}
       this.hideModal('addRoom')
+    },
+
+    revertForm(){
+      this.registeredRoom = {}
+      this.hideModal("addRoom")
     },
 
     hideModal(modalId) {
@@ -107,7 +107,7 @@ export default {
           <h5 class="modal-title" id="exampleModalLabel">
             <h1 class="h3 mb-3 fw-normal">Insert room information</h1>
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="this.revertForm()"></button>
         </div>
         <div class="modal-body">
           <form class="p-4 p-md-5 border rounded-3 bg-light">
@@ -133,13 +133,13 @@ export default {
             </div>
             <div class="form-floating mb-3">
               <textarea v-model="registeredRoom.description" class="form-control"
-                        placeholder="description" rows="3"></textarea>
+                        placeholder="description" rows="5"></textarea>
               <label for="floatingInput">Description</label>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="this.revertForm()">Close</button>
           <button type="button" class="btn btn-primary" @click="addRoom()">Confirm</button>
         </div>
       </div>
