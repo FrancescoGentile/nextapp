@@ -268,7 +268,7 @@ export default createStore({
     },
 
     modifyRoom({commit}, room) {
-      console.log(room)
+      //console.log(room)
       return new Promise((resolve, reject) => {
         axios.patch("http://localhost:3000/rooms/" + room.id, room
         ).then(response => {

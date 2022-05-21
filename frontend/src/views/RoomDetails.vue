@@ -38,6 +38,7 @@ export default defineComponent({
       this.$store.dispatch("modifyRoom", room
       ).then((response) => {
         this.room = response.data
+        this.$store.commit("setRoomDetails", this.room)
       }).catch(err => {
         console.log(err)
       })
@@ -105,13 +106,13 @@ export default defineComponent({
     </div>
   </div>
 
-  <div class="container">
+  <div class="container mt-2">
     <div class="row">
       <div class="col ">
         <div class="card">
           <h5 class="card-header">Room Reservations</h5>
           <div class="card-body">
-            <div class="text-end mb-2">
+            <div class="text-end">
               <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modifyRoom"
                       @click="this.selectedRoom = this.room"> Modify information </button>
               <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deleteRoom"> Delete Room </button>
@@ -141,6 +142,13 @@ export default defineComponent({
           </div>
         </div>
       </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col"></div>
+      <div class="col">
+        <button class="btn btn-primary" @click="this.$router.push('/dashboardAdmin')"> Go back to the admin dashboard </button>
+      </div>
+      <div class="col"></div>
     </div>
   </div>
 
