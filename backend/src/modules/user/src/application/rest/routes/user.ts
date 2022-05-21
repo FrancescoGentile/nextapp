@@ -59,10 +59,19 @@ async function admin_downgrade(request:Request, response: Response) {
   response.sendStatus(StatusCodes.OK);
 }
 
+async function user_upgrade(request:Request, response: Response) {
+  await request.user_service!.user_upgrade(
+  request.user_id,
+  request.params.user_id
+);
+response.sendStatus(StatusCodes.OK);
+}
+
 export function init_user_routes(): express.Router {
   const router = express.Router();
   router.post('/users', asyncHandler(register_user));
   router.get('/users', asyncHandler(get_user_list));
   router.put('/users/:user_id', asyncHandler(admin_downgrade));
+  router.put('/users/:user_id', asyncHandler(user_upgrade));
   return router;
 }

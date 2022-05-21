@@ -7,6 +7,7 @@ import { Credentials, Password, Username } from '../models/user.credentials';
 import { User } from '../models/user';
 
 export interface UserRepository {
+  
 
   /**
    * Saves the given user into the repository
@@ -44,6 +45,6 @@ export interface UserRepository {
    * Returns void.
    * @param admin_to_down admin to downgrade
    */
-  admin_downgrade(admin_to_down: UserID): void
+  change_role(admin_to_down: UserID, role: UserRole): Promise<void>;
 
 }

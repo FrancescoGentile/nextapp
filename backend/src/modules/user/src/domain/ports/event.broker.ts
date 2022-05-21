@@ -9,13 +9,14 @@ import {
 
 export interface EventBroker {
 
-  on_user_registered(listener: (event: UserCreatedEvent) => void, 
+  on_user_created(
+    listener: (event: UserCreatedEvent) => void,
     context?: any
-    ): void;
+  ): void;
 
-  on_admin_downgraded(listener: (event: UserRoleChangedEvent) => void,
+  on_user_role_changed(
+    listener: (event: UserRoleChangedEvent) => void,
     context?: any
-    ): void;
-
+  ): void;
 }
 

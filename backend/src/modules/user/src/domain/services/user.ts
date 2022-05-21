@@ -14,6 +14,7 @@ import { UserRepository } from '../ports/user.repository';
 
 export class NextUserInfoService implements UserInfoService {
     public constructor(private readonly user_repo: UserRepository) {}
+    
 
     public async register_user(requester: UserID, requestedUser: User): Promise<UserID> {
         const is_admin = await this.user_repo.check_system_administrator(requester);
@@ -45,12 +46,12 @@ export class NextUserInfoService implements UserInfoService {
         }
         return role === UserRole.SYS_ADMIN;
       }
-
-    public async admin_downgrade(requester: UserID, admin_to_down: UserID): Promise<void> {
+    
+    public async change_role(requester: UserID, admin_to_down: UserID, role: UserRole): Promise<void> {
         if (!(await this.is_admin(requester))) {
             throw new NotAnAdmin();
           }
-        this.user_repo.admin_downgrade(admin_to_down);
+        this.user_repo.change_role(admin_to_down, role);
     }
 
 }
