@@ -7,7 +7,7 @@ export default createStore({
     user: JSON.parse(localStorage.getItem("user") || "{}"),
     token: localStorage.getItem("token") || "",
     rooms:[],
-    error: ""
+    error: "",
   },
   getters: {
     isLoggedIn(state){
@@ -18,6 +18,9 @@ export default createStore({
     },
     getUsers(state) {
       return state.users
+    },
+    getRooms(state){
+      return state.rooms
     }
   },
   mutations: {
@@ -34,7 +37,11 @@ export default createStore({
     },
     setError(state, error){
       state.error = error;
+    },
+    setRooms(state, rooms){
+      state.rooms = rooms
     }
+
 
   },
   actions: {
@@ -180,6 +187,37 @@ export default createStore({
         })
       })
     },
+
+    rooms({ commit }) {
+      return new Promise((resolve, reject) => {
+        axios.get("http://localhost:3000/rooms"
+        ).then(response => {
+          const rooms = response.data
+          commit('setRooms', rooms)
+
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
+          commit('setError')
+          reject(err)
+        })
+      })
+    },
+
+    addRoom({commit}, room){
+      return new Promise((resolve, reject)=>{
+        axios.post("http://localhost:3000/rooms", room
+        ).then(response=>{
+          resolve(response)
+        }).catch(err=>{
+          commit("setError")
+          reject(err)
+        })
+      })
+    }
   },
   modules: {
   }

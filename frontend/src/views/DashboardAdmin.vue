@@ -1,6 +1,7 @@
 <script>
 import { defineComponent } from "vue"
 import UsersManagement from "@/components/UsersManagement.vue"
+import RoomsManagement from "@/components/RoomsManagement";
 
 export default defineComponent({
     data(){
@@ -24,7 +25,7 @@ export default defineComponent({
         }
     },
     components:{
-        UsersManagement
+        UsersManagement, RoomsManagement
     }
 })
 </script>
@@ -59,7 +60,8 @@ export default defineComponent({
       <div class="col"></div>
     </div>
 </div>
-<UsersManagement v-if="showUsers"></UsersManagement>
+  <UsersManagement v-if="showUsers"></UsersManagement>
+  <RoomsManagement v-if="showRooms"></RoomsManagement>
 </template>
 
 <style>
