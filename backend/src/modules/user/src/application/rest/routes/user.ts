@@ -56,9 +56,9 @@ async function get_user_info(request:Request, response: Response) {
   response.status(StatusCodes.OK).json(user);
 }
 
-async function ban_user(params:type) {
+async function ban_user(request:Request, response: Response) {
   const user = await request.user_service!.ban_user(request.user_id, request.params.id);
-  response.status(StatusCodes.OK).json(user);
+  response.status(StatusCodes.NO_CONTENT);
 }
 
 
