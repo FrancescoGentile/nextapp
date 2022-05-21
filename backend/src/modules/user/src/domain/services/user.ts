@@ -5,6 +5,7 @@
 import { UserID, UserRole } from '@nextapp/common/user';
 import { User } from '../models/user';
 import { UserInfoService } from '../ports/user.service';
+import { UserRepository } from '../ports/user.repository';
 
 export class NextUserInfoService implements UserInfoService {
 
@@ -12,15 +13,12 @@ export class NextUserInfoService implements UserInfoService {
         throw new Error('Method not implemented.');
     }
 
-    get_user_list(requester: UserID): Promise<User[]> {
+    get_user_list(admin: UserID): Promise<User[]> {
         if (!(await this.is_admin(admin))) {
             throw new NotAnAdmin();
           }
         return this.user_repo.get_user_list();
     }
-
-
-
 
     private async is_admin(user_id: UserID): Promise<boolean> {
         const role = await this.user_repo.get_user_role(user_id);
