@@ -5,7 +5,7 @@
 import { UserID } from '@nextapp/common/user';
 import { DateTime } from 'luxon';
 import { Booking, BookingID } from '../models/booking';
-import { SearchOptions } from '../models/options';
+import { SearchOptions } from '../models/search';
 import { RoomID } from '../models/room';
 
 export interface BookingService {

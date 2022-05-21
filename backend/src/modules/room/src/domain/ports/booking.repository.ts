@@ -3,9 +3,10 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { Booking, BookingID, BookingInterval } from '../models/booking';
-import { SearchOptions } from '../models/options';
+import { Booking, BookingID } from '../models/booking';
+import { SearchOptions } from '../models/search';
 import { RoomID } from '../models/room';
+import { NextInterval } from '../models/interval';
 
 export interface BookingRepository {
   /**
@@ -27,7 +28,7 @@ export interface BookingRepository {
    */
   get_bookings_by_room_interval(
     room_id: RoomID,
-    interval: BookingInterval
+    interval: NextInterval
   ): Promise<Booking[]>;
 
   /**
@@ -48,7 +49,7 @@ export interface BookingRepository {
    */
   search_bookings_by_user_interval(
     user_id: UserID,
-    interval: BookingInterval
+    interval: NextInterval
   ): Promise<BookingID[]>;
 
   /**

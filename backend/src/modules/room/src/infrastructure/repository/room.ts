@@ -5,6 +5,7 @@
 import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { RoomID, Room } from '../../domain/models/room';
+import { SearchOptions } from '../../domain/models/search';
 import { RoomRepository } from '../../domain/ports/room.repository';
 
 export class Neo4jRoomRepository implements RoomRepository {
@@ -31,6 +32,16 @@ export class Neo4jRoomRepository implements RoomRepository {
           `CREATE CONSTRAINT ROOM_unique_room_name IF NOT EXISTS
            FOR (r:ROOM_Room)
            REQUIRE r.name IS UNIQUE`
+        )
+      );
+
+      await session.close();
+      session = driver.session();
+      await session.writeTransaction((tx) =>
+        tx.run(
+          `CREATE INDEX ROOM_floor_index IF NOT EXISTS 
+           FOR (r:ROOM_Room) 
+           ON (r.floor)`
         )
       );
 
@@ -62,9 +73,9 @@ export class Neo4jRoomRepository implements RoomRepository {
         rooms.push(
           new Room(
             name,
-            details,
-            seats.toNumber(),
-            floor,
+            details ? JSON.parse(details) : undefined,
+            seats.toInt(),
+            floor.toInt(),
             RoomID.from_string(id)
           )
         );
@@ -78,13 +89,72 @@ export class Neo4jRoomRepository implements RoomRepository {
     }
   }
 
+  public async search_rooms(options: SearchOptions): Promise<RoomID[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (r:ROOM_Room)
+           RETURN r.id as id
+           ORDER BY r.id
+           SKIP $skip
+           LIMIT $limit`,
+          { skip: int(options.offset), limit: int(options.limit) }
+        )
+      );
+
+      const ids = res.records.map((record) =>
+        RoomID.from_string(record.get('id'))
+      );
+      return ids;
+    } catch (e) {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async search_rooms_by_floor(
+    floor: number,
+    options: SearchOptions
+  ): Promise<RoomID[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (r:ROOM_Room { floor: $floor })
+           RETURN r.id as id
+           ORDER BY r.id
+           SKIP $skip
+           LIMIT $limit`,
+          {
+            floor: int(floor),
+            skip: int(options.offset),
+            limit: int(options.limit),
+          }
+        )
+      );
+
+      const ids = res.records.map((record) =>
+        RoomID.from_string(record.get('id'))
+      );
+      return ids;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public async create_room(room: Room): Promise<RoomID | undefined> {
     const session = this.driver.session();
     try {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const id = RoomID.generate();
-        const { name, details } = room;
+        const { name } = room;
+        const details =
+          room.details === undefined ? null : JSON.stringify(room.details);
         const seats = int(room.seats);
         const floor = int(room.floor);
 
@@ -109,6 +179,10 @@ export class Neo4jRoomRepository implements RoomRepository {
             error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'
           ) {
             throw e;
+          }
+          // there is already a room with the same name
+          if (error.message.includes(name)) {
+            return undefined;
           }
         }
       }

@@ -18,7 +18,11 @@ export function init_services(
   booking_repo: BookingRepository,
   broker: EventBroker
 ): { room_service: RoomInfoService; booking_service: BookingService } {
-  const room_service = new NextRoomInfoService(room_repo, user_repo);
+  const room_service = new NextRoomInfoService(
+    room_repo,
+    booking_repo,
+    user_repo
+  );
   const booking_service = new NextBookingService(booking_repo, room_repo);
   const _ = new NextUserService(broker, user_repo);
 
