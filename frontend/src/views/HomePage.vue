@@ -32,7 +32,7 @@ export default defineComponent({
   <div class="container col-xxl-8 px-4 py-5">
     <div class="row flex-lg align-items-center g-5 py-5">
       <div class="col-10 col-sm-8 col-lg-6">
-        <img src="../assets/logo.jpg" class="d-block mx-lg-auto img-fluid" alt="NextApp" width="700" height="500" loading="lazy">
+        <img src="../../assets/logo.jpg" class="d-block mx-lg-auto img-fluid" alt="NextApp" width="700" height="500" loading="lazy">
       </div>
       <div class="col-md-10 mx-auto col-lg-5">
         <form @submit.prevent="handleSubmit()" class="p-4 p-md-5 border rounded-3 bg-light">

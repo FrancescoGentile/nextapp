@@ -16,7 +16,7 @@
       "username": "user0",
       "firstName": "name0",
       "lastName": "surname0",
-      "role": "user"
+      "role": "admin"
     },
     {
       "email": "user1@gmail.com",
