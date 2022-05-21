@@ -2,7 +2,7 @@
 //
 //
 
-import { UserID } from '@nextapp/common/user';
+import { UserID, UserRole } from '@nextapp/common/user';
 import { Credentials, Password, Username } from '../models/user.credentials';
 import { User } from '../models/user';
 
@@ -27,4 +27,17 @@ export interface UserRepository {
    * @param user_id
    */
   check_system_administrator(user_id: UserID): Promise<boolean>
+  
+  /**
+    * Gets the user list.
+    * @param user_id the user id who wants to get the list of all users
+    */
+  get_user_list(): Promise<User[]>;
+
+  /**
+   * Returns the user role if they exist.
+   * @param user_id
+   */
+   get_user_role(user_id: UserID): Promise<UserRole | null>;
+
 }

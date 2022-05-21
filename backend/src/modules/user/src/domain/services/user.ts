@@ -2,7 +2,8 @@
 //
 //
 
-import { UserID } from '@nextapp/common/user';
+import { UserID, UserRole } from '@nextapp/common/user';
+import { InternalServerError } from '../errors/errors.index';
 import {
     NotAnAdmin,
     UsernameAlreadyUsed
@@ -16,7 +17,7 @@ export class NextUserInfoService implements UserInfoService {
 
     public async register_user(requester: UserID, requestedUser: User): Promise<UserID> {
         const is_admin = await this.user_repo.check_system_administrator(requester);
-        if (!is_admin) {
+        if (!(await this.is_admin(requester))) {
           throw new NotAnAdmin();
         }
 
@@ -28,4 +29,21 @@ export class NextUserInfoService implements UserInfoService {
         const id = await this.user_repo.create_user(requestedUser);
         return id;
     }
+
+    public async get_user_list(admin: UserID): Promise<User[]> {
+        if (!(await this.is_admin(admin))) {
+            throw new NotAnAdmin();
+          }
+        return this.user_repo.get_user_list();
+    }
+
+    private async is_admin(user_id: UserID): Promise<boolean> {
+        const role = await this.user_repo.get_user_role(user_id);
+        if (role === null) {
+          // the user with the given id has still not been created
+          throw new InternalServerError();
+        }
+        return role === UserRole.SYS_ADMIN;
+      }
+
 }
