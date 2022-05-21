@@ -48,4 +48,12 @@ export interface UserRepository {
    */
    get_user_role(user_id: UserID): Promise<UserRole | null>;
 
+
+  /**
+   * Bans the user with the given id.
+   * @param user_id the id of the user to ban
+   * 
+   */
+   delete_user(user_id: UserID): Promise<boolean>;
+
 }
