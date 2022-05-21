@@ -11,5 +11,14 @@ export class NextUserInfoService implements UserInfoService {
     register_user(requester: UserID, user: User): Promise<UserID> {
         throw new Error('Method not implemented.');
     }
-    
+
+    private async is_admin(user_id: UserID): Promise<boolean> {
+        const role = await this.user_repo.get_user_role(user_id);
+        if (role === null) {
+          // the user with the given id has still not been created
+          throw new InternalServerError();
+        }
+        return role === UserRole.SYS_ADMIN;
+      }
+
 }
