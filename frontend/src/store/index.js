@@ -7,6 +7,7 @@ export default createStore({
     user: JSON.parse(localStorage.getItem("user") || "{}"),
     token: localStorage.getItem("token") || "",
     rooms:[],
+    error: ""
   },
   getters: {
     isLoggedIn(state){
@@ -30,6 +31,9 @@ export default createStore({
     },
     setUsers(state, users) {
       state.users = users
+    },
+    setError(state, error){
+      state.error = error;
     }
 
   },
@@ -58,8 +62,6 @@ export default createStore({
             title: "Error",
             text: err.response.data
           })
-          console.log(err.response.data)
-
 
           reject(err)
 
@@ -123,6 +125,7 @@ export default createStore({
         axios.get("http://localhost:3000/users"
         ).then(response => {
           let users = response.data
+          //remove hashed passwords both for security and because axios doesn't like them with patch requsts
           users.forEach(user =>{
             delete user.password
           })
@@ -133,6 +136,46 @@ export default createStore({
             title: "Error",
             text: err.response.data
           })
+          reject(err)
+        })
+      })
+    },
+
+    deleteUser({ commit }, id) {
+      return new Promise((resolve, reject) => {
+        axios.delete("http://localhost:3000/users/" + id
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: "User deleted"
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    modifyUser({ commit }, user) {
+      return new Promise((resolve, reject) => {
+        axios.patch("http://localhost:3000/users/" + user.id, user
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: "User updated"
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
+          commit("setError")
           reject(err)
         })
       })

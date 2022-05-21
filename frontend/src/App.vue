@@ -38,12 +38,12 @@ export default defineComponent({
             <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
           </li>
           <li v-if="user.role === 'admin'" class="nav-item">
-            <router-link to="/dashboardAdmin" class="nav-link">DashboardAdmin</router-link>
+            <router-link to="/dashboardAdmin" class="nav-link">Administration</router-link>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown" aria-expanded="false">Profile</a>
             <ul class="dropdown-menu" aria-labelledby="dropdown01">
-              <li><a class="dropdown-item" href="#">Settings</a></li>
+              <li><router-link class="dropdown-item" to="/settings">Settings</router-link></li>
               <li><a class="dropdown-item" @click="logout()">Logout</a></li>
             </ul>
           </li>
