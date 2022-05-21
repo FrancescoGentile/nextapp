@@ -37,6 +37,12 @@ export class NextUserInfoService implements UserInfoService {
         return this.user_repo.get_user_list();
     }
 
+    public async get_user_info(requester: UserID, id: UserID): Promise<User> {
+        if (!(await this.is_admin(requester)) || requester.equals(id)) {
+            throw new NotAnAdmin();
+            }
+        return this.user_repo.get_user_info(id);
+    }
     private async is_admin(user_id: UserID): Promise<boolean> {
         const role = await this.user_repo.get_user_role(user_id);
         if (role === null) {
