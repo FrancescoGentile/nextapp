@@ -2,7 +2,7 @@
 //
 //
 
-import { UserID } from '@nextapp/common/user';
+import { UserID, UserRole } from '@nextapp/common/user';
 import { User } from '../models/user';
 
 export interface UserInfoService {
@@ -23,7 +23,14 @@ export interface UserInfoService {
   get_user_list(requester: UserID): Promise<User[]>
 
   /**
-   * Return the information of the user with the passed id.
+   * Change user role to simple user or to admin.
+   * This method can throw an error if the user is not authorized to do so.
+   * @param requester the user who wants to downgrade the admin
+   * (only sys-admins can get the list of all users)
+   */
+  change_role(requester: UserID, admin_to_down: UserID, role: UserRole): Promise<void>;
+
+   /* Return the information of the user with the passed id.
    * This method can throw an error if the user is not authorized to do so.
    * @param requester the user who wants to get the information of the user
    * with the passed id

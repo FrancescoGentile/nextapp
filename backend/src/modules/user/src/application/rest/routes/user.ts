@@ -46,11 +46,18 @@ async function register_user(request:Request, response: Response) {
 }
 
 
-async function get_user_list(request:Request, response: Response) {
+async function get_user_list(request: Request, response: Response) {
   const users = await request.user_service!.get_user_list(request.user_id);
   response.status(StatusCodes.OK).json(users);
 }
 
+async function change_role(request:Request, response: Response) {
+    await request.user_service!.change_role(
+    request.user_id,
+    request.params.user_id,
+    request.params.role
+  );
+  response.sendStatus(StatusCodes.OK);
 async function get_user_info(request:Request, response: Response) {
   const user = await request.user_service!.get_user_info(request.user_id, request.params.id);
   response.status(StatusCodes.OK).json(user);
@@ -66,6 +73,7 @@ export function init_user_routes(): express.Router {
   const router = express.Router();
   router.post('/users', asyncHandler(register_user));
   router.get('/users', asyncHandler(get_user_list));
+  router.put('/users/:user_id', asyncHandler(change_role));
   router.delete('/users/:id', asyncHandler(ban_user));
   router.get('/users/:id', asyncHandler(get_user_info));
 
