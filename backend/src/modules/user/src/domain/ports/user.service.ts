@@ -13,4 +13,12 @@ export interface UserInfoService {
    * (only sys-admins can create new users)
    */
   register_user(requester: UserID, user: User): Promise<UserID>
+
+  /**
+   * Return the list of all users.
+   * This method can throw an error if the user is not authorized to do so.
+   * @param requester the user who wants to get the list of all users
+   * (only sys-admins can get the list of all users)
+   */
+  get_user_list(requester: UserID): Promise<User[]>
 }
