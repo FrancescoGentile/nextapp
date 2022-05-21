@@ -40,6 +40,9 @@ export default defineComponent({
           <li v-if="user.role === 'admin'" class="nav-item">
             <router-link to="/dashboardAdmin" class="nav-link">Administration</router-link>
           </li>
+          <li class="nav-item">
+            <router-link to="/rooms" class="nav-link">Reservations</router-link>
+          </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown" aria-expanded="false">Profile</a>
             <ul class="dropdown-menu" aria-labelledby="dropdown01">

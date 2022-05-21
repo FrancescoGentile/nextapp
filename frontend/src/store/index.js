@@ -12,7 +12,8 @@ export default createStore({
     reservations: [],
     roomReservations: [],
     userReservations: [],
-    dateReservations: []
+    dateReservations: [],
+    slots: []
   },
   getters: {
     isLoggedIn(state) {
@@ -62,6 +63,9 @@ export default createStore({
       })
       //console.log(userReservations)
       return dateReservations
+    },
+    getSlots(state){
+      return state.slots
     }
   },
   mutations: {
@@ -96,6 +100,9 @@ export default createStore({
     },
     setDateReservations(state, reservations){
       state.dateReservations = reservations
+    },
+    setSlots(state, slots){
+      state.slots = slots
     }
   },
   actions: {
@@ -374,6 +381,32 @@ export default createStore({
 
           commit('setError')
 
+          reject(err)
+        })
+      })
+    },
+
+    slots({commit}){
+      return new Promise((resolve, reject)=>{
+        axios.get("http://localhost:3000/slots"
+        ).then(response=>{
+          commit("setSlots", response.data)
+          resolve(response)
+        }).catch(err=>{
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteUserReservation({ commit }, id) {
+      return new Promise((resolve, reject) => {
+        axios.delete("http://localhost:3000/reservations/" + id
+        ).then(response => {
+          //commit("setReservations")
+          resolve(response)
+        }).catch(err => {
+          commit("setError")
           reject(err)
         })
       })

@@ -5,7 +5,8 @@ import { Modal } from "bootstrap"
 export default defineComponent({
   data(){
     return{
-      reservations: []
+      reservations: [],
+      chosenReservation: []
     }
 
   },
@@ -67,7 +68,7 @@ export default defineComponent({
             <th scope="row">{{ i + 1 }}</th>
             <td> {{ reservation.date }} </td>
             <td> {{ reservation.room }} </td>
-            <td> {{ reservation.slot }} </td>
+            <td> {{ reservation.slot *2 }}:00 - {{(reservation.slot *2)+2}}:00</td>
             <td>
               <button class="btn btn-primary align-end" data-bs-toggle="modal"
                       data-bs-target="#confirm" @click="() => {
