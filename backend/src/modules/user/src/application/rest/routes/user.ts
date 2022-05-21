@@ -63,12 +63,19 @@ async function get_user_info(request:Request, response: Response) {
   response.status(StatusCodes.OK).json(user);
 }
 
+async function ban_user(params:type) {
+  const user = await request.user_service!.ban_user(request.user_id, request.params.id);
+  response.status(StatusCodes.OK).json(user);
+}
+
 
 export function init_user_routes(): express.Router {
   const router = express.Router();
   router.post('/users', asyncHandler(register_user));
   router.get('/users', asyncHandler(get_user_list));
   router.put('/users/:user_id', asyncHandler(change_role));
+  router.delete('/users/:id', asyncHandler(ban_user));
   router.get('/users/:id', asyncHandler(get_user_info));
+
   return router;
 }
