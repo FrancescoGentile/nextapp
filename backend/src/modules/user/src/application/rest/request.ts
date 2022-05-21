@@ -11,4 +11,8 @@ declare module 'express-serve-static-core' {
     user_id: UserID;
     user_service?: UserInfoService;
   }
+  export interface LoginRequest extends Request{
+    username: string;
+    password: string;
+  }
 }
