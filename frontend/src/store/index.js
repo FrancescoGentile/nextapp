@@ -14,6 +14,9 @@ export default createStore({
     },
     getUser(state){
       return state.user
+    },
+    getUsers(state) {
+      return state.users
     }
   },
   mutations: {
@@ -21,10 +24,12 @@ export default createStore({
       state.token = token
       state.user = user
     },
-
     setLogout(state) {
       state.token = ''
       state.user = {}
+    },
+    setUsers(state, users) {
+      state.users = users
     }
 
   },
@@ -80,7 +85,58 @@ export default createStore({
           text: err.response.data
         })
       })
-    }
+    },
+
+    addUser({ commit }, user) {
+      return new Promise((resolve, reject) => {
+        axios.post("http://localhost:3000/users", {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          password: user.password
+        }).then(response => {
+          notify({
+            title: "Success",
+            text: "User successfully added"
+          })
+
+          resolve(response)
+        }).catch(err => {
+          commit('setError') //TODO look up how commit works
+          localStorage.removeItem('token')
+
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
+
+          reject(err)
+        })
+      })
+    },
+
+    users({ commit }) {
+      return new Promise((resolve, reject) => {
+        axios.get("http://localhost:3000/users"
+        ).then(response => {
+          let users = response.data
+          users.forEach(user =>{
+            delete user.password
+          })
+          commit('setUsers', users)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data
+          })
+          reject(err)
+        })
+      })
+    },
   },
   modules: {
   }

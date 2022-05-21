@@ -26,6 +26,15 @@
       "firstName": "name1",
       "lastName": "surname1",
       "role": "user"
+    },
+    {
+      "email": "prova@prova",
+      "password": "$2a$10$tEJVqPFZO/ngID1kIPHMZuHK0BV0ZvPn1TSyFSRA.sV9dw8l.Viga",
+      "id": 58,
+      "username": "prova",
+      "firstName": "Name",
+      "lastName": "Surname",
+      "role": "user"
     }
   ]
 }

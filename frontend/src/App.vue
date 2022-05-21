@@ -4,6 +4,9 @@ export default defineComponent({
   computed: {
     isLoggedIn() {
       return this.$store.getters.isLoggedIn;
+    },
+    user(){
+      return this.$store.getters.getUser
     }
   },
   methods:{
@@ -31,6 +34,12 @@ export default defineComponent({
 
       <div class="collapse navbar-collapse" id="navbarsExample02">
         <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
+          </li>
+          <li v-if="user.role === 'admin'" class="nav-item">
+            <router-link to="/dashboardAdmin" class="nav-link">DashboardAdmin</router-link>
+          </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown" aria-expanded="false">Profile</a>
             <ul class="dropdown-menu" aria-labelledby="dropdown01">
