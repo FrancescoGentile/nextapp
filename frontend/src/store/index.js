@@ -9,6 +9,11 @@ export default createStore({
     rooms: [],
     roomDetails: [],
     error: "",
+    reservations: [],
+    roomReservations: [],
+    userReservations: [],
+    dateReservations: [],
+    slots: []
   },
   getters: {
     isLoggedIn(state) {
@@ -23,8 +28,44 @@ export default createStore({
     getRooms(state) {
       return state.rooms
     },
+    getReservations(state){
+      return state.reservations
+    },
     getRoomDetails(state) {
       return state.roomDetails
+    },
+    getRoomReservations: (state)=> (roomId)=> {
+      let roomReservations = []
+      state.dateReservations.forEach(res=>{
+        if(res.room === roomId){
+          roomReservations.push(res)
+        }
+      })
+      //console.log(roomReservations)
+      return roomReservations
+    },
+    getUserReservations: (state) => (userId)=>{
+      let userReservations = []
+      state.reservations.forEach(res=>{
+        if(res.user === userId){
+          userReservations.push(res)
+        }
+      })
+      //console.log(userReservations)
+      return userReservations
+    },
+    getDateReservations: (state) => (date)=>{
+      let dateReservations = []
+      state.reservations.forEach(res=>{
+        if(res.date === date){
+          dateReservations.push(res)
+        }
+      })
+      //console.log(dateReservations)
+      return dateReservations
+    },
+    getSlots(state){
+      return state.slots
     }
   },
   mutations: {
@@ -47,12 +88,27 @@ export default createStore({
     },
     setRoomDetails(state, room) {
       state.roomDetails = room
+    },
+    setReservations(state, reservations){
+      state.reservations = reservations
+    },
+    setUserReservations(state, reservations){
+      state.userReservations = reservations
+    },
+    setRoomReservations(state, reservations){
+      state.roomReservations = reservations
+    },
+    setDateReservations(state, reservations){
+      state.dateReservations = reservations
+    },
+    setSlots(state, slots){
+      state.slots = slots
     }
-
   },
   actions: {
     login({commit}, user) {
       return new Promise((resolve, reject) => {
+        //axios.defaults.headers.common["Authorization"] = "Bearer " + localStorage.getItem("token");
         axios.defaults.headers.common["Authorization"]
         axios.post("http://localhost:3000/login", {
           email: user.email,
@@ -286,7 +342,76 @@ export default createStore({
           reject(err)
         })
       })
+    },
+
+    bookRoom({ commit }, reservation) {
+      return new Promise((resolve, reject) => {
+        axios.post("http://localhost:3000/reservations", {
+          id: reservation.id,
+          user: reservation.user,
+          room: reservation.room,
+          slot: reservation.slot,
+          date: reservation.date
+        }).then(response => {
+          notify({
+            title: "Success",
+            text: "Reservation added"
+          })
+          resolve(response)
+        }).catch(err => {
+           notify({
+            title: "Error",
+            text: err.response.data
+          })
+          commit('setError')
+          reject(err)
+        })
+      })
+    },
+
+    reservations({ commit }) {
+      return new Promise((resolve, reject) => {
+        axios.get("http://localhost:3000/reservations"
+        ).then(response => {
+          const reservations = response.data
+          commit('setReservations', reservations)
+
+          resolve(response)
+        }).catch(err => {
+
+          commit('setError')
+
+          reject(err)
+        })
+      })
+    },
+
+    slots({commit}){
+      return new Promise((resolve, reject)=>{
+        axios.get("http://localhost:3000/slots"
+        ).then(response=>{
+          commit("setSlots", response.data)
+          resolve(response)
+        }).catch(err=>{
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteUserReservation({ commit }, id) {
+      return new Promise((resolve, reject) => {
+        axios.delete("http://localhost:3000/reservations/" + id
+        ).then(response => {
+          //commit("setReservations")
+          resolve(response)
+        }).catch(err => {
+          commit("setError")
+          reject(err)
+        })
+      })
     }
+
 },
   modules: {
   }

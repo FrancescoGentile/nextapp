@@ -5,7 +5,8 @@ export default {
   data() {
     return {
       rooms: [],
-      registeredRoom: {}
+      registeredRoom: {},
+      floors: [1,2]
     }
   },
   computed: {
@@ -118,13 +119,13 @@ export default {
             </div>
             <div class="form-floating mb-3">
               <div class="form-check form-check-inline">
-                <input v-model="registeredRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="1">
-                <label class="form-check-label" for="inlineRadio1">1</label>
+                Floor:
+                <div v-for="(floor,i) in floors" :key="i">
+                  <input v-model="registeredRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" :value=floor>
+                  <label class="form-check-label" for="inlineRadio1">{{floor}}</label>
+                </div>
               </div>
-              <div class="form-check form-check-inline">
-                <input v-model="registeredRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="2">
-                <label class="form-check-label" for="inlineRadio2">2</label>
-              </div>
+
             </div>
             <div class="form-floating mb-3">
               <input v-model="registeredRoom.totalSeats" type="text" class="form-control"

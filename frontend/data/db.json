@@ -41,7 +41,7 @@
     {
       "id": 0,
       "name": "Aula 1",
-      "floor": 1,
+      "floor": 2,
       "totalSeats": 25,
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
     },
@@ -65,13 +65,105 @@
       "floor": 2,
       "totalSeats": 20,
       "description": "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+    }
+  ],
+  "reservations": [
+    {
+      "id": 63,
+      "user": 1,
+      "room": 0,
+      "slot": 1,
+      "date": "10/5/2022"
     },
     {
-      "id": 76,
-      "name": "Aula Prova",
-      "floor": "2",
-      "totalSeats": 30,
-      "description": "Room Description "
+      "id": 6,
+      "user": 2,
+      "room": 2,
+      "slot": 7,
+      "date": "25/5/2022"
+    },
+    {
+      "id": 5,
+      "user": 2,
+      "room": 1,
+      "slot": 8,
+      "date": "24/5/2022"
+    },
+    {
+      "id": 49,
+      "user": 2,
+      "room": 0,
+      "slot": 3,
+      "date": "22/5/2022"
+    },
+    {
+      "id": 57,
+      "user": 2,
+      "room": 0,
+      "slot": 5,
+      "date": "22/5/2022"
+    }
+  ],
+  "slots": [
+    {
+      "id": 0,
+      "start": 0,
+      "end": 2
+    },
+    {
+      "id": 1,
+      "start": 2,
+      "end": 4
+    },
+    {
+      "id": 2,
+      "start": 4,
+      "end": 6
+    },
+    {
+      "id": 3,
+      "start": 6,
+      "end": 8
+    },
+    {
+      "id": 4,
+      "start": 8,
+      "end": 10
+    },
+    {
+      "id": 5,
+      "start": 10,
+      "end": 12
+    },
+    {
+      "id": 6,
+      "start": 12,
+      "end": 14
+    },
+    {
+      "id": 7,
+      "start": 14,
+      "end": 16
+    },
+    {
+      "id": 8,
+      "start": 16,
+      "end": 18
+    },
+    {
+      "id": 9,
+      "start": 18,
+      "end": 20
+    },
+    {
+      "id": 10,
+      "start": 20,
+      "end": 22
+    },
+    {
+      "id": 11,
+      "start": 22,
+      "end": 24
     }
   ]
 }

@@ -7,18 +7,32 @@ export default defineComponent({
   data(){
     return {
       room: {},
-      selectedRoom: {}
+      selectedRoom: {},
+      reservations: [],
+      selectedReservation: {},
+      floors: [1,2]
     }
   },
   computed:{
     loadedRoom(){
       return this.$store.getters.getRoomDetails
+    },
+    roomReservations(){
+      return this.$store.getters.getRoomReservations(parseInt(this.id))
     }
   },
   mounted(){
     this.$store.dispatch("roomDetails", this.id
     ).then(()=>{
       this.room = this.loadedRoom;
+    }).catch(err=>{
+      console.log(err)
+    })
+
+    this.$store.dispatch("reservations"
+    ).then(()=>{
+      this.reservations = this.roomReservations
+      this.$store.commit("setRoomReservations", this.reservations)
     }).catch(err=>{
       console.log(err)
     })
@@ -53,6 +67,19 @@ export default defineComponent({
         console.log(err)
       })
       this.hideModal("modifyRoom")
+    },
+
+    deleteReservation(reservationId) {
+      this.$store.dispatch("deleteUserReservation", reservationId
+      ).then(() => {
+        this.reservations= this.reservations.filter(reservation=>reservation.id !== reservationId)
+        this.$store.commit("setRoomReservations", this.reservations)
+      }).catch(err => {
+        console.log(err);
+      });
+      const myModalEl = document.getElementById('deleteReservation')
+      const modal = Modal.getInstance(myModalEl)
+      modal.hide()
     },
 
     hideModal(modalId) {
@@ -106,35 +133,37 @@ export default defineComponent({
     </div>
   </div>
 
-  <div class="container mt-2">
+  <div class="container mt-5">
     <div class="row">
       <div class="col ">
         <div class="card">
           <h5 class="card-header">Room Reservations</h5>
           <div class="card-body">
-            <div class="text-end">
-              <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modifyRoom"
-                      @click="this.selectedRoom = this.room"> Modify information </button>
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deleteRoom"> Delete Room </button>
-            </div>
             <div class="table-responsive">
               <table class="table table-striped table-responsive text-center ">
+                <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">User</th>
+                  <th scope="col">Room</th>
+                  <th scope="col">Slot</th>
+                  <th scope="col">Date</th>
+                  <th scope="col"></th>
+                </tr>
+                </thead>
                 <tbody>
-                <tr>
-                  <td> Name: </td>
-                  <td>{{ room.name }}</td>
-                </tr>
-                <tr>
-                  <td> Floor:</td>
-                  <td>{{ room.floor }}</td>
-                </tr>
-                <tr>
-                  <td>Total Seats:</td>
-                  <td>{{ room.totalSeats }} </td>
-                </tr>
-                <tr>
-                  <td> Additional Information:</td>
-                  <td>{{ room.description }} </td>
+                <tr v-for="(reservation, i) in this.reservations" :key="reservation.id">
+                  <th scope="row">{{ i+1 }}</th>
+                  <td>{{ reservation.user }}</td>
+                  <td>{{ reservation.room }}</td>
+                  <td>{{ reservation.slot }}</td>
+                  <td>{{ reservation.date }}</td>
+                  <td>
+                    <div class="text-end">
+                      <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                              data-bs-target="#deleteReservation" @click="this.selectedReservation = reservation"> Delete Reservation </button>
+                    </div>
+                  </td>
                 </tr>
                 </tbody>
               </table>
@@ -184,13 +213,15 @@ export default defineComponent({
               <input type="text" class="form-control" v-model="selectedRoom.name">
             </div>
             <div class="mb-3">
-              <div class="form-check form-check-inline">
-                <input v-model="selectedRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="1">
-                <label class="form-check-label" for="inlineRadio1">1</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input v-model="selectedRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="2">
-                <label class="form-check-label" for="inlineRadio2">2</label>
+              <div class="form-floating mb-3">
+                <div class="form-check form-check-inline">
+                  Floor:
+                  <div v-for="(floor,i) in floors" :key="i">
+                    <input v-model="selectedRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" :value=floor>
+                    <label class="form-check-label" for="inlineRadio1">{{floor}}</label>
+                  </div>
+                </div>
+
               </div>
             </div>
             <div class="mb-3">
@@ -213,14 +244,25 @@ export default defineComponent({
     </div>
   </div>
 
+  <div class="modal fade" id="deleteReservation" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Delete profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this reservation? This action will be permanent.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" @click="deleteReservation(this.selectedReservation.id)">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.gradient-custom {
-  /* Chrome 10-25, Safari 5.1-6 */
-  background: -webkit-linear-gradient(to right bottom, red, rgba(246, 211, 101, 1));
 
-  /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-  background: linear-gradient(to right bottom, red, rgba(246, 211, 101, 1))
-}
 </style>
