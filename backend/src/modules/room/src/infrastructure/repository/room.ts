@@ -53,35 +53,31 @@ export class Neo4jRoomRepository implements RoomRepository {
     }
   }
 
-  public async get_rooms(room_ids: RoomID[]): Promise<Room[]> {
+  public async get_room(room_id: RoomID): Promise<Room | null> {
     const session = this.driver.session();
     try {
-      const ids = room_ids.map((id) => id.to_string());
       const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (room:ROOM_Room)
-           WHERE room.id IN $ids
+          `MATCH (room:ROOM_Room { id: $id })
            RETURN room`,
-          { ids }
+          { id: room_id.to_string() }
         )
       );
 
-      const rooms: Room[] = [];
-      res.records.forEach((record) => {
-        const { id, name, details, seats, floor } =
-          record.get('room').properties;
-        rooms.push(
-          new Room(
-            name,
-            details ? JSON.parse(details) : undefined,
-            seats.toInt(),
-            floor.toInt(),
-            RoomID.from_string(id)
-          )
-        );
-      });
+      if (res.records.length === 0) {
+        return null;
+      }
 
-      return rooms;
+      const { id, name, details, seats, floor } =
+        res.records[0].get('room').properties;
+
+      return new Room(
+        name,
+        details ? JSON.parse(details) : undefined,
+        seats.toInt(),
+        floor.toInt(),
+        RoomID.from_string(id)
+      );
     } catch {
       throw new InternalServerError();
     } finally {
@@ -89,24 +85,54 @@ export class Neo4jRoomRepository implements RoomRepository {
     }
   }
 
-  public async search_rooms(options: SearchOptions): Promise<RoomID[]> {
+  public async search_rooms(
+    options: SearchOptions,
+    floor_number?: number
+  ): Promise<Room[]> {
     const session = this.driver.session();
     try {
-      const res = await session.readTransaction((tx) =>
-        tx.run(
-          `MATCH (r:ROOM_Room)
-           RETURN r.id as id
-           ORDER BY r.id
-           SKIP $skip
-           LIMIT $limit`,
-          { skip: int(options.offset), limit: int(options.limit) }
-        )
-      );
+      let res;
+      if (floor_number !== undefined) {
+        res = await session.readTransaction((tx) =>
+          tx.run(
+            `MATCH (r:ROOM_Room { floor: $floor })
+             RETURN r
+             ORDER BY r.id
+             SKIP $skip
+             LIMIT $limit`,
+            {
+              skip: int(options.offset),
+              limit: int(options.limit),
+              floor: int(floor_number),
+            }
+          )
+        );
+      } else {
+        res = await session.readTransaction((tx) =>
+          tx.run(
+            `MATCH (r:ROOM_Room)
+             RETURN r 
+             ORDER BY r.id
+             SKIP $skip
+             LIMIT $limit`,
+            { skip: int(options.offset), limit: int(options.limit) }
+          )
+        );
+      }
 
-      const ids = res.records.map((record) =>
-        RoomID.from_string(record.get('id'))
-      );
-      return ids;
+      const rooms = res.records.map((record) => {
+        const { id, name, details, seats, floor } = record.get('r').properties;
+
+        return new Room(
+          name,
+          details ? JSON.parse(details) : undefined,
+          seats.toInt(),
+          floor.toInt(),
+          RoomID.from_string(id)
+        );
+      });
+
+      return rooms;
     } catch (e) {
       throw new InternalServerError();
     } finally {
