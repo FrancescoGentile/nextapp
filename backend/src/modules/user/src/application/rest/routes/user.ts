@@ -13,7 +13,7 @@ import {
   Username,
   Password
 } from '../../../domain/models/user.credentials'
-import { CredentialsNotString, InvalidCredentials } from '../../../domain/errors/errors.index';
+import { InvalidCredentials } from '../../../domain/errors/errors.index';
 
 async function register_user(request:Request, response: Response) {
 
@@ -49,8 +49,8 @@ async function register_user(request:Request, response: Response) {
   const id = await request.user_service!.register_user(request.user_id, requestedUser);
   response
     .status(StatusCodes.NO_CONTENT)
-    .location(request.path + id.to_string())
-    .send('The user has been successfully registered');
+    .location(request.path + id.to_string()
+  );
 }
 
 
