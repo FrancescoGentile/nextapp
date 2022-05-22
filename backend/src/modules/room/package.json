@@ -2,8 +2,27 @@
   "name": "@nextapp/room",
   "version": "1.0.0",
   "description": "",
-  "main": "",
-  "types": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./service": "./dist/domain/services/index.js",
+    "./restapi": "./dist/application/rest/index.js",
+    "./infrastructure": "./dist/infrastructure/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "service": [
+        "./dist/domain/services/index.d.ts"
+      ],
+      "restapi": [
+        "./dist/application/rest/index.d.ts"
+      ],
+      "infrastructure": [
+        "./dist/infrastructure/index.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint --ignore-path .eslintignore --ext .ts",
