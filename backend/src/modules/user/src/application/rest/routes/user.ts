@@ -13,7 +13,7 @@ import {
   Username,
   Password
 } from '../../../domain/models/user.credentials'
-import { CredentialsNotString } from '../../../domain/errors/errors.index';
+import { CredentialsNotString, InvalidCredentials } from '../../../domain/errors/errors.index';
 
 async function register_user(request:Request, response: Response) {
 
@@ -89,13 +89,9 @@ async function login(
 ) {
   const username = request.params.username;
   const password = request.params.password;
-  try {
     if (!is_string(username) || !is_string(password)) {
-      throw new CredentialsNotString();
-  }
-  }catch (CredentialsNotString) {
-    response.status(StatusCodes.BAD_REQUEST);
-  }
+      throw new InvalidCredentials();
+    }
   const token = await request.auth_service.login_with_credentials(username, password);
   
   response.cookie(
