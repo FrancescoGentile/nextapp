@@ -159,6 +159,46 @@ export class NextRoomInfoService implements RoomInfoService {
     return id;
   }
 
+  public async update_room(
+    admin: UserID,
+    room_id: RoomID,
+    name?: string,
+    details?: any,
+    floor?: number
+  ): Promise<void> {
+    if (!(await this.is_admin(admin))) {
+      throw new RoomDeletionNotAuthorized();
+    }
+
+    if (name === undefined && details === undefined && floor === undefined) {
+      return;
+    }
+
+    const room = await this.room_repo.get_room(room_id);
+    if (room === null) {
+      throw new RoomNotFound(room_id.to_string());
+    }
+
+    let new_details = room.details;
+    if (details === null) {
+      new_details = null;
+    } else if (details !== undefined) {
+      Object.assign(new_details, details);
+    }
+    const new_room = new Room(
+      name ?? room.name,
+      new_details,
+      room.seats,
+      floor ?? room.floor,
+      room.id
+    );
+
+    const updated = await this.room_repo.update_room(new_room);
+    if (!updated) {
+      throw new RoomNameAlreadyUsed(new_room.name);
+    }
+  }
+
   public async delete_room(admin: UserID, room_id: RoomID): Promise<void> {
     if (!(await this.is_admin(admin))) {
       throw new RoomDeletionNotAuthorized();
