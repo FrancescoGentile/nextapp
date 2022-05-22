@@ -47,7 +47,10 @@ async function register_user(request:Request, response: Response) {
     value.middle_name
   );
   const id = await request.user_service!.register_user(request.user_id, requestedUser);
-  response.status(StatusCodes.CREATED).location(request.path + id.to_string());
+  response
+    .status(StatusCodes.NO_CONTENT)
+    .location(request.path + id.to_string())
+    .send('The user has been successfully registered');
 }
 
 
@@ -62,7 +65,7 @@ async function change_role(request:Request, response: Response) {
     request.params.user_id,
     request.params.role
   );
-  response.sendStatus(StatusCodes.OK);
+  response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
 async function get_user_info(request:Request, response: Response) {
@@ -93,22 +96,39 @@ async function login(
   }catch (CredentialsNotString) {
     response.status(StatusCodes.BAD_REQUEST);
   }
-  await request.auth_service.login_with_credentials(username, password);
-  response.status(StatusCodes.OK);
-}
-async function ban_user(request:Request, response: Response) {
-  const user = await request.user_service!.ban_user(request.user_id, request.params.id);
+  const token = await request.auth_service.login_with_credentials(username, password);
+  
+  response.cookie(
+    'JsonWebToken', 
+    token.to_string(), 
+    { secure: true, httpOnly: true }
+  );
   response.status(StatusCodes.NO_CONTENT);
 }
 
+async function ban_user(request:Request, response: Response) {
+  await request.user_service!.ban_user(request.user_id, request.params.id);
+  response.status(StatusCodes.NO_CONTENT);
+}
+
+async function unsubscribe(request: Request, response: Response){
+  await request.user_service!.unsubscribe(request.user_id);
+  response
+    .status(StatusCodes.NO_CONTENT);
+}
 
 export function init_user_routes(): express.Router {
   const router = express.Router();
   router.post('/login', asyncHandler(login));
+
   router.post('/users', asyncHandler(register_user));
   router.get('/users', asyncHandler(get_user_list));
+
   router.get('/users/:id', asyncHandler(get_user_info));
-  router.put('/users/:user_id', asyncHandler(change_role));
+  router.put('/users/:id', asyncHandler(change_role));
   router.delete('/users/:id', asyncHandler(ban_user));
+
+  router.delete('/users/me'), asyncHandler(unsubscribe);
+
   return router;
 }

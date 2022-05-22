@@ -47,5 +47,12 @@ export interface UserInfoService {
    * @param id the id of the user to ban
    */
   ban_user(requester: UserID, id: UserID): Promise<void>
+
+  /**
+   * Deletes the account of the requester.
+   * @param requester user who wants to unsunscribe
+   * @param id the id of the user to ban
+   */
+  unsubscribe(requester_id: UserID): Promise<void>
   
 }

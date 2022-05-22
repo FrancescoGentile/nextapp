@@ -5,7 +5,8 @@
 import {
   UserCreatedEvent,
   UserRoleChangedEvent,
-  UserLogin
+  UserLoginEvent,
+  UserDeletedEvent
 } from '../events/events.index';
 
 export interface EventBroker {
@@ -21,8 +22,13 @@ export interface EventBroker {
   ): void;
 
   on_user_login(
-    listener: (event: UserLogin) => void,
+    listener: (event: UserLoginEvent) => void,
     context?: any
   ): void;
-}
 
+  on_user_deleted(
+    listener: (event: UserDeletedEvent) => void,
+    context?: any
+  ): void;
+
+}

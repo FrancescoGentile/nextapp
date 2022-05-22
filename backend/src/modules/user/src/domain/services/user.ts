@@ -72,4 +72,11 @@ export class NextUserInfoService implements UserInfoService {
         this.user_repo.change_role(admin_to_down, role);
     }
 
+    public async unsubscribe(requester_id: UserID){
+        const deleted = await this.user_repo.delete_user(requester_id);
+        if (!deleted) {
+          throw new UserNotFound(requester_id.to_string());
+        }
+    }
+
 }
