@@ -11,6 +11,10 @@ import { UserRepository } from '../../domain/ports/user.repository';
 
 export class Neo4jUserRepository implements UserRepository {
   public constructor(private readonly driver: Driver) {}
+  
+  delete_user(user_id: UserID): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
 
   
   public static async create(driver: Driver): Promise<Neo4jUserRepository> {

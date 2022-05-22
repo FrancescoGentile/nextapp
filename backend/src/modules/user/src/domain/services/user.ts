@@ -6,7 +6,8 @@ import { UserID, UserRole } from '@nextapp/common/user';
 import { InternalServerError } from '../errors/errors.index';
 import {
     NotAnAdmin,
-    UsernameAlreadyUsed
+    UsernameAlreadyUsed,
+    UserNotFound
   } from '../errors/errors.index';
 import { User } from '../models/user';
 import { UserInfoService } from '../ports/user.service';
@@ -44,6 +45,16 @@ export class NextUserInfoService implements UserInfoService {
         return this.user_repo.get_user_info(id);
     }
 
+
+    public async ban_user(requester: UserID, id: UserID): Promise<void> {
+        if (!(await this.is_admin(requester))) {
+            throw new NotAnAdmin();
+        }
+        const deleted = await this.user_repo.delete_user(id);
+        if (!deleted) {
+          throw new UserNotFound(id.to_string());
+        }
+    }
 
     private async is_admin(user_id: UserID): Promise<boolean> {
         const role = await this.user_repo.get_user_role(user_id);

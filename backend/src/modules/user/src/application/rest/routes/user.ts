@@ -1,4 +1,4 @@
-import { InvalidRequestError, StatusCodes, NextError } from '@nextapp/common/error';
+import { InvalidRequestError, StatusCodes } from '@nextapp/common/error';
 import Joi from 'joi';
 import { toJson } from 'json-joi-converter';
 import { 
@@ -96,6 +96,11 @@ async function login(
   await request.auth_service.login_with_credentials(username, password);
   response.status(StatusCodes.OK);
 }
+async function ban_user(request:Request, response: Response) {
+  const user = await request.user_service!.ban_user(request.user_id, request.params.id);
+  response.status(StatusCodes.NO_CONTENT);
+}
+
 
 export function init_user_routes(): express.Router {
   const router = express.Router();
@@ -104,6 +109,6 @@ export function init_user_routes(): express.Router {
   router.get('/users', asyncHandler(get_user_list));
   router.get('/users/:id', asyncHandler(get_user_info));
   router.put('/users/:user_id', asyncHandler(change_role));
-  
+  router.delete('/users/:id', asyncHandler(ban_user));
   return router;
 }

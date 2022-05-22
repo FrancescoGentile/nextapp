@@ -61,4 +61,11 @@ export interface UserRepository {
    */
   get_id_password(username: Username): Promise<{ id: UserID; password: Password } | null>;
 
+  /**
+   * Bans the user with the given id.
+   * @param user_id the id of the user to ban
+   * 
+   */
+   delete_user(user_id: UserID): Promise<boolean>;
+
 }

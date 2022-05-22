@@ -90,7 +90,19 @@ export class InvalidUserID extends NextError {
       get_user_type(UserErrorTypes.INVALID_USERID),
       StatusCodes.BAD_REQUEST,
       'Invalid user ID',
-      `${id} is not a valid id for a user`,
+      `${id} is not a valid userid`,
+      options,
+    );
+  }
+}
+
+export class UserNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_user_type(UserErrorTypes.INVALID_USERID),
+      StatusCodes.BAD_REQUEST,
+      'The specified user does not exist',
+      `(${id}) not registered.`,
       options,
     );
   }
