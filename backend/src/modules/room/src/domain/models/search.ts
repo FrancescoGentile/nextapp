@@ -13,6 +13,8 @@ export class SearchOptions {
 
   public static readonly DEFAULT_LIMIT = 20;
 
+  public static readonly MAX_LIMIT = 40;
+
   private constructor(
     // offset is an integer greater than or equal to 0
     public readonly offset: number,
@@ -20,17 +22,28 @@ export class SearchOptions {
     public readonly limit: number
   ) {}
 
-  public static build(offset: number, limit: number): SearchOptions {
-    if (!Number.isInteger(offset) || offset < 0) {
+  public static build(offset?: number, limit?: number): SearchOptions {
+    let off;
+    if (offset === undefined) {
+      off = SearchOptions.DEFAULT_OFFSET;
+    } else if (!Number.isInteger(offset) || offset < 0) {
       throw new InvalidRequestError(
         `Offset should be an integer and greater than or equal to 0`
       );
+    } else {
+      off = offset;
     }
-    if (!Number.isInteger(limit) || limit < 1) {
+
+    let lim;
+    if (limit === undefined) {
+      lim = SearchOptions.DEFAULT_LIMIT;
+    } else if (!Number.isInteger(limit) || limit < 1 || limit > 40) {
       throw new InvalidRequestError(
-        `Limit should be an integer and greater than or equal to 1`
+        `Limit should be an integer greater than or equal to 1 and less than or equal to ${SearchOptions.MAX_LIMIT}`
       );
+    } else {
+      lim = limit;
     }
-    return new SearchOptions(offset, limit);
+    return new SearchOptions(off, lim);
   }
 }
