@@ -7,9 +7,9 @@ import { DateTime } from 'luxon';
 import {
   BookingNotFound,
   InternalServerError,
+  InvalidBookingRoom,
   OverlappingBooking,
   RoomNotAvailable,
-  RoomNotFound,
 } from '../errors';
 import { BookingID, Booking, check_availability } from '../models/booking';
 import { SearchOptions } from '../models/search';
@@ -25,18 +25,23 @@ export class NextBookingService implements BookingService {
     private readonly room_repo: RoomRepository
   ) {}
 
-  public async get_bookings(
-    user_id: UserID,
-    ids: BookingID[]
-  ): Promise<Booking[]> {
-    return this.booking_repo.get_user_bookings(user_id, ids);
+  public async get_booking(user_id: UserID, id: BookingID): Promise<Booking> {
+    const booking = await this.booking_repo.get_user_booking(user_id, id);
+    if (booking === null) {
+      throw new BookingNotFound(id.to_string());
+    }
+
+    return booking;
   }
 
   public async search_bookings(
     user_id: UserID,
+    start: DateTime,
+    end: DateTime,
     options: SearchOptions
-  ): Promise<BookingID[]> {
-    return this.booking_repo.search_user_bookings(user_id, options);
+  ): Promise<Booking[]> {
+    const interval = NextInterval.from_dates(start, end, false);
+    return this.booking_repo.search_user_bookings(user_id, interval, options);
   }
 
   public async create_booking(
@@ -46,28 +51,27 @@ export class NextBookingService implements BookingService {
     end: DateTime
   ): Promise<BookingID> {
     const interval = NextInterval.from_dates(start, end, true);
-    const [rooms, bookings] = await Promise.all([
-      this.room_repo.get_rooms([room_id]),
+    const [room, bookings] = await Promise.all([
+      this.room_repo.get_room(room_id),
       this.booking_repo.get_bookings_by_room_interval(room_id, interval),
     ]);
 
-    if (rooms.length === 0) {
-      throw new RoomNotFound(room_id.to_string());
+    if (room === null) {
+      throw new InvalidBookingRoom();
     }
-    const room = rooms[0];
     const booking: Booking = { user: user_id, room: room_id, interval };
     const available = check_availability(room, bookings, booking.interval);
     if (!available) {
       throw new RoomNotAvailable(room_id.to_string(), interval.interval);
     }
 
-    const user_bookings =
-      await this.booking_repo.search_bookings_by_user_interval(
-        user_id,
-        interval
-      );
+    const user_bookings = await this.booking_repo.search_user_bookings(
+      user_id,
+      interval,
+      SearchOptions.build(0, 1)
+    );
     if (user_bookings.length !== 0) {
-      throw new OverlappingBooking(user_bookings[0].to_string());
+      throw new OverlappingBooking(user_bookings[0].id!.to_string());
     }
 
     const id = await this.booking_repo.create_booking(booking);
