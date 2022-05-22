@@ -30,6 +30,13 @@ export interface RoomRepository {
   create_room(room: Room): Promise<RoomID | undefined>;
 
   /**
+   * Updates the room with the new information.
+   * This method returns false if there is already another room with the same name.
+   * @param room
+   */
+  update_room(room: Room): Promise<boolean>;
+
+  /**
    * Deletes the room with the given id if it exists.
    * This method shoudl also delete all the bookings for this room.
    * @param room_id
