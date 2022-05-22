@@ -18,6 +18,7 @@ export default defineComponent({
             roomReservations: [],
             dateReservations: [],
             slots: [],
+            floors: [1,2],
             reservationRoom: [],
             date: new Date(),
             showRooms: false,
@@ -183,7 +184,42 @@ export default defineComponent({
     <div class="row">
       <div class="col ">
         <div class="card">
-          <h5 class="card-header">Select room for date: {{ date.value }}</h5>
+          <h5 class="card-header">
+            <div class="container">
+              <div class="row">
+                <div class="col">
+                  Select room for date: {{ date.value }}
+                </div>
+                <div class="col">
+                  <div class="dropdown text-end">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                      Filter rooms by floor:
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li v-for="(floor,i) in floors" :key="i">
+                        <a class="dropdown-item" @click="FilterByFloor(floor)">{{floor}}</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="dropdown text-end">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                      Filter rooms by slot:
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li v-for="slot in slots" :key="slot.id">
+                        <a class="dropdown-item" @click="FilterByAvailableSlots(slot)">{{slot.start}}:00-{{slot.end}}:00</a>
+                      </li>
+
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+          </h5>
           <div class="card-body">
             <div class="table-responsive">
               <table class="table table-striped align-middle text-center ">

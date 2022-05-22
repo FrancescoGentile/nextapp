@@ -41,7 +41,7 @@
     {
       "id": 0,
       "name": "Aula 1",
-      "floor": 1,
+      "floor": 2,
       "totalSeats": 25,
       "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
     },

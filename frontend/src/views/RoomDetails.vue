@@ -9,7 +9,8 @@ export default defineComponent({
       room: {},
       selectedRoom: {},
       reservations: [],
-      selectedReservation: {}
+      selectedReservation: {},
+      floors: [1,2]
     }
   },
   computed:{
@@ -212,13 +213,15 @@ export default defineComponent({
               <input type="text" class="form-control" v-model="selectedRoom.name">
             </div>
             <div class="mb-3">
-              <div class="form-check form-check-inline">
-                <input v-model="selectedRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="1">
-                <label class="form-check-label" for="inlineRadio1">1</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input v-model="selectedRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="2">
-                <label class="form-check-label" for="inlineRadio2">2</label>
+              <div class="form-floating mb-3">
+                <div class="form-check form-check-inline">
+                  Floor:
+                  <div v-for="(floor,i) in floors" :key="i">
+                    <input v-model="selectedRoom.floor" class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" :value=floor>
+                    <label class="form-check-label" for="inlineRadio1">{{floor}}</label>
+                  </div>
+                </div>
+
               </div>
             </div>
             <div class="mb-3">
