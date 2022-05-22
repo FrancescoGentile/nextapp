@@ -133,7 +133,7 @@ export function init_user_routes(): express.Router {
   router.put('/users/:id', asyncHandler(change_role));
   router.delete('/users/:id', asyncHandler(ban_user));
 
-  router.delete('/users/me'), asyncHandler(unsubscribe);
+  router.delete('/users/me', asyncHandler(unsubscribe));
 
   router.put('/user/me/password', asyncHandler(change_password));
 
