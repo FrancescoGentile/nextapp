@@ -38,6 +38,6 @@ export class EventEmitterBroker implements EventBroker {
     event: UserDeletedEvent) => void, 
     context?: any
   ): void {
-    this.emitter.on('user_logged_in', listener, context)
+    this.emitter.on('user_deleted', listener, context)
   }
 }
