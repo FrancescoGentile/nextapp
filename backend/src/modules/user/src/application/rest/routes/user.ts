@@ -113,6 +113,15 @@ async function unsubscribe(request: Request, response: Response){
     .status(StatusCodes.NO_CONTENT);
 }
 
+async function change_password(request:Request, response: Response) {
+  await request.user_service!.change_password(
+    request.params.username,
+    request.params.old_password,
+    request.params.new_password
+  );
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 export function init_user_routes(): express.Router {
   const router = express.Router();
   router.post('/login', asyncHandler(login));
@@ -125,6 +134,8 @@ export function init_user_routes(): express.Router {
   router.delete('/users/:id', asyncHandler(ban_user));
 
   router.delete('/users/me'), asyncHandler(unsubscribe);
+
+  router.put('/user/me/password', asyncHandler(change_password));
 
   return router;
 }

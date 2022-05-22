@@ -10,11 +10,17 @@ import {
   UserNotFound,
 } from '../errors/errors.index';
 import { User } from '../models/user';
+import { 
+  Username,
+  Password
+} from '../models/user.credentials';
 import { UserInfoService } from '../ports/user.service';
 import { UserRepository } from '../ports/user.repository';
+import { InvalidCredentials } from '../errors/errors.index';
 
 export class NextUserInfoService implements UserInfoService {
   public constructor(private readonly user_repo: UserRepository) {}
+  
 
   public async register_user(
     requester: UserID,
@@ -84,6 +90,27 @@ export class NextUserInfoService implements UserInfoService {
     const deleted = await this.user_repo.delete_user(requester_id);
     if (!deleted) {
       throw new UserNotFound(requester_id.to_string());
+    }
+  }
+  
+  public async change_password(
+    requester_username: string, 
+    old_password: string, 
+    new_password: string
+  ): Promise<boolean> {
+    const uname = Username.from_string(requester_username);
+    const info = await this.user_repo.get_id_password(uname);
+    const res = info!.password;
+    const valid = await res!.verify(old_password);
+    if (valid!) {
+      const passed_psw = await Password.from_clear(new_password, uname);
+      if(await this.user_repo.change_password(info!.id,passed_psw!)){
+        return true;
+      } else{
+        return false;
+      }
+    } else {
+      throw new InvalidCredentials();
     }
   }
 }
