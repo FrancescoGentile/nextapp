@@ -6,7 +6,7 @@ import { InternalServerError } from '@nextapp/common/error';
 import { UserID, UserRole } from '@nextapp/common/user';
 import { Driver } from 'neo4j-driver';
 import { User } from '../../domain/models/user';
-import { Username, Password, Credentials } from '../../domain/models/user.credentials';
+import { Username, Password } from '../../domain/models/user.credentials';
 import { UserRepository } from '../../domain/ports/user.repository';
 
 export class Neo4jUserRepository implements UserRepository {

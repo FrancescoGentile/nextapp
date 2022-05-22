@@ -16,4 +16,8 @@ export class Email {
 
     return new Email(email);
   }
+
+  public to_string(): string {
+    return this.email;
+  }
 }

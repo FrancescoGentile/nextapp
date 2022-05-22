@@ -42,14 +42,6 @@ export interface UserRepository {
    */
   get_user_info(user_id: UserID): Promise<User>;
 
-
-  /**
-   * Gets the user information with the given username.
-   * @param user_id the id of the user to get
-   */
-  get_user_info_by_username(username: Username): Promise<User>;
-
-
   /**
    * Returns the user role if they exist.
    * @param user_id
@@ -62,10 +54,11 @@ export interface UserRepository {
    */
   change_role(admin_to_down: UserID, role: UserRole): Promise<void>;
 
-  get_id_password(
-    username: Username
-  ): Promise<{ id: UserID; password: Password } | null>;
-
-  get_user_role(user: UserID): Promise<UserRole | null>;
+  /**
+   * Return the id and password of the user with the given username if they exist.
+   * This method may throw an error.
+   * @param username
+   */
+  get_id_password(username: Username): Promise<{ id: UserID; password: Password } | null>;
 
 }

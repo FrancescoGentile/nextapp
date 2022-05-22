@@ -70,7 +70,7 @@ async function get_user_info(request:Request, response: Response) {
     request.user_id, 
     request.params.id
   );
-  response.status(StatusCodes.OK).json(user.toJson());
+  response.status(StatusCodes.OK).json(user);
 }
 
 function is_string(value: any): boolean {

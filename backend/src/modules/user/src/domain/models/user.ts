@@ -56,20 +56,24 @@ export class User{
         if (this.userRole === UserRole.SYS_ADMIN) {
             return {
                 id: this.id,
-                name: this.first_name,
-                surname: this.last_name,
+                first_name: this.first_name,
+                middle_name: this.middle_name,
+                last_name: this.last_name,
                 isAdmin: true,
                 username: this.username.to_string(),
-                password: this.password?.to_string()
+                password: this.password.to_string(),
+                email: this.email.to_string(),
             };
         } else {
             return {
                 id: this.id,
-                name: this.first_name,
-                surname: this.last_name,
+                first_name: this.first_name,
+                middle_name: this.middle_name,
+                last_name: this.last_name,
                 isAdmin: false,
                 username: this.username.to_string(),
-                password: this.password?.to_string()
+                password: this.password.to_string(),
+                email: this.email.to_string(),
             };
         }
     }
