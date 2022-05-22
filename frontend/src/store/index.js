@@ -36,7 +36,7 @@ export default createStore({
     },
     getRoomReservations: (state)=> (roomId)=> {
       let roomReservations = []
-      state.reservations.forEach(res=>{
+      state.dateReservations.forEach(res=>{
         if(res.room === roomId){
           roomReservations.push(res)
         }
@@ -61,7 +61,7 @@ export default createStore({
           dateReservations.push(res)
         }
       })
-      //console.log(userReservations)
+      //console.log(dateReservations)
       return dateReservations
     },
     getSlots(state){

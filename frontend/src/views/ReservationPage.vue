@@ -39,12 +39,12 @@ export default defineComponent({
       loadedReservations(){
         return this.$store.getters.getReservations
       },
-        loadedUserReservations(){
-          return this.$store.getters.getUserReservations(this.user.id)
-        },
-        loadedDateReservations(){
-          return this.$store.getters.getDateReservations(this.date.value)
-        },
+      loadedUserReservations(){
+        return this.$store.getters.getUserReservations(this.user.id)
+      },
+      loadedDateReservations(){
+        return this.$store.getters.getDateReservations(this.date.value)
+      },
       loadedRoomReservations(){
         return this.$store.getters.getRoomReservations(this.reservationRoom.id)
       }
@@ -108,7 +108,7 @@ export default defineComponent({
 
       emptySeats(slot){
         let count = 0
-        if(this.roomReservations != undefined){
+        if(this.roomReservations !== undefined){
           this.roomReservations.forEach(reservation=>{
             if(reservation.slot === slot){
               count += 1
@@ -126,8 +126,8 @@ export default defineComponent({
             })
           })
       },*/
-        // TODO: if user already has booked for that slot the they can't reserve it again
-        // TODO: show reservation immediately with circle filling
+        // TODO: filtra aule per posti liberi in determinato slot
+        // TODO: filtra aule per piano
         handleBooking(roomId, slot) {
             //console.log(slot)
             let reservation = {
@@ -141,6 +141,8 @@ export default defineComponent({
             ).then((response) => {
               this.userReservations.push(response.data)
               this.$store.commit("setUserReservations", this.userReservations)
+              this.roomReservations.push(response.data)
+              this.$store.commit("setRoomReservations", this.roomReservations)
             }).catch(err => {
                 console.log(err)
             })
@@ -175,62 +177,94 @@ export default defineComponent({
         <div class="row">
             <div class="col"> <br><br></div>
         </div>
+    </div>
 
-        <div v-if="this.showRooms">
-            <h3> Select room for date: {{ date.value }}</h3>
-            <div class="row border align-items-center" v-for="room in rooms" :key="room.id">
-                <div class="col">
-                    <h1>{{ room.name }}</h1>
-                </div>
-                <div class="col">
+  <div v-if="this.showRooms" class="container">
+    <div class="row">
+      <div class="col ">
+        <div class="card">
+          <h5 class="card-header">Select room for date: {{ date.value }}</h5>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped align-middle text-center ">
+                <thead>
+                  <th style="width: 5%">#</th>
+                  <th style="width: 10%">Name</th>
+                  <th style="width: 5%">Floor</th>
+                  <th style="width: 5%">TotalSeats</th>
+                  <th style="width: 55%">Description</th>
+                  <th style="width: 20%"></th>
+                </thead>
+                <tbody>
+                <tr v-for="(room, i) in rooms" :key="room.id">
+                  <td> {{ i+1 }} </td>
+                  <td> {{room.name}} </td>
+                  <td> {{room.floor}} </td>
+                  <td> {{room.totalSeats}} </td>
+                  <td> {{room.description}} </td>
+                  <td>
                     <button class="btn btn-primary" v-if="!isFullRoom(room)" @click="chooseRoom(room.id)">
-                        Click here to book
+                      Click here to book
                     </button>
-                    <p v-else> The room is already fully booked</p>
-                </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
             </div>
+          </div>
         </div>
-      <br>
-        <div class="row" v-if="showSlots">
-            <div class="col">
-                <h3> Available slots for: {{ date.value }}</h3>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col"> <br><br></div>
-        </div>
-        <div class="row" v-if="showSlots">
-            <div class="col">
-                <div class="container gap-3">
-                    <div class="row align-items-center" v-for="slot in this.slots" :key="slot.id">
-                        <div class="col-6 text-center">
-                            <h3 class="text-center"> {{ slot.start }}-{{ slot.end }}</h3>
-                        </div>
-                        <div class="col-3 d-flex justify-content-center">
-                            <div v-if="emptySeats(slot.id) > 0 ">
-                                <button class="btn btn-primary" @click="handleBooking(reservationRoom.id, slot.id)">
-                                    Book for this slot
-                                </button>
-                            </div>
-                            <div v-else>
-                                <p> Slots already fully booked</p>
-                            </div>
-                        </div>
-                        <div class="col-3 d-flex justify-content-center">
-                            <circle-progress :percent="((reservationRoom.totalSeats - emptySeats(slot.id)) / reservationRoom.totalSeats) * 100"
-                                :size="90" :show-percent="true" :viewport="true" :is-gradient="true" :gradient="{
+      </div>
+    </div>
+  </div>
+
+  <div v-if="this.showSlots" class="container">
+    <div class="row">
+      <div class="col ">
+        <div class="card">
+          <h5 class="card-header">Available slots for: {{ date.value }}</h5>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped align-middle text-center ">
+                <thead>
+                <th>#</th>
+                <th>Time Period</th>
+                <th> </th>
+                <th> </th>
+                </thead>
+                <tbody>
+                <tr v-for="(slot, i) in slots" :key="slot.id">
+                  <td> {{ i+1 }} </td>
+                  <td> {{slot.start}}:00 - {{slot.end}}:00 </td>
+                  <td>
+                    <div class="col-3 d-flex text-center">
+                      <circle-progress :percent="((reservationRoom.totalSeats - emptySeats(slot.id)) / reservationRoom.totalSeats) * 100"
+                                       :size="90" :show-percent="true" :viewport="true" :is-gradient="true" :gradient="{
                                     angle: 90,
                                     startColor: '#ff0000',
                                     stopColor: '#ff0000',
                                 }"></circle-progress>
-                        </div>
-                        <div class="row"><br></div>
                     </div>
+                  </td>
 
-                </div>
+                  <td>
+                    <div v-if="emptySeats(slot.id) > 0 ">
+                      <button class="btn btn-primary" @click="handleBooking(reservationRoom.id, slot.id)"> Book for this slot </button>
+                    </div>
+                    <div v-else>
+                      <p> Slot already fully booked</p>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
             </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+
+
 </template>
 
 <style>

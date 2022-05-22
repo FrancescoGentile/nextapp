@@ -65,23 +65,9 @@
       "floor": 2,
       "totalSeats": 20,
       "description": "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
-    },
-    {
-      "id": 5,
-      "name": "Aula Prova",
-      "floor": 2,
-      "totalSeats": 30,
-      "description": "Room Description "
     }
   ],
   "reservations": [
-    {
-      "id": 24,
-      "user": 0,
-      "room": 3,
-      "slot": 2,
-      "date": "27/5/2022"
-    },
     {
       "id": 63,
       "user": 1,
@@ -97,18 +83,25 @@
       "date": "25/5/2022"
     },
     {
-      "id": 67,
-      "user": 2,
-      "room": 0,
-      "slot": 2,
-      "date": "21/5/2022"
-    },
-    {
       "id": 5,
       "user": 2,
       "room": 1,
       "slot": 8,
       "date": "24/5/2022"
+    },
+    {
+      "id": 49,
+      "user": 2,
+      "room": 0,
+      "slot": 3,
+      "date": "22/5/2022"
+    },
+    {
+      "id": 57,
+      "user": 2,
+      "room": 0,
+      "slot": 5,
+      "date": "22/5/2022"
     }
   ],
   "slots": [
