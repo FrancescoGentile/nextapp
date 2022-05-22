@@ -11,7 +11,11 @@ import { InvalidRequestError } from '@nextapp/common/error';
 export class SearchOptions {
   public static readonly DEFAULT_OFFSET = 0;
 
+  public static readonly MIN_OFFSET = 0;
+
   public static readonly DEFAULT_LIMIT = 20;
+
+  public static readonly MIN_LIMIT = 1;
 
   public static readonly MAX_LIMIT = 40;
 
@@ -26,7 +30,7 @@ export class SearchOptions {
     let off;
     if (offset === undefined) {
       off = SearchOptions.DEFAULT_OFFSET;
-    } else if (!Number.isInteger(offset) || offset < 0) {
+    } else if (!Number.isInteger(offset) || offset < SearchOptions.MIN_OFFSET) {
       throw new InvalidRequestError(
         `Offset should be an integer and greater than or equal to 0`
       );
@@ -37,7 +41,11 @@ export class SearchOptions {
     let lim;
     if (limit === undefined) {
       lim = SearchOptions.DEFAULT_LIMIT;
-    } else if (!Number.isInteger(limit) || limit < 1 || limit > 40) {
+    } else if (
+      !Number.isInteger(limit) ||
+      limit < SearchOptions.MIN_LIMIT ||
+      limit > SearchOptions.MAX_LIMIT
+    ) {
       throw new InvalidRequestError(
         `Limit should be an integer greater than or equal to 1 and less than or equal to ${SearchOptions.MAX_LIMIT}`
       );
