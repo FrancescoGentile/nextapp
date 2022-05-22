@@ -7,26 +7,18 @@ import { SearchOptions } from '../models/search';
 
 export interface RoomRepository {
   /**
-   * Returns the rooms with the given ids if they exist.
+   * Returns the room with the given id if it exists.
    * @param ids
    */
-  get_rooms(ids: RoomID[]): Promise<Room[]>;
+  get_room(id: RoomID): Promise<Room | null>;
 
   /**
-   * Returns ids of the rooms saved in the repository.
-   * @param options
-   */
-  search_rooms(options: SearchOptions): Promise<RoomID[]>;
-
-  /**
-   * Returns the ids of the rooms in the given floor.
+   * Returns a list of rooms given the options.
+   * If floor is passed, only the rooms located in the given floor are returned.
    * @param floor
    * @param options
    */
-  search_rooms_by_floor(
-    floor: number,
-    options: SearchOptions
-  ): Promise<RoomID[]>;
+  search_rooms(options: SearchOptions, floor?: number): Promise<Room[]>;
 
   /**
    * Adds a room to the repository and

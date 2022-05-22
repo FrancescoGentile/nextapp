@@ -10,22 +10,26 @@ import { RoomID } from '../models/room';
 
 export interface BookingService {
   /**
-   * Returns the bookings with the given ids if they exist
-   * and if they were made by the user with the given id.
+   * Returns the booking with the given id made by the user with the
+   * given id.
    * @param user_id
-   * @param ids
+   * @param id
    */
-  get_bookings(user_id: UserID, ids: BookingID[]): Promise<Booking[]>;
+  get_booking(user_id: UserID, id: BookingID): Promise<Booking>;
 
   /**
-   * Returns the ids of the bookings made by the user.
+   * Returns the bookings made by the user in the given interval.
    * @param user_id
+   * @param start
+   * @param end
    * @param options
    */
   search_bookings(
     user_id: UserID,
+    start: DateTime,
+    end: DateTime,
     options: SearchOptions
-  ): Promise<BookingID[]>;
+  ): Promise<Booking[]>;
 
   /**
    * Creates a new booking for the given user and room in the specified time interval.

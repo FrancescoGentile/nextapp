@@ -10,15 +10,15 @@ import { NextInterval } from '../models/interval';
 
 export interface BookingRepository {
   /**
-   * Returns the bookings with the given ids if they exist
-   * and if they were made by the user with the given id.
+   * Returns the booking with the given id and made by the given user
+   * if it exists.
    * @param user_id
-   * @param booking_ids
+   * @param booking_id
    */
-  get_user_bookings(
+  get_user_booking(
     user_id: UserID,
-    booking_ids: BookingID[]
-  ): Promise<Booking[]>;
+    booking_ids: BookingID
+  ): Promise<Booking | null>;
 
   /**
    * Returns all the bookings for the given room and that
@@ -32,25 +32,16 @@ export interface BookingRepository {
   ): Promise<Booking[]>;
 
   /**
-   * Returns the ids of the bookings made by the given user.
+   * Returns the ids of the bookings made by the given user
+   * in the given interval of time.
    * @param user_id
    * @param options
    */
   search_user_bookings(
     user_id: UserID,
+    interval: NextInterval,
     options: SearchOptions
-  ): Promise<BookingID[]>;
-
-  /**
-   * Returns the ids of the bookings for the given user and
-   * in the given time interval.
-   * @param user_id
-   * @param interval
-   */
-  search_bookings_by_user_interval(
-    user_id: UserID,
-    interval: NextInterval
-  ): Promise<BookingID[]>;
+  ): Promise<Booking[]>;
 
   /**
    * Adds the given booking to the repository.
