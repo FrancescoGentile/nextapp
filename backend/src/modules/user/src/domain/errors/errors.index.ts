@@ -7,19 +7,48 @@ import { NextError, StatusCodes } from '@nextapp/common/error';
 export { InternalServerError } from '@nextapp/common/error';
 
 enum UserErrorTypes {
-  INVALID_USERNAME = 1,
+  INVALID_FIRST_NAME = 1,
+  INVALID_SURNAME_NAME,
+  INVALID_USERNAME,
   INVALID_PASSWORD,
   INVALID_USERID,
   USED_USERNAME,
   NOT_ADMIN,
   BAD_CREDENTIALS,
-  INVALID_EMAIL
+  INVALID_EMAIL,
 }
 
 function get_user_type(type: UserErrorTypes): string {
   return `user-${String(type).padStart(3, '0')}`;
 }
 
+export class InvalidFirstName extends NextError {
+  public constructor(first_name: string, options?: ErrorOptions) {
+    super(
+      get_user_type(UserErrorTypes.INVALID_FIRST_NAME),
+      StatusCodes.BAD_REQUEST,
+      'Invalid first name',
+      `${first_name} does not meet on or both of the following conditions: ` +
+        `at least 1 character long, ` +
+        `only lowercase and uppercase Latin letters.`,
+      options
+    );
+  }
+}
+
+export class InvalidSurname extends NextError {
+  public constructor(surname: string, options?: ErrorOptions) {
+    super(
+      get_user_type(UserErrorTypes.INVALID_FIRST_NAME),
+      StatusCodes.BAD_REQUEST,
+      'Invalid surname',
+      `${surname} does not meet on or both of the following conditions: ` +
+        `at least 1 character long, ` +
+        `only lowercase and uppercase Latin letters.`,
+      options
+    );
+  }
+}
 
 export class InvalidUsername extends NextError {
   public constructor(username: string, options?: ErrorOptions) {
@@ -27,10 +56,10 @@ export class InvalidUsername extends NextError {
       get_user_type(UserErrorTypes.INVALID_USERNAME),
       StatusCodes.BAD_REQUEST,
       'Invalid username',
-      `${username} does not meet one or both of the following conditions:`
-      + 'length between 5 and 100 characters,'
-      + 'consisting only of lowercase and uppercase Latin letters, Arabic numerals and underscores.',
-      options,
+      `${username} does not meet one or both of the following conditions:` +
+        'length between 5 and 100 characters,' +
+        'consisting only of lowercase and uppercase Latin letters, Arabic numerals and underscores.',
+      options
     );
   }
 }
@@ -47,7 +76,6 @@ export class InvalidEmail extends NextError {
   }
 }
 
-
 export class InvalidPassword extends NextError {
   public constructor(warning: string, options?: ErrorOptions) {
     super(
@@ -55,7 +83,7 @@ export class InvalidPassword extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid password',
       warning,
-      options,
+      options
     );
   }
 }
@@ -67,7 +95,7 @@ export class UsernameAlreadyUsed extends NextError {
       StatusCodes.CONFLICT,
       'Username already used',
       `${username} is already used. Try to choose another username.`,
-      options,
+      options
     );
   }
 }
@@ -79,7 +107,7 @@ export class NotAnAdmin extends NextError {
       StatusCodes.FORBIDDEN,
       'Not an admin',
       `This action requires admin priviledges.`,
-      options,
+      options
     );
   }
 }
@@ -91,7 +119,7 @@ export class InvalidUserID extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid user ID',
       `${id} is not a valid userid`,
-      options,
+      options
     );
   }
 }
@@ -103,11 +131,11 @@ export class UserNotFound extends NextError {
       StatusCodes.BAD_REQUEST,
       'The specified user does not exist',
       `(${id}) not registered.`,
-      options,
+      options
     );
   }
 }
-  
+
 export class CredentialsNotString extends NextError {
   public constructor(options?: ErrorOptions) {
     super(
@@ -115,7 +143,7 @@ export class CredentialsNotString extends NextError {
       StatusCodes.BAD_REQUEST,
       'Bad credentials',
       `Username or password not a string`,
-      options,
+      options
     );
   }
 }
