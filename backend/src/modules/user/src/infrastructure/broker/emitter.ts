@@ -5,6 +5,7 @@
 import EventEmitter from 'eventemitter3';
 import {
   UserCreatedEvent, 
+  UserCredentialChangedEvent, 
   UserDeletedEvent, 
   UserLoginEvent, 
   UserRoleChangedEvent
@@ -13,6 +14,7 @@ import { EventBroker } from '../../domain/ports/event.broker';
 
 export class EventEmitterBroker implements EventBroker {
   public constructor(private readonly emitter: EventEmitter) {}
+  
   
   on_user_created(listener: (
     event: UserCreatedEvent) => void, 
@@ -37,6 +39,13 @@ export class EventEmitterBroker implements EventBroker {
   on_user_deleted(listener: (
     event: UserDeletedEvent) => void, 
     context?: any
+  ): void {
+    this.emitter.on('user_deleted', listener, context)
+  }
+  
+  on_user_credential_changed(listener: (
+    event: UserCredentialChangedEvent) => void,
+     context?: any
   ): void {
     this.emitter.on('user_deleted', listener, context)
   }

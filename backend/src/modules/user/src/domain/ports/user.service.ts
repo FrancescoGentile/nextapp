@@ -54,5 +54,17 @@ export interface UserInfoService {
    * @param id the id of the user to ban
    */
   unsubscribe(requester_id: UserID): Promise<void>
+
+  /**
+   * Change user password to requested password.
+   * @param requester_id the user id who wants to change its password
+   * @param old_password the current password
+   * @param new_password the new password to hash and store
+   */
+  change_password(
+    requester_id: string, 
+    old_password: string, 
+    new_password: string
+  ): Promise<boolean>
   
 }
