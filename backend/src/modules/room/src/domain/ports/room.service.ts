@@ -24,41 +24,23 @@ export interface RoomInfoService {
     room_id: RoomID,
     start: DateTime,
     end: DateTime
-  ): Promise<NextInterval[]>;
+  ): Promise<{ interval: NextInterval; seats: number }[]>;
 
   /**
-   * Returns the rooms with the given ids if they exist.
-   * @param ids
+   * Returns the room with the given id if it exists.
+   * @param id
    */
-  get_rooms(ids: RoomID[]): Promise<Room[]>;
+  get_room(id: RoomID): Promise<Room>;
 
   /**
-   * Returns ids of the rooms in the building.
+   * Returns the rooms which satisfy the given options.
    * @param options
    */
-  search_rooms(options: SearchOptions): Promise<RoomID[]>;
-
-  /**
-   * Returns the ids of the rooms in the given floor.
-   * @param floor
-   * @param options
-   */
-  search_rooms_by_floor(
-    floor: number,
-    options: SearchOptions
-  ): Promise<RoomID[]>;
-
-  /**
-   * Returns the ids of the rooms that are available in the given interval.
-   * @param start
-   * @param end
-   * @param options
-   */
-  search_rooms_by_availability(
-    start: DateTime,
-    end: DateTime,
-    options: SearchOptions
-  ): Promise<RoomID[]>;
+  search_rooms(
+    options: SearchOptions,
+    floor?: number,
+    interval?: { start: DateTime; end: DateTime }
+  ): Promise<Room[]>;
 
   /**
    * Creates a new room with the given information.

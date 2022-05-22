@@ -40,24 +40,23 @@ export class NextRoomInfoService implements RoomInfoService {
     room_id: RoomID,
     start: DateTime,
     end: DateTime
-  ): Promise<NextInterval[]> {
-    const interval = NextInterval.from_dates(start, end);
-    const rooms = await this.room_repo.get_rooms([room_id]);
-    if (rooms.length === 0) {
+  ): Promise<{ interval: NextInterval; seats: number }[]> {
+    const interval = NextInterval.from_dates(start, end, true);
+    const room = await this.room_repo.get_room(room_id);
+    if (room === null) {
       throw new RoomNotFound(room_id.to_string());
     }
-    const room = rooms[0];
     const bookings = await this.booking_repo.get_bookings_by_room_interval(
       room_id,
       interval
     );
 
-    const slots: NextInterval[] = [];
+    const slots: { interval: NextInterval; seats: number }[] = [];
 
     const available_seats = get_availability(room, bookings, interval);
     const { length } = available_seats;
 
-    for (let i = 0; i < length; i += 1) {
+    for (let i = 0; i < length; ) {
       if (available_seats[i] <= 0) {
         // eslint-disable-next-line no-continue
         continue;
@@ -65,35 +64,76 @@ export class NextRoomInfoService implements RoomInfoService {
 
       const s = i;
       let e = i + 1;
-      for (; e < length && available_seats[e] > 0; e += 1);
+      for (
+        ;
+        e < length &&
+        available_seats[e] > 0 &&
+        available_seats[e] === available_seats[e - 1];
+        e += 1
+      );
 
       const int_start = start.plus({ minutes: s * NextInterval.SLOT_LENGTH });
       const int_end = start.plus({ minutes: e * NextInterval.SLOT_LENGTH });
 
-      slots.push(NextInterval.from_dates(int_start, int_end));
+      slots.push({
+        interval: NextInterval.from_dates(int_start, int_end),
+        seats: available_seats[e - 1],
+      });
 
-      i = e + 1;
+      i = e;
     }
 
     return slots;
   }
 
-  public async get_rooms(ids: RoomID[]): Promise<Room[]> {
-    return this.room_repo.get_rooms(ids);
+  public async get_room(id: RoomID): Promise<Room> {
+    const room = await this.room_repo.get_room(id);
+    if (room === null) {
+      throw new RoomNotFound(id.to_string());
+    }
+    return room;
   }
 
-  public async search_rooms(options: SearchOptions): Promise<RoomID[]> {
-    return this.room_repo.search_rooms(options);
-  }
-
-  public async search_rooms_by_floor(
-    floor: number,
-    options: SearchOptions
-  ): Promise<RoomID[]> {
-    if (!BuildingInfo.is_valid(floor)) {
+  public async search_rooms(
+    options: SearchOptions,
+    floor?: number,
+    interv?: { start: DateTime; end: DateTime }
+  ): Promise<Room[]> {
+    if (floor !== undefined && !BuildingInfo.is_valid(floor)) {
       throw new InvalidFloor(BuildingInfo.FLOORS);
     }
-    return this.room_repo.search_rooms_by_floor(floor, options);
+
+    if (interv === undefined) {
+      return this.room_repo.search_rooms(options, floor);
+    }
+
+    const interval = NextInterval.from_dates(interv.start, interv.end, true);
+    const res: Room[] = [];
+    let opt = options;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const rooms = await this.room_repo.search_rooms(options, floor);
+
+      for (const room of rooms) {
+        const available = await this.check_availability(room, interval);
+        if (available) {
+          res.push(room);
+
+          if (res.length >= options.limit) {
+            return res;
+          }
+        }
+      }
+
+      if (rooms.length < opt.limit) {
+        return res;
+      }
+
+      opt = SearchOptions.build(
+        opt.offset + opt.limit,
+        options.limit - res.length
+      );
+    }
   }
 
   private async check_availability(
@@ -105,41 +145,6 @@ export class NextRoomInfoService implements RoomInfoService {
       interval
     );
     return check_availability(room, bookings, interval);
-  }
-
-  public async search_rooms_by_availability(
-    start: DateTime,
-    end: DateTime,
-    options: SearchOptions
-  ): Promise<RoomID[]> {
-    const interval = NextInterval.from_dates(start, end, true);
-    const res: RoomID[] = [];
-    let opt = options;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const ids = await this.room_repo.search_rooms(options);
-      const rooms = await this.room_repo.get_rooms(ids);
-
-      for (const room of rooms) {
-        const available = await this.check_availability(room, interval);
-        if (available) {
-          res.push(room.id!);
-
-          if (res.length >= options.limit) {
-            return res;
-          }
-        }
-      }
-
-      if (ids.length < opt.limit) {
-        return res;
-      }
-
-      opt = SearchOptions.build(
-        opt.offset + opt.limit,
-        options.limit - res.length
-      );
-    }
   }
 
   public async create_room(admin: UserID, room: Room): Promise<RoomID> {

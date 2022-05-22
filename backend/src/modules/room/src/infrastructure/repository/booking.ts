@@ -48,35 +48,32 @@ export class Neo4jBookingRepository implements BookingRepository {
     return new Neo4jBookingRepository(driver);
   }
 
-  public async get_user_bookings(
+  public async get_user_booking(
     user_id: UserID,
-    booking_ids: BookingID[]
-  ): Promise<Booking[]> {
+    booking_id: BookingID
+  ): Promise<Booking | null> {
     const session = this.driver.session();
     try {
-      const user = user_id.to_string();
-      const ids = booking_ids.map((id) => id.to_string());
-
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (user:ROOM_User {id: $user})-[booking:ROOM_BOOKING]->(room:ROOM_Room)
-           WHERE booking.id in $ids
+           WHERE booking.id = $id
            RETURN room.id as room, booking.id as id, booking.start as start, booking.end as end`,
-          { user, ids }
+          { user: user_id.to_string(), id: booking_id.to_string() }
         )
       );
 
-      const bookings: Booking[] = [];
-      res.records.forEach((record) => {
-        bookings.push({
-          id: BookingID.from_string(record.get('id')),
-          room: RoomID.from_string(record.get('room')),
-          user: user_id,
-          interval: neo4j_to_interval(record.get('start'), record.get('end')),
-        });
-      });
+      if (res.records.length === 0) {
+        return null;
+      }
 
-      return bookings;
+      const record = res.records[0];
+      return {
+        id: BookingID.from_string(record.get('id')),
+        room: RoomID.from_string(record.get('room')),
+        user: user_id,
+        interval: neo4j_to_interval(record.get('start'), record.get('end')),
+      };
     } catch {
       throw new InternalServerError();
     } finally {
@@ -120,29 +117,35 @@ export class Neo4jBookingRepository implements BookingRepository {
 
   public async search_user_bookings(
     user_id: UserID,
+    interval: NextInterval,
     options: SearchOptions
-  ): Promise<BookingID[]> {
+  ): Promise<Booking[]> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (u:ROOM_User)-[b:ROOM_BOOKING]->(r:ROOM_Room)
-           WHERE u.id = $id
-           RETURN b.id as id
+          `MATCH (u:ROOM_User { id: $id })-[b:ROOM_BOOKING]->(r:ROOM_Room)
+           WHERE ($start <= b.start < b.end) OR ($start < b.end <= $end)
+           RETURN u.id as uid, r.id as rid, b.id as bid, b.start as start, b.end as end
            ORDER BY b.id
            SKIP $skip
            LIMIT $limit`,
           {
             id: user_id.to_string(),
+            start: luxon_to_neo4j(interval.start),
+            end: luxon_to_neo4j(interval.end),
             limit: int(options.limit),
             skip: int(options.offset),
           }
         )
       );
 
-      const bookings = res.records.map((record) =>
-        BookingID.from_string(record.get('id'))
-      );
+      const bookings = res.records.map((record) => ({
+        id: BookingID.from_string(record.get('bid')),
+        room: RoomID.from_string(record.get('rid')),
+        user: new UserID(record.get('uid')),
+        interval: neo4j_to_interval(record.get('start'), record.get('end')),
+      }));
 
       return bookings;
     } catch {
@@ -191,8 +194,8 @@ export class Neo4jBookingRepository implements BookingRepository {
       while (true) {
         const id = BookingID.generate();
         // eslint-disable-next-line no-await-in-loop
-        const bookings = await this.get_user_bookings(booking.user, [id]);
-        if (bookings.length === 0) {
+        const bookings = await this.get_user_booking(booking.user, id);
+        if (bookings === null) {
           // eslint-disable-next-line no-await-in-loop
           const res = await session.writeTransaction((tx) =>
             tx.run(

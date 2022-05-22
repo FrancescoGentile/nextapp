@@ -82,7 +82,7 @@ export class RoomNameAlreadyUsed extends NextError {
       get_room_type(RoomErrorTypes.NAME_ALREADY_USED),
       StatusCodes.CONFLICT,
       'Name already used',
-      `${name} is already assigned to anther room. Try another name.`,
+      `${name} is already assigned to another room. Try another name.`,
       options
     );
   }
@@ -134,6 +134,7 @@ enum BookingErrorTypes {
   ROOM_NOT_AVAILABLE,
   OVERLAPPING_BOOKING,
   INVALID_INTERVAL,
+  INVALID_ROOM,
 }
 
 function get_booking_type(type: BookingErrorTypes): string {
@@ -196,6 +197,18 @@ export class InvalidInterval extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid search interval',
       details,
+      options
+    );
+  }
+}
+
+export class InvalidBookingRoom extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_booking_type(BookingErrorTypes.INVALID_ROOM),
+      StatusCodes.BAD_REQUEST,
+      'Room not found',
+      `Your booking is for a room that does not exist.`,
       options
     );
   }

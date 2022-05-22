@@ -2,103 +2,102 @@
 //
 //
 
-import { InvalidRequestError, StatusCodes } from '@nextapp/common/error';
-import { NextFunction, Request, Response } from 'express-serve-static-core';
+import { StatusCodes } from '@nextapp/common/error';
+import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
-import { toJson } from 'json-joi-converter';
 import express from 'express';
 
 import { DateTime } from 'luxon';
-import { RoomNotFound } from '../../../domain/errors';
 import { RoomID } from '../../../domain/models/room';
-import { API_VERSION, asyncHandler } from '../utils';
+import { API_VERSION, asyncHandler, validate } from '../utils';
 import { Booking, BookingID } from '../../../domain/models/booking';
 import { SearchOptions } from '../../../domain/models/search';
+import { BookingNotFound, InvalidBookingRoom } from '../../../domain/errors';
 
 const BASE_PATH = '/users/me/bookings';
 
 function booking_to_json(booking: Booking): any {
   return {
     self: `${API_VERSION}${BASE_PATH}/${booking.id!.to_string()}`,
-    room: `${API_VERSION}/rooms/${booking.room.to_string()}`,
+    room: {
+      self: `${API_VERSION}/rooms/${booking.room.to_string()}`,
+    },
     start: booking.interval.interval.start.toString(),
     end: booking.interval.interval.end.toString(),
   };
 }
 
 async function get_booking(request: Request, response: Response) {
-  const id = BookingID.from_string(request.params.booking_id);
-  const bookings = await request.booking_service!.get_bookings(
-    request.user_id!,
-    [id]
-  );
-
-  if (bookings.length === 0) {
-    throw new RoomNotFound(id.to_string());
+  let id;
+  try {
+    id = BookingID.from_string(request.params.booking_id);
+  } catch {
+    throw new BookingNotFound(request.params.booking_id);
   }
-  response.status(StatusCodes.OK).json(booking_to_json(bookings[0]));
+  const booking = await request.booking_service!.get_booking(
+    request.user_id!,
+    id
+  );
+  response.status(StatusCodes.OK).json(booking_to_json(booking));
 }
 
 async function search_bookings(request: Request, response: Response) {
-  const { offset, limit } = request.query;
-  const off = offset ?? SearchOptions.DEFAULT_OFFSET;
-  const lim = limit ?? SearchOptions.DEFAULT_LIMIT;
+  const schema = Joi.object({
+    start: Joi.date().required(),
+    end: Joi.date().required(),
+    offset: Joi.number(),
+    limit: Joi.number(),
+  });
 
-  const options = SearchOptions.build(off, lim);
+  const value = validate(schema, {
+    start: request.query.start,
+    end: request.query.end,
+    offset: request.query.offset,
+    limit: request.query.limit,
+  });
+
+  const options = SearchOptions.build(value.offset, value.limit);
+
   const bookings = await request.booking_service!.search_bookings(
     request.user_id!,
+    DateTime.fromJSDate(value.start),
+    DateTime.fromJSDate(value.end),
     options
   );
 
-  response
-    .status(StatusCodes.OK)
-    .json(bookings.map((id) => `${API_VERSION}${BASE_PATH}/${id.to_string()}`));
-}
-
-async function get_bookings(
-  request: Request,
-  response: Response,
-  next?: NextFunction
-) {
-  if (request.query.id === undefined) {
-    // user did not specify any ids
-    next!();
-  } else {
-    // user specified at least one id
-    const schema = Joi.array().items(Joi.string());
-    const { error, value } = schema.validate(request.query.id);
-    if (error !== undefined) {
-      throw new InvalidRequestError(toJson(schema));
-    }
-
-    const ids: BookingID[] = value.map((id: string) =>
-      BookingID.from_string(id)
-    );
-    const bookings = await request.booking_service!.get_bookings(
-      request.user_id!,
-      ids
-    );
-    response.status(StatusCodes.OK).json(bookings.map(booking_to_json));
-  }
+  response.status(StatusCodes.OK).json(bookings.map(booking_to_json));
 }
 
 async function create_booking(request: Request, response: Response) {
   // In theory, we could put more constraints on the request properties.
   // However, the business logic is responsible for the validatiom.
   const schema = Joi.object({
-    room_id: Joi.string().required(),
+    room: Joi.object({
+      self: Joi.string().required(),
+    }).required(),
     start: Joi.date().required(),
     end: Joi.date().required(),
   });
 
-  const { error, value } = schema.validate(request.body);
-  if (error !== undefined) {
-    throw new InvalidRequestError(toJson(schema));
+  const value = validate(schema, request.body);
+
+  const path = value.room.self;
+  const regex = /^\/api\/v1\/rooms\/(.*)$/;
+  const match = path.match(regex);
+
+  if (match === null) {
+    throw new InvalidBookingRoom();
+  }
+  let room_id;
+  try {
+    room_id = RoomID.from_string(match[1]);
+  } catch {
+    throw new InvalidBookingRoom();
   }
 
   const id = await request.booking_service!.create_booking(
     request.user_id!,
-    RoomID.from_string(value.room_id),
+    room_id,
     DateTime.fromJSDate(value.start),
     DateTime.fromJSDate(value.end)
   );
@@ -121,11 +120,7 @@ export function init_booking_routes(): express.Router {
   const router = express.Router();
 
   router.get(`${BASE_PATH}/:booking_id`, asyncHandler(get_booking));
-  router.get(
-    BASE_PATH,
-    asyncHandler(get_bookings),
-    asyncHandler(search_bookings)
-  );
+  router.get(BASE_PATH, asyncHandler(search_bookings));
   router.post(BASE_PATH, asyncHandler(create_booking));
   router.delete(`${BASE_PATH}/:booking_id`, asyncHandler(delete_booking));
 

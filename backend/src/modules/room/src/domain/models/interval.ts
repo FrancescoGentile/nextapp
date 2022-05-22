@@ -74,14 +74,14 @@ export class NextInterval {
       length > NextInterval.MAX_INTERVAL
     ) {
       throw new InvalidInterval(
-        `An interval should have a min length of ${NextInterval.MIN_INTERVAL} ` +
+        `An interval should have a minimum length of ${NextInterval.MIN_INTERVAL} ` +
           `minutes and a maximum length of ${NextInterval.MAX_INTERVAL} minutes.`
       );
     }
 
     if (after_now && interval.start.diff(DateTime.utc()).milliseconds < 0) {
       throw new InvalidInterval(
-        'For this operation, you can pass a past interval.'
+        'For this operation, you cannot pass a past interval.'
       );
     }
 
@@ -115,8 +115,10 @@ export class NextInterval {
     if (inters === null) {
       return { offset: undefined, length: 0 };
     }
-    const offset = inters.start.diff(this.interval.start, 'minutes').minutes;
-    const length = inters.length('minutes');
+    const offset =
+      inters.start.diff(this.interval.start, 'minutes').minutes /
+      NextInterval.SLOT_LENGTH;
+    const length = inters.length('minutes') / NextInterval.SLOT_LENGTH;
     return { offset, length };
   }
 }

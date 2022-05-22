@@ -2,16 +2,15 @@
 //
 //
 
-import { InvalidRequestError, StatusCodes } from '@nextapp/common/error';
-import { NextFunction, Request, Response } from 'express-serve-static-core';
+import { StatusCodes } from '@nextapp/common/error';
+import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
-import { toJson } from 'json-joi-converter';
 import express from 'express';
 import { DateTime } from 'luxon';
-import { RoomNotFound } from '../../../domain/errors';
 import { Room, RoomID } from '../../../domain/models/room';
-import { API_VERSION, asyncHandler } from '../utils';
+import { API_VERSION, asyncHandler, validate } from '../utils';
 import { SearchOptions } from '../../../domain/models/search';
+import { RoomNotFound } from '../../../domain/errors';
 
 const BASE_PATH = '/rooms';
 
@@ -25,75 +24,55 @@ function room_to_json(room: Room): any {
   };
 }
 
-async function get_room(request: Request, response: Response) {
-  const id = RoomID.from_string(request.params.room_id);
-  const rooms = await request.room_service!.get_rooms([id]);
-  if (rooms.length === 0) {
-    throw new RoomNotFound(id.to_string());
-  }
-  response.status(StatusCodes.OK).json(room_to_json(rooms[0]));
+async function get_floors(request: Request, response: Response) {
+  const floors = await request.room_service!.get_floors();
+  response.status(StatusCodes.OK).json(floors);
 }
 
-async function get_rooms(
-  request: Request,
-  response: Response,
-  next?: NextFunction
-) {
-  if (request.query.id === undefined) {
-    next!();
-  } else {
-    const schema = Joi.array().items(Joi.string());
-    const { error, value } = schema.validate(request.query.id);
-    if (error !== undefined) {
-      throw new InvalidRequestError(toJson(schema));
-    }
-
-    const ids: RoomID[] = value.map((id: string) => RoomID.from_string(id));
-    const rooms = await request.room_service!.get_rooms(ids);
-    response.status(StatusCodes.OK).json(rooms.map(room_to_json));
+async function get_room(request: Request, response: Response) {
+  let id;
+  try {
+    id = RoomID.from_string(request.params.room_id);
+  } catch {
+    throw new RoomNotFound(request.params.room_id);
   }
+
+  const room = await request.room_service!.get_room(id);
+  response.status(StatusCodes.OK).json(room_to_json(room));
 }
 
 async function search_rooms(request: Request, response: Response) {
-  const { offset, limit } = request.query;
-  const off = offset ?? SearchOptions.DEFAULT_OFFSET;
-  const lim = limit ?? SearchOptions.DEFAULT_LIMIT;
-  const options = SearchOptions.build(off, lim);
+  const schema = Joi.object({
+    offset: Joi.number(),
+    limit: Joi.number(),
+    floor: Joi.number(),
+    start: Joi.date(),
+    end: Joi.date(),
+  }).with('start', 'end');
 
-  let ids;
-  if (request.query.floor !== undefined) {
-    ids = await request.room_service!.search_rooms_by_floor(
-      Number.parseFloat(request.query.floor),
-      options
-    );
-  } else if (
-    request.query.start !== undefined ||
-    request.query.end !== undefined
-  ) {
-    const schema = Joi.object({
-      start: Joi.date().required(),
-      end: Joi.date().required(),
-    });
-    const { error, value } = schema.validate({
-      start: request.query.start,
-      end: request.query.end,
-    });
+  const value = validate(schema, {
+    offset: request.query.offset,
+    limit: request.query.limit,
+    floor: request.query.floor,
+    start: request.query.start,
+    end: request.query.end,
+  });
 
-    if (error !== undefined) {
-      throw new InvalidRequestError(toJson(schema));
-    }
-    ids = await request.room_service!.search_rooms_by_availability(
-      DateTime.fromJSDate(value.start),
-      DateTime.fromJSDate(value.end),
-      options
-    );
-  } else {
-    ids = await request.room_service!.search_rooms(options);
+  let interval;
+  if (value.start !== undefined) {
+    interval = {
+      start: DateTime.fromJSDate(value.start),
+      end: DateTime.fromJSDate(value.end),
+    };
   }
 
-  response
-    .status(StatusCodes.OK)
-    .json(ids.map((id) => `${API_VERSION}${BASE_PATH}/${id.to_string()}`));
+  const rooms = await request.room_service!.search_rooms(
+    SearchOptions.build(value.offset, value.limit),
+    value.floor,
+    interval
+  );
+
+  response.status(StatusCodes.OK).json(rooms.map(room_to_json));
 }
 
 async function get_slots(request: Request, response: Response) {
@@ -101,14 +80,11 @@ async function get_slots(request: Request, response: Response) {
     start: Joi.date().required(),
     end: Joi.date().required(),
   });
-  const { error, value } = schema.validate({
+
+  const value = validate(schema, {
     start: request.query.start,
     end: request.query.end,
   });
-
-  if (error !== undefined) {
-    throw new InvalidRequestError(toJson(schema));
-  }
 
   const slots = await request.room_service!.get_available_slots(
     RoomID.from_string(request.params.room_id),
@@ -116,9 +92,12 @@ async function get_slots(request: Request, response: Response) {
     DateTime.fromJSDate(value.end)
   );
 
-  response
-    .status(StatusCodes.OK)
-    .json(slots.map((slot) => slot.interval.toISO()));
+  response.status(StatusCodes.OK).json(
+    slots.map((slot) => ({
+      interval: slot.interval.interval.toISO(),
+      seats: slot.seats,
+    }))
+  );
 }
 
 async function create_room(request: Request, response: Response) {
@@ -131,10 +110,7 @@ async function create_room(request: Request, response: Response) {
     floor: Joi.number().required(),
   });
 
-  const { error, value } = schema.validate(request.body);
-  if (error !== undefined) {
-    throw new InvalidRequestError(toJson(schema));
-  }
+  const value = validate(schema, request.body);
 
   const id = await request.room_service!.create_room(
     request.user_id!,
@@ -158,10 +134,12 @@ async function delete_room(request: Request, response: Response) {
 export function init_room_routes(): express.Router {
   const router = express.Router();
 
+  router.get(`/floors`, asyncHandler(get_floors));
   router.get(`${BASE_PATH}/:room_id`, asyncHandler(get_room));
   router.get(`${BASE_PATH}/:room_id/slots`, asyncHandler(get_slots));
-  router.get(BASE_PATH, asyncHandler(get_rooms), asyncHandler(search_rooms));
+  router.get(BASE_PATH, asyncHandler(search_rooms));
   router.post(BASE_PATH, asyncHandler(create_room));
+  // router.patch(`${BASE_PATH}/:room_id`, asyncHandler(modify_room));
   router.delete(`${BASE_PATH}/:room_id`, asyncHandler(delete_room));
 
   return router;
