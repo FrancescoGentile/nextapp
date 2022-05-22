@@ -1,4 +1,4 @@
-import { InvalidRequestError, StatusCodes } from '@nextapp/common/error';
+import { InvalidRequestError, StatusCodes, NextError } from '@nextapp/common/error';
 import Joi from 'joi';
 import { toJson } from 'json-joi-converter';
 import { 
@@ -12,7 +12,8 @@ import { User } from '../../../domain/models/user';
 import { 
   Username,
   Password
- } from '../../../domain/models/user.credentials'
+} from '../../../domain/models/user.credentials'
+import { CredentialsNotString } from '../../../domain/errors/errors.index';
 
 async function register_user(request:Request, response: Response) {
 
@@ -22,7 +23,8 @@ async function register_user(request:Request, response: Response) {
     last_name: Joi.string().required(),
     isAdmin: Joi.boolean().required(),
     username: Joi.string().required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
+    email: Joi.string().required(),
   });
 
   const { error, value } = schema.validate(request.body);
@@ -41,11 +43,10 @@ async function register_user(request:Request, response: Response) {
     value.isAdmin,
     requestedUsername,
     requestedPassword,
+    value.email,
     value.middle_name
   );
-  
   const id = await request.user_service!.register_user(request.user_id, requestedUser);
-
   response.status(StatusCodes.CREATED).location(request.path + id.to_string());
 }
 
@@ -56,40 +57,44 @@ async function get_user_list(request: Request, response: Response) {
 }
 
 async function change_role(request:Request, response: Response) {
-    await request.user_service!.change_role(
+  await request.user_service!.change_role(
     request.user_id,
     request.params.user_id,
     request.params.role
   );
   response.sendStatus(StatusCodes.OK);
-
-async function get_user_info(request:Request, response: Response) {
-  const user = await request.user_service!.get_user_info(request.user_id, request.params.id);
-  response.status(StatusCodes.OK).json(user);
 }
 
-private function is_string(value: any): boolean {
+async function get_user_info(request:Request, response: Response) {
+  const user = await request.user_service!.get_user_info(
+    request.user_id, 
+    request.params.id
+  );
+  response.status(StatusCodes.OK).json(user.toJson());
+}
+
+function is_string(value: any): boolean {
   if (typeof (value) === 'string' || value instanceof String) {
     return true;
   }
   return false;
 }
 
-
 async function login(
   request: LoginRequest,
   response: Response,
 ) {
+  const username = request.params.username;
+  const password = request.params.password;
   try {
-    const { username, password } = request.body;
     if (!is_string(username) || !is_string(password)) {
-      // TODO: create specific error
-      throw new Error('ciao');
-    }
-    auth_servive.login_with_credentials(username, password);
-  } catch (error) {
-    error_response(error, response);
+      throw new CredentialsNotString();
   }
+  }catch (CredentialsNotString) {
+    response.status(StatusCodes.BAD_REQUEST);
+  }
+  await request.auth_service.login_with_credentials(username, password);
+  response.status(StatusCodes.OK);
 }
 
 export function init_user_routes(): express.Router {
