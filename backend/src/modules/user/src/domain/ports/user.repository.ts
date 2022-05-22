@@ -42,7 +42,6 @@ export interface UserRepository {
    */
   get_user_info(user_id: UserID): Promise<User>;
 
-
   /**
    * Returns the user role if they exist.
    * @param user_id
@@ -54,5 +53,12 @@ export interface UserRepository {
    * @param admin_to_down admin to downgrade
    */
   change_role(admin_to_down: UserID, role: UserRole): Promise<void>;
+
+  /**
+   * Return the id and password of the user with the given username if they exist.
+   * This method may throw an error.
+   * @param username
+   */
+  get_id_password(username: Username): Promise<{ id: UserID; password: Password } | null>;
 
 }

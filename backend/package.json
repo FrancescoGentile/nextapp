@@ -30,5 +30,8 @@
       "email": "francesco.gentile@studenti.unitn.it"
     }
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  }
 }
