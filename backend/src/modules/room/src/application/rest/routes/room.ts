@@ -123,6 +123,33 @@ async function create_room(request: Request, response: Response) {
     .send();
 }
 
+async function update_room(request: Request, response: Response) {
+  const schema = Joi.object({
+    name: Joi.string(),
+    details: Joi.any(),
+    floor: Joi.number(),
+  });
+
+  const value = validate(schema, request.body);
+
+  let id;
+  try {
+    id = RoomID.from_string(request.params.room_id);
+  } catch {
+    throw new RoomNotFound(request.params.room_id);
+  }
+
+  await request.room_service!.update_room(
+    request.user_id!,
+    id,
+    value.name,
+    value.details,
+    value.floor
+  );
+
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 async function delete_room(request: Request, response: Response) {
   await request.room_service!.delete_room(
     request.user_id!,
@@ -139,7 +166,7 @@ export function init_room_routes(): express.Router {
   router.get(`${BASE_PATH}/:room_id/slots`, asyncHandler(get_slots));
   router.get(BASE_PATH, asyncHandler(search_rooms));
   router.post(BASE_PATH, asyncHandler(create_room));
-  // router.patch(`${BASE_PATH}/:room_id`, asyncHandler(modify_room));
+  router.patch(`${BASE_PATH}/:room_id`, asyncHandler(update_room));
   router.delete(`${BASE_PATH}/:room_id`, asyncHandler(delete_room));
 
   return router;

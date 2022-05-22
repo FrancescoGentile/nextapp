@@ -97,7 +97,7 @@ export class Neo4jRoomRepository implements RoomRepository {
           tx.run(
             `MATCH (r:ROOM_Room { floor: $floor })
              RETURN r
-             ORDER BY r.id
+             ORDER BY r.name
              SKIP $skip
              LIMIT $limit`,
             {
@@ -112,7 +112,7 @@ export class Neo4jRoomRepository implements RoomRepository {
           tx.run(
             `MATCH (r:ROOM_Room)
              RETURN r 
-             ORDER BY r.id
+             ORDER BY r.name
              SKIP $skip
              LIMIT $limit`,
             { skip: int(options.offset), limit: int(options.limit) }
@@ -150,7 +150,7 @@ export class Neo4jRoomRepository implements RoomRepository {
         tx.run(
           `MATCH (r:ROOM_Room { floor: $floor })
            RETURN r.id as id
-           ORDER BY r.id
+           ORDER BY r.name
            SKIP $skip
            LIMIT $limit`,
           {
@@ -180,7 +180,9 @@ export class Neo4jRoomRepository implements RoomRepository {
         const id = RoomID.generate();
         const { name } = room;
         const details =
-          room.details === undefined ? null : JSON.stringify(room.details);
+          room.details === undefined || room.details === null
+            ? null
+            : JSON.stringify(room.details);
         const seats = int(room.seats);
         const floor = int(room.floor);
 
@@ -214,6 +216,38 @@ export class Neo4jRoomRepository implements RoomRepository {
       }
     } catch {
       throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async update_room(room: Room): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const details =
+        room.details === undefined || room.details === null
+          ? null
+          : JSON.stringify(room.details);
+      await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (r: ROOM_Room { id: $id })
+           SET r.name = $name, r.details = $details, r.seats = $seats, r.floor = $floor`,
+          {
+            id: room.id!.to_string(),
+            name: room.name,
+            details,
+            seats: int(room.seats),
+            floor: int(room.floor),
+          }
+        )
+      );
+      return true;
+    } catch (e) {
+      const error = e as Neo4jError;
+      if (error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+        throw new InternalServerError();
+      }
+      return false;
     } finally {
       await session.close();
     }

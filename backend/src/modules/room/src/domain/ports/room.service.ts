@@ -52,6 +52,22 @@ export interface RoomInfoService {
   create_room(admin: UserID, room: Room): Promise<RoomID>;
 
   /**
+   * Updates the room with the new information passed.
+   * @param admin
+   * @param room_id
+   * @param name
+   * @param details
+   * @param floor
+   */
+  update_room(
+    admin: UserID,
+    room_id: RoomID,
+    name?: string,
+    details?: any,
+    floor?: number
+  ): Promise<void>;
+
+  /**
    * Removes the room with the given id if it exists.
    * This method can be executed only by an admin.
    * This method throw an error if no room with the given id exists.
