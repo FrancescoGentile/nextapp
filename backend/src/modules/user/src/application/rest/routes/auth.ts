@@ -31,11 +31,11 @@ async function login(request: Request, response: Response) {
       httpOnly: true,
       expires: expires.toJSDate(),
     })
-    .send();
+    .end();
 }
 
 function logout(request: Request, response: Response) {
-  response.status(StatusCodes.NO_CONTENT).clearCookie(COOKIE_NAME).send();
+  response.status(StatusCodes.NO_CONTENT).clearCookie(COOKIE_NAME).end();
 }
 
 export function init_auth_routes(

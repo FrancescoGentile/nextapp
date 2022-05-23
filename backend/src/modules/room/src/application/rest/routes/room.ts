@@ -120,7 +120,7 @@ async function create_room(request: Request, response: Response) {
   response
     .status(StatusCodes.CREATED)
     .location(`${API_VERSION}${BASE_PATH}/${id.to_string()}`)
-    .send();
+    .end();
 }
 
 async function update_room(request: Request, response: Response) {
