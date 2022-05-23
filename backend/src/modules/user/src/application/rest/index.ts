@@ -51,9 +51,9 @@ export function init_rest_api(
   router.use(express.json() as any);
   router.use(init_request(user_service, auth_service));
 
-  router.use(API_VERSION, init_auth_routes(), handle_error);
-
   const auth_middleware = verify_token(auth_service);
+
+  router.use(API_VERSION, init_auth_routes(auth_middleware), handle_error);
 
   router.use(API_VERSION, init_user_routes(auth_middleware), handle_error);
 
