@@ -1,4 +1,4 @@
-# Webpack 
+# NextApp 
 
 Questo folder contiene l'implementazione del backend per il progetto del corso di Ingegneria del Software 2. Per maggiori dettagli sull'architettura usata e sull'organizzazione di questo branch rimandiamo alla Wiki di questa repository. 
 
