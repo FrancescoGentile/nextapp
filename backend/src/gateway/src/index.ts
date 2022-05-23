@@ -8,6 +8,7 @@ import neo4j, { Driver } from 'neo4j-driver';
 import { InternalServerError } from '@nextapp/common/error';
 import { EventEmitter } from 'eventemitter3';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import 'dotenv/config';
 import { InvalidEndpoint } from './errors';
 import { init_user_module } from './user';
@@ -61,6 +62,14 @@ async function start_server(port: number) {
   const router = await init_gateway();
   const app = express();
 
+  if (process.env.FRONTEND === undefined) {
+    throw new InternalServerError('Frontend server not set.');
+  }
+
+  app.use(cors({
+    origin: [process.env.FRONTEND],
+    credentials: true, 
+  }) as any);
   app.use(router);
   app.use(invalid_endpoint);
 
