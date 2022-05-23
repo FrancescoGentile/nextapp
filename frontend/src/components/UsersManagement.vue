@@ -4,6 +4,7 @@ import { Modal } from "bootstrap"
 export default {
     data() {
         return {
+            user: {},
             users: [],
             registeredUser: {},
             selectedUser: {}
@@ -13,7 +14,7 @@ export default {
         loadedUsers() {
             return this.$store.getters.getUsers
         },
-        user() {
+        loadedUser() {
             return this.$store.getters.getUser
         }
     },
@@ -24,55 +25,61 @@ export default {
         }).catch(err => {
             console.log(err)
         })
+
+      this.$store.dispatch("publicUser"
+      ).then(()=>{
+        this.user = this.loadedUser
+      }).catch(err=>{
+        console.log(err)
+      })
     },
     methods: {
         registerUser() {
-            let id = Math.floor(Math.random() * 100)
-            let username = this.registeredUser.username
-            let email = this.registeredUser.email
-            let password = this.registeredUser.password
-            let firstName = this.registeredUser.firstName
-            let lastName = this.registeredUser.lastName
-            let role = "user"
+
+            //console.log(this.registeredUser)
             const user = {
-                id, username, email, password, firstName, lastName, role
+                username: this.registeredUser.username,
+                password: this.registeredUser.password,
+                first_name: this.registeredUser.first_name,
+                middle_name: this.registeredUser.middle_name,
+                surname: this.registeredUser.surname,
+                is_admin: false,
+                email: this.registeredUser.email
             }
+            console.log(user)
             this.$store.dispatch("addUser", user
             ).then(() => {
-                this.users.push(user)
-                this.$store.commit("setUsers", this.users)
+                this.$store.dispatch("users"
+                ).then(response=>{
+                    this.$store.commit("setUsers", response.data)
+                    this.users = this.loadedUsers
+                    console.log(this.users)
+                }).catch(err=>{
+                    console.log(err)
+                })
             }).catch(err => {
                 console.log(err)
             })
-            this.registeredUser = {}
+            //this.registeredUser = {}
             this.hideModal('addUser')
         },
 
-      deleteUser(userId) {
+      deleteUser(user) {
+          let userId = user.self.replace("/api/v1/users/", "")
         this.$store.dispatch("deleteUser", userId
         ).then(() => {
-          this.users = this.users.filter(user => user.id !== userId)
-          this.$store.commit("setUsers", this.users)
+            this.$store.dispatch("users"
+            ).then(response=>{
+                this.$store.commit("setUsers", response.data)
+                this.users = this.loadedUsers
+                console.log(this.users)
+            }).catch(err=>{
+                console.log(err)
+            })
         }).catch(err => {
           console.log(err);
         });
         this.hideModal('deleteUser')
-      },
-
-      modifyUser(user) {
-        this.$store.dispatch("modifyUser", user
-        ).then((response) => {
-          const data = response.data
-          this.users.forEach(element => {
-            if (element.id === data.id) {
-              element = data
-            }
-          });
-          this.$store.commit("setUsers", this.users)
-        }).catch(err => {
-          console.log(err)
-        })
-        this.hideModal("modifyUser")
       },
 
       revertChanges(){
@@ -86,18 +93,17 @@ export default {
         this.hideModal("modifyUser")
       },
 
-      changeRole(user, index){
-        if(user.role === "admin"){
-          user.role = "user"
-        }else{
-          user.role = "admin"
-        }
-        this.$store.dispatch("modifyUser", user
-        ).then(response =>{
-          let data = response.data;
-          delete data.password;
-          this.users[index] = data
-          this.$store.commit("setUsers", this.users)
+      changeRole(user){
+        this.$store.dispatch("changeRole", user
+        ).then(() =>{
+            this.$store.dispatch("users"
+            ).then(response=>{
+                this.$store.commit("setUsers", response.data)
+                this.users = this.loadedUsers
+            }).catch(err=>{
+                console.log(err)
+            })
+
         }).catch(err=>{
           console.log(err)
         })
@@ -107,7 +113,8 @@ export default {
             const myModalEl = document.getElementById(modalId)
             const modal = Modal.getInstance(myModalEl)
             modal.hide()
-        }
+        },
+
     }
 }
 </script>
@@ -127,10 +134,9 @@ export default {
                             <table class="table table-striped table-responsive text-center ">
                                 <thead>
                                     <tr>
-                                        <th scope="col">Id</th>
+                                        <th scope="col">#</th>
                                         <th scope="col">Username</th>
-                                        <th scope="col">Email</th>
-                                        <th scope="col">Fulllname</th>
+                                        <th scope="col">Name</th>
                                         <th scope="col"></th>
                                     </tr>
                                 </thead>
@@ -138,43 +144,25 @@ export default {
                                     <tr v-for="(user, i) in this.users" :key="user.id">
                                         <th scope="row">{{ i+1 }}</th>
                                         <td>{{ user.username }}</td>
-                                        <td>{{ user.email }}</td>
-                                        <td>{{ user.firstName }} {{ user.lastName }}</td>
+                                        <td>{{ user.first_name }} {{user.middle_name}} {{ user.surname }}</td>
                                       <td>
                                         <div class="text-right">
                                           <div class="btn-group" role="toolbar">
 
-                                            <button v-if="user.role === 'user'" type="button" class="btn btn-primary me-2"
+                                            <button v-if="!user.is_admin" type="button" class="btn btn-primary me-2"
 
-                                                    @click="this.changeRole(user, i)"> Upgrade to admin
+                                                    @click="this.changeRole(user)"> Upgrade to admin
                                             </button>
 
-
-                                            <button v-else-if="this.user.id !== user.id" type="button" class="btn btn-primary me-2"
-                                                    @click="this.changeRole(user, i)"> Downgrade to user
+                                            <button v-else type="button" class="btn btn-primary me-2"
+                                                    @click="this.changeRole(user)"> Downgrade to user
                                             </button>
-
-
-                                            <button v-else type="button" class="btn btn-secondary me-2"
-                                                    @click="this.changeRole(user, i)" disabled> Downgrade to user
-                                            </button>
-
 
                                             <button type="button" class="btn btn-primary me-2"
-                                                    data-bs-toggle="modal" data-bs-target="#modifyUser"
-                                                    @click="selectedUser = user"> Modify
-                                            </button>
-
-                                            <button v-if="this.user.id !== user.id" type="button" class="btn btn-primary me-2"
                                                     data-bs-toggle="modal" data-bs-target="#deleteUser"
                                                     @click="selectedUser = user"> Delete
                                             </button>
 
-
-                                            <button v-else type="button" class="btn btn-secondary me-2"
-                                                    data-bs-toggle="modal" data-bs-target="#deleteUser"
-                                                    @click="selectedUser = user" disabled> Delete
-                                            </button>
                                           </div>
                                         </div>
 
@@ -207,24 +195,29 @@ export default {
                             <label for="floatingInput">Email address</label>
                         </div>
                         <div class="form-floating mb-3">
+                            <input v-model="registeredUser.password" type="password" class="form-control"
+                                   placeholder="password">
+                            <label for="floatingInput">Password</label>
+                        </div>
+                        <div class="form-floating mb-3">
                             <input v-model="registeredUser.username" type="text" class="form-control"
                                 placeholder="username">
                             <label for="floatingInput">Username</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <input v-model="registeredUser.firstName" type="text" class="form-control"
+                            <input v-model="registeredUser.first_name" type="text" class="form-control"
                                 placeholder="firstname">
                             <label for="floatingInput">First Name</label>
                         </div>
+                      <div class="form-floating mb-3">
+                        <input v-model="registeredUser.middle_name" type="text" class="form-control"
+                               placeholder="firstname">
+                        <label for="floatingInput">Middle Name</label>
+                      </div>
                         <div class="form-floating mb-3">
-                            <input v-model="registeredUser.lastName" type="text" class="form-control"
-                                placeholder="lastname">
-                            <label for="floatingInput">Last Name</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input v-model="registeredUser.password" type="password" class="form-control"
-                                placeholder="Password">
-                            <label for="floatingPassword">Default password</label>
+                            <input v-model="registeredUser.surname" type="text" class="form-control"
+                                placeholder="surname">
+                            <label for="floatingInput">Surname</label>
                         </div>
                     </form>
                 </div>
@@ -248,50 +241,11 @@ export default {
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" @click="deleteUser(selectedUser.id)">Confirm</button>
+          <button type="button" class="btn btn-primary" @click="deleteUser(selectedUser)">Confirm</button>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="modal fade" id="modifyUser" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Change user's information</h5>
-          <button type="button" class="btn-close"  @click="revertChanges(this.selectedUser.id)" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form>
-            <div class="mb-3">
-              <label class="col-form-label">Email</label>
-              <input type="text" class="form-control" v-model="selectedUser.email">
-            </div>
-            <div class="mb-3">
-              <label class="col-form-label">Username</label>
-              <input type="text" class="form-control" v-model="selectedUser.username">
-            </div>
-            <div class="mb-3">
-              <label class="col-form-label">First Name</label>
-              <input type="text" class="form-control" v-model="selectedUser.firstName">
-            </div>
-            <div class="mb-3">
-              <label class="col-form-label">Last Name</label>
-              <input type="text" class="form-control" v-model="selectedUser.lastName">
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="revertChanges(this.selectedUser.id)">Close</button>
-          <button type="submit" class="btn btn-primary" @click="modifyUser(this.selectedUser)">Confirm
-            changes</button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-
 
 </template>
 

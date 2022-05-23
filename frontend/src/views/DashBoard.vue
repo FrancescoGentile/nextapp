@@ -1,39 +1,106 @@
 <script>
 import { defineComponent } from "vue";
 import { Modal } from "bootstrap"
+import Datepicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 export default defineComponent({
   data(){
     return{
+        rooms: [],
       reservations: [],
-      chosenReservation: []
+      chosenReservation: [],
+        printableReservations: [],
+      showReservations: false,
+      minDate: "",
+      maxDate: "",
+      date: new Date()
     }
 
   },
-  computed:{
-    user() {
-      return this.$store.getters.getUser;
-    },
-    userReservations(){
-      return this.$store.getters.getUserReservations(this.user.id);
-    }
+  components:{
+    Datepicker
+  },
+
+  created() {
+    this.minDate = new Date()
+    this.maxDate = new Date(new Date().setDate(this.minDate.getDate() + 30));
   },
 
   mounted() {
-    this.$store.dispatch("reservations"
-    ).then(()=>{
-      this.reservations = this.userReservations
-      this.$store.commit("setUserReservations", this.reservations)
-    }).catch(err=>{
-      console.log(err)
-    })
+      this.$store.dispatch("rooms"
+      ).then(() => {
+          this.rooms = this.loadedRooms
+      }).catch(err => {
+          console.log(err)
+      })
   },
-
+    computed:{
+        loadedRooms() {
+            return this.$store.getters.getRooms
+        }
+    },
   methods:{
-    deleteReservation(reservationId) {
+    handleSubmit(modelData) {
+      this.date.value = modelData
+        //console.log(this.date.toISOString())
+        let day = this.date.getDate()
+        let startDate = new Date()
+        startDate.setDate(day)
+        let start = startDate.toISOString()
+        start = start.substring(0, 11)+"00:00:00.000Z"
+
+        let endDate = new Date()
+        endDate.setDate(day+1)
+        let end = endDate.toISOString()
+        end = end.substring(0, 11)+"00:00:00.000Z"
+
+      let filter = {
+        start: start,
+        end: end
+      }
+      console.log(filter)
+        this.reservations = []
+        this.printableReservations = []
+      this.$store.dispatch("userReservations", filter
+      ).then(response=>{
+        this.reservations = response.data
+          this.reservations.forEach(reservation=>{
+              let start = reservation.start.split("T")
+              let end = reservation.end.split("T")
+              let name = ""
+              this.rooms.forEach(room=>{
+                  //console.log(room.self, reservation.room.self)
+                  if(this.getId(room) === this.getId(reservation.room)){
+                      name = room.name
+                  }
+
+              })
+              let res={
+                  self: reservation.self,
+                  room: name,
+                  date: start[0],
+                  start: start[1].substring(0,2),
+                  end: end[1].substring(0,2)
+              }
+              this.printableReservations.push(res)
+          })
+          console.log(this.printableReservations)
+          this.showReservations = true
+      }).catch(err=>{
+        console.log(err)
+      })
+
+
+
+    },
+    deleteReservation(reservation) {
+        let reservationId= reservation.self.replace("/api/v1/users/me/bookings/", "")
+        console.log(reservationId)
       this.$store.dispatch("deleteUserReservation", reservationId
       ).then(() => {
-        this.reservations= this.reservations.filter(reservation=>reservation.id !== reservationId)
+          //console.log(this.reservations)
+        this.reservations= this.reservations.filter(res=> res.self.replace("/api/v1/users/me/bookings/", "") !== reservation.self.replace("/api/v1/users/me/bookings/", ""))
         this.$store.commit("setUserReservations", this.reservations)
       }).catch(err => {
         console.log(err);
@@ -41,8 +108,16 @@ export default defineComponent({
       const myModalEl = document.getElementById('confirm')
       const modal = Modal.getInstance(myModalEl)
       modal.hide()
-    }
-  }
+    },
+      getId(room){
+          //console.log(room)
+          let id = room.self.replace("/api/v1/rooms/", "")
+          //console.log(id)
+          return id
+      }
+  },
+
+
 })
 
 
@@ -50,8 +125,32 @@ export default defineComponent({
 
 <template>
   <div class="container">
-
+    <div class="row mb-3">
+      <div class="col">
+        <h1 class="text-center"> Please select a date to see your reservations:</h1>
+      </div>
+    </div>
     <div class="row">
+      <div class="col"></div>
+      <div class="col">
+        <Datepicker v-model="date" inline placeholder="Select date" :cleareble="true" :enableTimePicker="false"
+                    @update:modelValue="handleSubmit" :minDate="minDate" :maxDate="maxDate"  />
+      </div>
+      <div class="col"></div>
+    </div>
+    <div class="row">
+      <div class="col"> <br><br></div>
+    </div>
+  </div>
+
+  <div v-show="showReservations" class="container">
+    <div class="row" v-if="reservations.length === 0">
+        <div class="col text-center">
+          <h3> There aren't any reservations for this date </h3>
+        </div>
+
+    </div>
+    <div v-else class="row">
       <div class="col">
         <h1 class="text-center">My reservations</h1>
         <table class="table table-striped table-responsive text-center">
@@ -64,15 +163,15 @@ export default defineComponent({
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(reservation, i) in reservations" :key="reservation.id">
+          <tr v-for="(reservation, i) in printableReservations" :key="reservation.id">
             <th scope="row">{{ i + 1 }}</th>
             <td> {{ reservation.date }} </td>
             <td> {{ reservation.room }} </td>
-            <td> {{ reservation.slot *2 }}:00 - {{(reservation.slot *2)+2}}:00</td>
+            <td> {{ reservation.start }} - {{reservation.end}}</td>
             <td>
               <button class="btn btn-primary align-end" data-bs-toggle="modal"
                       data-bs-target="#confirm" @click="() => {
-                                        this.$data.chosenReservation = reservation.id
+                                        this.$data.chosenReservation = reservation
                                     }">
                 Delete reservation </button>
             </td>
@@ -81,6 +180,7 @@ export default defineComponent({
         </table>
       </div>
     </div>
+
   </div>
 
   <div class="modal fade" id="confirm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -103,6 +203,25 @@ export default defineComponent({
   </div>
 </template>
 
-<style scoped>
-
+<style>
+.dp__theme_light {
+  --dp-background-color: #ffffff;
+  --dp-text-color: #212121;
+  --dp-hover-color: #ff6f60;
+  --dp-hover-text-color: #212121;
+  --dp-hover-icon-color: #959595;
+  --dp-primary-color: red;
+  --dp-primary-text-color: #f8f5f5;
+  --dp-secondary-color: #c0c4cc;
+  --dp-border-color: #ddd;
+  --dp-menu-border-color: #ddd;
+  --dp-border-color-hover: #aaaeb7;
+  --dp-disabled-color: #f6f6f6;
+  --dp-scroll-bar-background: #f3f3f3;
+  --dp-scroll-bar-color: #959595;
+  --dp-success-color: red;
+  --dp-success-color-disabled: #red;
+  --dp-icon-color: #959595;
+  --dp-danger-color: #ff6f60;
+}
 </style>

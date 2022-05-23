@@ -10,32 +10,34 @@ export default defineComponent({
       selectedRoom: {},
       reservations: [],
       selectedReservation: {},
-      floors: [1,2]
+      floors: []
     }
   },
   computed:{
     loadedRoom(){
       return this.$store.getters.getRoomDetails
     },
-    roomReservations(){
-      return this.$store.getters.getRoomReservations(parseInt(this.id))
+    loadedFloors(){
+      return this.$store.getters.getFloors
     }
+
   },
   mounted(){
     this.$store.dispatch("roomDetails", this.id
     ).then(()=>{
       this.room = this.loadedRoom;
+      console.log(this.room)
     }).catch(err=>{
       console.log(err)
     })
 
-    this.$store.dispatch("reservations"
+    this.$store.dispatch("floors",
     ).then(()=>{
-      this.reservations = this.roomReservations
-      this.$store.commit("setRoomReservations", this.reservations)
+      this.floors = this.loadedFloors
     }).catch(err=>{
       console.log(err)
     })
+
   },
   methods:{
     deleteRoom(roomId) {
@@ -49,9 +51,10 @@ export default defineComponent({
     },
 
     modifyRoom(room) {
-      this.$store.dispatch("modifyRoom", room
-      ).then((response) => {
-        this.room = response.data
+      let roomId = this.getId(room)
+      this.$store.dispatch("modifyRoom", {room, roomId}
+      ).then(() => {
+        this.room = room
         this.$store.commit("setRoomDetails", this.room)
       }).catch(err => {
         console.log(err)
@@ -59,10 +62,12 @@ export default defineComponent({
       this.hideModal("modifyRoom")
     },
 
-    revertChanges(roomId){
+    revertChanges(room){
+      let roomId = this.getId(room)
       this.$store.dispatch("roomDetails", roomId
       ).then(response=>{
         this.room = response.data
+        this.$store.commit("setRoomDetails", this.room)
       }).catch(err=>{
         console.log(err)
       })
@@ -80,6 +85,13 @@ export default defineComponent({
       const myModalEl = document.getElementById('deleteReservation')
       const modal = Modal.getInstance(myModalEl)
       modal.hide()
+    },
+
+    getId(room){
+      //console.log(room)
+      let id = room.self.replace("/api/v1/rooms/", "")
+      //console.log(id)
+      return id
     },
 
     hideModal(modalId) {
@@ -118,11 +130,11 @@ export default defineComponent({
                   </tr>
                 <tr>
                   <td>Total Seats:</td>
-                  <td>{{ room.totalSeats }} </td>
+                  <td>{{ room.seats }} </td>
                 </tr>
                 <tr>
                   <td> Additional Information:</td>
-                  <td>{{ room.description }} </td>
+                  <td>{{ room.details }} </td>
                 </tr>
                 </tbody>
               </table>
@@ -131,53 +143,10 @@ export default defineComponent({
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="container mt-5">
-    <div class="row">
-      <div class="col ">
-        <div class="card">
-          <h5 class="card-header">Room Reservations</h5>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-striped table-responsive text-center ">
-                <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">User</th>
-                  <th scope="col">Room</th>
-                  <th scope="col">Slot</th>
-                  <th scope="col">Date</th>
-                  <th scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(reservation, i) in this.reservations" :key="reservation.id">
-                  <th scope="row">{{ i+1 }}</th>
-                  <td>{{ reservation.user }}</td>
-                  <td>{{ reservation.room }}</td>
-                  <td>{{ reservation.slot }}</td>
-                  <td>{{ reservation.date }}</td>
-                  <td>
-                    <div class="text-end">
-                      <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                              data-bs-target="#deleteReservation" @click="this.selectedReservation = reservation"> Delete Reservation </button>
-                    </div>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+    <div class="row mt-3">
+      <div class="col text-center">
+        <button class="btn btn-primary" @click="this.$router.push('/dashboardAdmin')"> Go back to rooms list</button>
       </div>
-    </div>
-    <div class="row mt-2">
-      <div class="col"></div>
-      <div class="col">
-        <button class="btn btn-primary" @click="this.$router.push('/dashboardAdmin')"> Go back to the admin dashboard </button>
-      </div>
-      <div class="col"></div>
     </div>
   </div>
 
@@ -204,7 +173,7 @@ export default defineComponent({
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Change user's information</h5>
-          <button type="button" class="btn-close"  @click="revertChanges(this.id)" aria-label="Close"></button>
+
         </div>
         <div class="modal-body">
           <form>
@@ -226,16 +195,16 @@ export default defineComponent({
             </div>
             <div class="mb-3">
               <label class="col-form-label">Total Seats</label>
-              <input type="text" class="form-control" v-model="selectedRoom.totalSeats" disabled>
+              <input type="text" class="form-control" v-model="selectedRoom.seats" disabled>
             </div>
             <div class="mb-3">
-              <label class="col-form-label">Description</label>
-              <textarea type="text" class="form-control" v-model="selectedRoom.description" rows="5"></textarea>
+              <label class="col-form-label">Details</label>
+              <textarea type="text" class="form-control" v-model="selectedRoom.details" rows="5"></textarea>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="revertChanges(this.selectedRoom.id)">Close</button>
+          <button type="button" class="btn btn-secondary" @click="revertChanges(this.selectedRoom)">Close</button>
           <button type="submit" class="btn btn-primary" @click="modifyRoom(this.selectedRoom)">Confirm
             changes</button>
         </div>

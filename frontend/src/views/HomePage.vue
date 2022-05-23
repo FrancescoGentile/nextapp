@@ -4,18 +4,19 @@ import { defineComponent} from "vue"
 export default defineComponent({
   data(){
     return{
-      email: "",
+      username: "",
       password: ""
     }
   },
   methods:{
     handleSubmit(){
       // login based on email instead of username to use fake json backend
-      let email = this.email
+      let username = this.username
       let password = this.password
+
       this.$store.dispatch("login",{
-        email,
-        password
+        username: username,
+        password: password
       }).then(()=>{
         this.$router.push("/dashboard")
       }).catch(err=>{
@@ -38,8 +39,8 @@ export default defineComponent({
         <form @submit.prevent="handleSubmit()" class="p-4 p-md-5 border rounded-3 bg-light">
           <h1 class="h3 mb-3 fw-normal">Please sign up</h1>
           <div class="form-floating mb-3">
-            <input v-model="email" type="text" class="form-control" id="floatingInput" placeholder="name@example.com">
-            <label for="floatingInput">Email</label>
+            <input v-model="username" type="text" class="form-control" id="floatingInput" placeholder="name@example.com">
+            <label for="floatingInput">Username</label>
           </div>
           <div class="form-floating mb-3">
             <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">

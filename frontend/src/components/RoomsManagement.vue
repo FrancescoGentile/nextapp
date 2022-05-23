@@ -6,12 +6,15 @@ export default {
     return {
       rooms: [],
       registeredRoom: {},
-      floors: [1,2]
+      floors: []
     }
   },
   computed: {
     loadedRooms() {
       return this.$store.getters.getRooms
+    },
+    loadedFloors(){
+      return this.$store.getters.getFloors
     }
   },
   mounted() {
@@ -22,24 +25,36 @@ export default {
     }).catch(err => {
       console.log(err)
     })
+
+    this.$store.dispatch("floors",
+    ).then(()=>{
+      this.floors = this.loadedFloors
+    }).catch(err=>{
+      console.log(err)
+    })
   },
+
   methods: {
     addRoom() {
       //console.log(this.registeredRoom)
-      let id = Math.floor(Math.random() * 100)
       let name = this.registeredRoom.name
       let floor = parseInt(this.registeredRoom.floor)
-      let totalSeats = parseInt(this.registeredRoom.totalSeats)
-      let description= this.registeredRoom.description
+      let seats = parseInt(this.registeredRoom.seats)
+      let details = this.registeredRoom.details
 
       const room = {
-        id, name, floor, totalSeats, description
+        name, details, seats, floor
       }
       //console.log(room)
       this.$store.dispatch("addRoom", room
       ).then(() => {
-        this.rooms.push(room)
-        this.$store.commit("setRooms", this.rooms)
+          this.$store.dispatch("rooms"
+          ).then(() => {
+              this.rooms = this.loadedRooms
+              //console.log(this.rooms)
+          }).catch(err => {
+              console.log(err)
+          })
       }).catch(err => {
         console.log(err)
       })
@@ -50,6 +65,12 @@ export default {
     revertForm(){
       this.registeredRoom = {}
       this.hideModal("addRoom")
+    },
+
+    getId(room){
+      let id = room.self.replace("/api/v1/rooms/", "")
+      //console.log(id)
+      return id
     },
 
     hideModal(modalId) {
@@ -79,6 +100,7 @@ export default {
                   <th scope="col">#</th>
                   <th scope="col">Name</th>
                   <th scope="col">Floor</th>
+                  <th scope="col">Total Seats</th>
                   <th scope="col"></th>
                 </tr>
                 </thead>
@@ -87,8 +109,9 @@ export default {
                   <th scope="row">{{ i+1}}</th>
                   <td>{{ room.name }}</td>
                   <td>{{ room.floor }}</td>
+                  <td>{{ room.seats}}</td>
                   <td>
-                    <button class="btn btn-primary" @click="this.$router.push({name:'roomDetails', params:{id: room.id}})"> Click to see room's details </button>
+                    <button class="btn btn-primary" @click="this.$router.push({name:'roomDetails', params:{id: getId(room)}})"> Click to see room's details </button>
                   </td>
                 </tr>
                 </tbody>
@@ -128,14 +151,14 @@ export default {
 
             </div>
             <div class="form-floating mb-3">
-              <input v-model="registeredRoom.totalSeats" type="text" class="form-control"
+              <input v-model="registeredRoom.seats" type="text" class="form-control"
                      placeholder="Seats">
               <label for="floatingInput">Total Seats</label>
             </div>
             <div class="form-floating mb-3">
-              <textarea v-model="registeredRoom.description" class="form-control"
-                        placeholder="description" rows="5"></textarea>
-              <label for="floatingInput">Description</label>
+              <textarea v-model="registeredRoom.details" class="form-control"
+                        placeholder="details" rows="5"></textarea>
+              <label for="floatingInput">Details</label>
             </div>
           </form>
         </div>

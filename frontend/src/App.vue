@@ -1,13 +1,20 @@
 <script>
 import { defineComponent } from "vue"
 export default defineComponent({
+
   computed: {
     isLoggedIn() {
       return this.$store.getters.isLoggedIn;
     },
-    user(){
-      return this.$store.getters.getUser
-    }
+
+  },
+  mounted(){
+    /*this.$store.dispatch("privateUser"
+    ).then(()=>{
+      this.user = this.privateUser
+    }).catch(err=>{
+      console.log(err)
+    })*/
   },
   methods:{
     logout(){
@@ -37,7 +44,7 @@ export default defineComponent({
           <li class="nav-item">
             <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
           </li>
-          <li v-if="user.role === 'admin'" class="nav-item">
+          <li class="nav-item">
             <router-link to="/dashboardAdmin" class="nav-link">Administration</router-link>
           </li>
           <li class="nav-item">
@@ -55,11 +62,9 @@ export default defineComponent({
     </div>
   </nav>
 
-
   <nav v-else class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
     <div class="container-fluid">
       <router-link to="/" class="navbar-brand">NextApp</router-link>
-      <!--<router-link to="/login"> <button class="btn btn-primary">Sign In</button> </router-link>-->
     </div>
   </nav>
   <notifications position="top right" classes="alert alert-primary" />
