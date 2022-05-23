@@ -9,7 +9,6 @@ import { InternalServerError } from '@nextapp/common/error';
 import { EventEmitter } from 'eventemitter3';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import 'dotenv/config';
 import { InvalidEndpoint } from './errors';
 import { init_user_module } from './user';
 import { init_room_module } from './room';
