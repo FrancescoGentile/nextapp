@@ -10,6 +10,7 @@ import { EventEmitter } from 'eventemitter3';
 import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import { InvalidEndpoint } from './errors';
+import { init_user_module } from './user';
 
 async function get_neo4j(): Promise<Driver> {
   const url = process.env.NEO4J_URL;
@@ -35,6 +36,14 @@ async function init_gateway(): Promise<express.Router> {
 
   const router = express.Router();
   router.use(cookieParser() as any);
+
+  if (process.env.KEY === undefined) {
+    throw new InternalServerError('Private Key is not set');
+  }
+
+  const { routes, auth_middleware } = await init_user_module(driver, emitter, process.env.KEY);
+
+  router.use(routes);
 
   return router;
 }
