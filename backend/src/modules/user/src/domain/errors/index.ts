@@ -8,14 +8,14 @@ export { InternalServerError } from '@nextapp/common/error';
 
 enum UserErrorTypes {
   INVALID_FIRST_NAME = 1,
-  INVALID_SURNAME_NAME,
+  INVALID_SURNAME,
   INVALID_USERNAME,
   INVALID_PASSWORD,
   INVALID_USERID,
   USED_USERNAME,
-  NOT_ADMIN,
-  BAD_CREDENTIALS,
   INVALID_EMAIL,
+  OLD_PASSWORD_WRONG,
+  NOT_ADMIN,
 }
 
 function get_user_type(type: UserErrorTypes): string {
@@ -23,28 +23,24 @@ function get_user_type(type: UserErrorTypes): string {
 }
 
 export class InvalidFirstName extends NextError {
-  public constructor(first_name: string, options?: ErrorOptions) {
+  public constructor(options?: ErrorOptions) {
     super(
       get_user_type(UserErrorTypes.INVALID_FIRST_NAME),
       StatusCodes.BAD_REQUEST,
       'Invalid first name',
-      `${first_name} does not meet on or both of the following conditions: ` +
-        `at least 1 character long, ` +
-        `only lowercase and uppercase Latin letters.`,
+      'Your first name cannot be empty.',
       options
     );
   }
 }
 
 export class InvalidSurname extends NextError {
-  public constructor(surname: string, options?: ErrorOptions) {
+  public constructor(options?: ErrorOptions) {
     super(
-      get_user_type(UserErrorTypes.INVALID_FIRST_NAME),
+      get_user_type(UserErrorTypes.INVALID_SURNAME),
       StatusCodes.BAD_REQUEST,
       'Invalid surname',
-      `${surname} does not meet on or both of the following conditions: ` +
-        `at least 1 character long, ` +
-        `only lowercase and uppercase Latin letters.`,
+      'Your surname cannot be empty.',
       options
     );
   }
@@ -128,21 +124,21 @@ export class UserNotFound extends NextError {
   public constructor(id: string, options?: ErrorOptions) {
     super(
       get_user_type(UserErrorTypes.INVALID_USERID),
-      StatusCodes.BAD_REQUEST,
-      'The specified user does not exist',
-      `(${id}) not registered.`,
+      StatusCodes.NOT_FOUND,
+      'User not found',
+      `No user with id ${id} was found.`,
       options
     );
   }
 }
 
-export class CredentialsNotString extends NextError {
+export class OldPasswordWrong extends NextError {
   public constructor(options?: ErrorOptions) {
     super(
-      get_user_type(UserErrorTypes.BAD_CREDENTIALS),
+      get_user_type(UserErrorTypes.OLD_PASSWORD_WRONG),
       StatusCodes.BAD_REQUEST,
-      'Bad credentials',
-      `Username or password not a string`,
+      'Wrong old password',
+      undefined,
       options
     );
   }
@@ -155,6 +151,7 @@ export class CredentialsNotString extends NextError {
 export enum AuthErrorTypes {
   INVALID_CREDENTIALS = 1,
   INVALID_AUTH_TOKEN,
+  MISSING_AUTH_TOKEN,
 }
 
 function get_auth_type(type: AuthErrorTypes): string {
@@ -180,6 +177,18 @@ export class InvalidAuthToken extends NextError {
       StatusCodes.UNAUTHORIZED,
       'Invalid token',
       undefined,
+      options
+    );
+  }
+}
+
+export class MissingAuthToken extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_auth_type(AuthErrorTypes.MISSING_AUTH_TOKEN),
+      StatusCodes.UNAUTHORIZED,
+      'Missing token',
+      'You need to authenticate before using the API.',
       options
     );
   }

@@ -4,49 +4,24 @@
 
 import EventEmitter from 'eventemitter3';
 import {
-  UserCreatedEvent, 
-  UserCredentialChangedEvent, 
-  UserDeletedEvent, 
-  UserLoginEvent, 
-  UserRoleChangedEvent
-} from '../../domain/events/events.index';
+  UserCreatedEvent,
+  UserDeletedEvent,
+  UserRoleChangedEvent,
+} from '../../domain/events';
 import { EventBroker } from '../../domain/ports/event.broker';
 
 export class EventEmitterBroker implements EventBroker {
   public constructor(private readonly emitter: EventEmitter) {}
-  
-  
-  on_user_created(listener: (
-    event: UserCreatedEvent) => void, 
-    context?: any
-  ): void {
-    this.emitter.on('user_registered', listener, context)
+
+  public emit_user_created(event: UserCreatedEvent): void {
+    this.emitter.emit(event.name, event);
   }
-  on_user_role_changed(listener: (
-    event: UserRoleChangedEvent) => void, 
-    context?: any
-  ): void {
-    this.emitter.on('user_role_changed', listener, context)
+
+  public emit_user_deleted(event: UserDeletedEvent): void {
+    this.emitter.emit(event.name, event);
   }
-  
-  on_user_login(listener: (
-    event: UserLoginEvent) => void, 
-    context?: any
-  ): void {
-    this.emitter.on('user_logged_in', listener, context)
-  }
-  
-  on_user_deleted(listener: (
-    event: UserDeletedEvent) => void, 
-    context?: any
-  ): void {
-    this.emitter.on('user_deleted', listener, context)
-  }
-  
-  on_user_credential_changed(listener: (
-    event: UserCredentialChangedEvent) => void,
-     context?: any
-  ): void {
-    this.emitter.on('user_deleted', listener, context)
+
+  public emit_user_role_changed(event: UserRoleChangedEvent): void {
+    this.emitter.emit(event.name, event);
   }
 }

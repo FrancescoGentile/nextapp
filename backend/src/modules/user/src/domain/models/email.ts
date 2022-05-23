@@ -3,7 +3,7 @@
 //
 
 import * as EmailValidator from 'email-validator';
-import { InvalidEmail } from '../errors/errors.index';
+import { InvalidEmail } from '../errors';
 
 export class Email {
   private constructor(private readonly email: string) {}

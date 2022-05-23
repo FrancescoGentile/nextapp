@@ -4,7 +4,8 @@
 
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID, UserRole } from '@nextapp/common/user';
-import { Driver, Neo4jError } from 'neo4j-driver';
+import { Driver, int, Neo4jError } from 'neo4j-driver';
+import { SearchOptions } from '../../domain/models/search';
 import { User } from '../../domain/models/user';
 import { Username, Password } from '../../domain/models/user.credentials';
 import { UserRepository } from '../../domain/ports/user.repository';
@@ -110,19 +111,19 @@ export class Neo4jUserRepository implements UserRepository {
             tx.run(
               `CREATE (u:USER_User {
                 id: $id,
-                username: $username
+                username: $username,
                 password: $password,
                 first_name: $first_name,
                 middle_name: $middle_name,
                 surname: $surname, 
-                email: $email,
+                email: $email
               })`,
               {
                 id: id.to_string(),
                 username: user.username.to_string(),
                 password: user.password.to_string(),
                 first_name: user.first_name,
-                middle_name: user.middle_name,
+                middle_name: user.middle_name ?? null,
                 surname: user.surname,
                 email: user.email.to_string(),
               }
@@ -142,6 +143,40 @@ export class Neo4jUserRepository implements UserRepository {
           }
         }
       }
+    } catch (e) {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_user_info(user_id: UserID): Promise<User | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:USER_User { id: $id })
+           RETURN u`,
+          { id: user_id.to_string() }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      const info = res.records[0].get('u').properties;
+
+      return new User(
+        info.first_name,
+        info.middle_name,
+        info.surname,
+        info.admin,
+        Username.from_string(info.username),
+        Password.from_hash(info.password),
+        info.email,
+        new UserID(info.id)
+      );
     } catch {
       throw new InternalServerError();
     } finally {
@@ -149,18 +184,17 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-  public async check_system_administrator(user_id: UserID): Promise<boolean> {
-    const role = await this.get_user_role(user_id);
-    return role === UserRole.SYS_ADMIN;
-  }
-
-  public async get_user_list(): Promise<User[]> {
+  public async get_users_list(options: SearchOptions): Promise<User[]> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:USER_User)
-           RETURN u`
+           RETURN u
+           ORDER BY u.username
+           SKIP $skip
+           LIMIT $limit`,
+          { skip: int(options.offset), limit: int(options.limit) }
         )
       );
 
@@ -168,17 +202,18 @@ export class Neo4jUserRepository implements UserRepository {
         const info = record.get('u').properties;
         return new User(
           info.first_name,
+          info.middle_name,
           info.surname,
           info.admin,
           Username.from_string(info.username),
           Password.from_hash(info.password),
           info.email,
-          info.middle_name
+          new UserID(info.id)
         );
       });
 
       return users;
-    } catch {
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -225,39 +260,6 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-  public async get_user_info(user_id: UserID): Promise<User | null> {
-    const session = this.driver.session();
-    try {
-      const res = await session.readTransaction((tx) =>
-        tx.run(
-          `MATCH (u:USER_User { id: $id })
-           RETURN u`,
-          { id: user_id.to_string() }
-        )
-      );
-
-      if (res.records.length === 0) {
-        return null;
-      }
-
-      const info = res.records[0].get('u').properties;
-
-      return new User(
-        info.first_name,
-        info.surname,
-        info.admin,
-        Username.from_string(info.username),
-        Password.from_hash(info.password),
-        info.email,
-        info.middle_name
-      );
-    } catch {
-      throw new InternalServerError();
-    } finally {
-      await session.close();
-    }
-  }
-
   public async delete_user(user_id: UserID): Promise<boolean> {
     const session = this.driver.session();
     try {
@@ -269,7 +271,7 @@ export class Neo4jUserRepository implements UserRepository {
         )
       );
       return res.summary.counters.updates().nodesDeleted > 0;
-    } catch {
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();

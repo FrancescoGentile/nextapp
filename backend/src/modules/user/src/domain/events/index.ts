@@ -15,14 +15,6 @@ export interface UserRoleChangedEvent extends NextEvent {
   role: UserRole;
 }
 
-export interface UserLoginEvent extends NextEvent {
-  user_id: UserID;
-}
-
 export interface UserDeletedEvent extends NextEvent {
-  user_id: UserID;
-}
-
-export interface UserCredentialChangedEvent extends NextEvent {
   user_id: UserID;
 }

@@ -4,7 +4,7 @@
 
 import { UserID } from '@nextapp/common/user';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { InvalidAuthToken } from '../errors/errors.index';
+import { InvalidAuthToken } from '../errors';
 
 export class AuthKey {
   public constructor(private readonly key: string) {}

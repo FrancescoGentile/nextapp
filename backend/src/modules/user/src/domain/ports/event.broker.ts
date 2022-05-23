@@ -5,36 +5,13 @@
 import {
   UserCreatedEvent,
   UserRoleChangedEvent,
-  UserLoginEvent,
   UserDeletedEvent,
-  UserCredentialChangedEvent
-} from '../events/events.index';
+} from '../events';
 
 export interface EventBroker {
+  emit_user_created(event: UserCreatedEvent): void;
 
-  on_user_created(
-    listener: (event: UserCreatedEvent) => void,
-    context?: any
-  ): void;
+  emit_user_deleted(event: UserDeletedEvent): void;
 
-  on_user_role_changed(
-    listener: (event: UserRoleChangedEvent) => void,
-    context?: any
-  ): void;
-
-  on_user_login(
-    listener: (event: UserLoginEvent) => void,
-    context?: any
-  ): void;
-
-  on_user_deleted(
-    listener: (event: UserDeletedEvent) => void,
-    context?: any
-  ): void;
-
-  on_user_credential_changed(
-    listener: (event: UserCredentialChangedEvent) => void,
-    context?: any
-  ): void;
-
+  emit_user_role_changed(event: UserRoleChangedEvent): void;
 }
