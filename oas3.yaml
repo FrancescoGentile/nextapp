@@ -1,0 +1,1051 @@
+openapi: "3.0.2"
+
+info:
+  title: NextApp
+  description: API specification for NextApp
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local testing endpoint
+
+paths:
+  /login:
+    summary: Login
+    post:
+      summary: Sign in
+      description: Sign in and return the authentication code.
+      requestBody:
+        required: true
+        description: Your credentials
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginCredentials"
+      responses:
+        "204":
+          description: >
+            You have successfully authenticated.
+            The token is returned inside a HttpOnly coookie.
+            You need to include this token in subsequent requests to be authorized.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                description: The JsonWebToken
+        "401":
+          description: Authentication failed because the credentials were not valid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  
+  /logout:
+      summary: Logout
+      post:
+        descrition: >
+          This method simply removes the JsonWebToken from the cookie.
+          The backend must do this operation because the cookie is HttpOnly.
+        responses:
+          '204':
+            description: The cookie has been successfully removed
+          "401":
+          description: Authentication failed because the credentials were not valid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+          
+  /users:
+    summary: Collection of users
+    get:
+      summary: Retrieve a list of users and their public information
+      description: This list is accessible only to admins.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: The number of users to skip before starting to collect the result set
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: The numbers of users to return
+      responses:
+        "200":
+          description: The response contains a list of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListUserPersonalInfo"
+        "400":
+          description: The offset or limit parameters are not valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Register a new user
+      description: This operation can be performed only by admins.
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Information associated to the new user
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserInfo"
+      responses:
+        "204":
+          description: The user has been successfully registered
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+                description: Link associated to this user
+        "400":
+          description: The given information were not valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/{id}:
+    summary: User info
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The id of the user
+        schema:
+          type: string
+    get:
+      summary: Retrieve public information of a user
+      description: This operation can be performed only by admins or by the account owner. 
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The response contains the public information of the user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPersonalInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "404":
+          description: No user with the given id was found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      summary: Change the role of the user
+      description: This action can be performed only by an admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_admin:
+                  type: boolean
+                  description: Whether the user should be an admin or not
+              required:
+              - is_admin
+      responses:
+        '204':
+          description: The user's role has been successfully changed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "404":
+          description: No user with the given id was found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: Delete the account of the user.
+      description: This operation can be performed by an admin or by ther owner of the account.
+      description: >
+        This operation deletes all the information associated to a user,
+        including all their bookings (in the past, present and future).
+        This operation can be performed only by an admin.
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: The user's account has been successfully deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "404":
+          description: No user with the given id was found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/me:
+    summary: Personal account
+    get:
+      summary: Retrieve all your personal information
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The response contains your private information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPersonalInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: Delete your account
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: You account has been successfully deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/me/password:
+    summary: Change password
+    patch:
+      summary: Change your password
+      requestBody:
+        description: >
+          The body must contain your previous password and the new one.
+          If the previous password is wrong, the operation fails.
+          At the moment, it is not possible to change your password without knowing the one you are currently using.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePassword"
+      responses:
+        "204":
+          description: You have successfully changed your password
+        "400":
+          description: old_password field does not match with your current password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /floors:
+    summary: Floors
+    get:
+      summary: Get a list of floors where rooms can be created
+      description: >
+        Note: this endpoint returns a list of floors where rooms can be created, not only floors
+        where rooms are present at the moment.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: A list of floors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  description: A floor number
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /rooms:
+    summary: Collection of rooms
+    get:
+      summary: Retrieve a list of rooms and their associated information
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: The number of rooms to skip before starting to collect the result set
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: The numbers of rooms to return
+        - in: query
+          name: floor
+          schema:
+            type: integer
+          description: The floor number of the rooms to retrieve
+        - in: query
+          name: time-filter
+          style: form
+          explode: true
+          schema:
+            type: object
+            properties:
+              start:
+                type: string
+                format: date-time
+                description: The date and time (in ISO format) from which to search for available rooms
+              end:
+                type: string
+                format: date-time
+                description: The date and time (in ISO format) until which to search for available rooms
+            required:
+              - start
+              - end
+      responses:
+        "200":
+          description: The response contains a list of the searched rooms
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListRoomInfo"
+        "400":
+          description: >
+            The request was not valid. This may due to different reasons. 
+            1. The floor is not a valid floor. 
+            2. The time interval is not a valid ISO time interval or it is in the past
+            (you can search available room only in the future).
+            3. The offset and limit parameters are not valid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Create a new room
+      description: Create a new room with the given information
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoomInfo"
+      responses:
+        "204":
+          description: The room has been successfully created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+                description: The link associated to the newly created room
+        "400":
+          description: >
+            The room could not be created because at least one of the constraints was not met.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /rooms/{id}:
+    summary: Room
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          description: The id of the room
+    get:
+      summary: Get the information associated to a room
+      description: Return the information associated to the room with the specified id if this room exists.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The room was found and its information is in the response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomInfo"
+        "404":
+          description: The room with the given id was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: Delete all the information associated to the room
+      description: >
+        Delete all the information associated to the room with the given id. 
+        It also deletes all the bookings for this room both in the past, present and future.
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: The room has been successfully deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "404":
+          description: No room with the given id was found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      summary: Modify information associated to a room
+      description: In this version, you can only modify its name, floor and details.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: The new information of the room
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModifyRoomInfo"
+      responses:
+        "204":
+          description: The room has been successfully modified
+        "400":
+          description: >
+            The room could not be modified because at least one of the constraints was not met.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/NotAdminForbidden"
+        "404":
+          description: No room with the given id was found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /rooms/{id}/slots:
+    summary: Room slots
+    get:
+      summary: Get a list of time intervals where the room can be booked
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: The id of the room
+        - in: query
+          name: time-filter
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: object
+            properties:
+              start:
+                type: string
+                format: date-time
+                description: The date and time (in ISO format) from which to search for available slots
+              end:
+                type: string
+                format: date-time
+                description: The date and time (in ISO format) until which to search for available slots
+            required:
+              - start
+              - end
+      responses:
+        "200":
+          description: The response containt a list of time intervals and available seats for each interval
+          content:
+            application/json:
+              schema:
+                description: A list of time intervals
+                type: array
+                items:
+                  type: object
+                  properties:
+                    interval:
+                      type: string
+                      description: A time interval in ISO format
+                    seats:
+                      type: integer
+                      description: The number of seats still available in the associated interval
+        "400":
+          description: >
+            The given interval of time is not a valid ISO interval of time or it is in the past.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: The room with the given id was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/me/bookings:
+    summary: Your bookings
+    get:
+      summary: Retrieve the bookings you made
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: The number of bookings to skip before starting to collect the result set
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: The numbers of bookings to return
+        - in: query
+          name: time-filter
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: object
+            properties:
+              start:
+                type: string
+                format: date-time
+                description: The date and time (in ISO format) from which to search for available rooms
+              end:
+                type: string
+                format: date-time
+                description: The date and time (in ISO format) until which to search for available rooms
+            required:
+              - start
+              - end
+      responses:
+        "200":
+          description: The response contains a list of your bookings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListBookingInfo"
+        "400":
+          description: >
+            The request was not valid. This may due to different reasons. 
+            1. The time interval is not a valid ISO time interval.
+            2. The offset and limit parameters are not valid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Create a new booking
+      description: Add to your current set of bookings a new one for the room and in the time interval specified.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        description: The information of the room to create
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingInfo"
+      responses:
+        "204":
+          description: The booking has been successfully added to your other bookings
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+                description: The link associated to this booking
+        "400":
+          description: >
+            The data in the request body were not correct. This may due to different reasons.
+            1. The room field contains a link that is not associated to any rooms in the building.
+            2. The start and end fields are not valid ISO date and time or they are in the past
+            (you can only make bookings for the future).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: >
+            This error may be due to different reasons. 
+            1. The room is not available in the time interval specified.
+            2. You already have other bookings in this time interval.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/me/bookings/{id}:
+    summary: A booking
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          description: The id of the booking
+    get:
+      summary: Get the information associated to the booking
+      description: Get the information associated to the booking with the given id if it exists.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The booking was found and its information is in the response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: The booking with the given id was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: Delete this booking
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: The booking has been successfully deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: The booking with the given id was not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      description: >
+        This is the format for each error returned by the server. 
+        It is inspired on IETF RFC 7807 for HTTP error handling.
+      type: object
+      properties:
+        type:
+          type: string
+          description: Unique id associated to this error type
+        code:
+          type: integer
+          description: HTTP status code associated to this error
+        title:
+          type: string
+          description: Short human-readable description of the error
+        details:
+          type: string
+          description: >
+            Long human-readable description of the error which may containt the cause of the error 
+            and possible solutions
+        instance:
+          type: string
+          description: URL path of the request for which this error is returned
+
+    LoginCredentials:
+      type: object
+      properties:
+        username:
+          type: string
+          pattern: ^[a-zA-Z0-9_]{5,100}$
+          description: Your username
+        password:
+          type: string
+          description: Your password
+      required:
+        - username
+        - password
+
+    ChangePassword:
+      type: object
+      properties:
+        old_password:
+          type: string
+          description: The current password you are using
+        new_password:
+          type: string
+          description: The password you want to set
+      required:
+        - old_password
+        - new_password
+
+    ListUserPersonalInfo:
+      description: A list of users and their public information
+      type: array
+      items:
+        type: object
+        description: Public information of a user
+        properties:
+          self:
+            type: string
+            format: uri
+            description: The link associated to this user
+          username:
+            type: string
+            pattern: ^[a-zA-Z0-9_]{5,100}$
+            description: Username that uniquely identify a user
+          first_name:
+            type: string
+            description: First name of the user
+          middle_name:
+            type: string
+            description: Middle name of the user
+          surname:
+            type: string
+            description: Surname of the user
+          is_admin:
+            type: boolean
+            description: Whether the user has an admin role or not
+          email:
+            type: string
+            format: email
+            description: The email of the user
+      required:
+        - username
+        - first_name
+        - surname
+        - is_admin
+        - email
+
+    CreateUserInfo:
+      type: object
+      description: Information to create a new user
+      properties:
+        username:
+          type: string
+          pattern: ^[a-zA-Z0-9_]{5,100}$
+          description: Username that uniquely identify a user
+        password:
+          type: string
+          description: The user's password
+        first_name:
+          type: string
+          description: First name of the user
+        middle_name:
+          type: string
+          description: Middle name of the user
+        surname:
+          type: string
+          description: Surname of the user
+        is_admin:
+          type: boolean
+          description: Whether the user has an admin role or not
+        email:
+          type: string
+          description: The user's email
+      required:
+        - username
+        - password
+        - first_name
+        - surname
+        - is_admin
+        - email
+
+    UserPersonalInfo:
+      type: object
+      description: Personal information of the user
+      properties:
+        self:
+          type: string
+          format: uri
+          description: The link associated to this user
+        username:
+          type: string
+          pattern: ^[a-zA-Z0-9_]{5,100}$
+          description: Username that uniquely identify a user
+        first_name:
+          type: string
+          description: First name of the user
+        middle_name:
+          type: string
+          description: Middle name of the user
+        surname:
+          type: string
+          description: Surname of the user
+        is_admin:
+          type: boolean
+          description: Whether the user has an admin role or not
+        email:
+          type: string
+          format: email
+          description: The email of the user
+      required:
+        - username
+        - first_name
+        - surname
+        - is_admin
+        - email
+
+    CreateRoomInfo:
+      type: object
+      description: Information associated to the room
+      properties:
+        name:
+          type: string
+          description: The name of the room
+        details:
+          type: object
+          additionalProperties: true
+          description: Description of the room
+        seats:
+          type: integer
+          description: The number of seats in this room
+        floor:
+          type: integer
+          description: The floor number where the room is located
+      required:
+        - name
+        - seats
+        - floor
+
+    ModifyRoomInfo:
+      type: object
+      description: Information associated to the room
+      properties:
+        name:
+          type: string
+          description: The name of the room
+        details:
+          type: object
+          additionalProperties: true
+          description: Description of the room
+        floor:
+          type: integer
+          description: The floor number where the room is located
+
+    RoomInfo:
+      type: object
+      description: Information associated to the room
+      properties:
+        self:
+          type: string
+          format: uri
+          description: Link associated to this room
+        name:
+          type: string
+          description: The name of the room
+        details:
+          type: object
+          additionalProperties: true
+          description: Description of the room
+        seats:
+          type: integer
+          description: The number of seats in this room
+        floor:
+          type: integer
+          description: The floor number where the room is located
+
+    ListRoomInfo:
+      type: array
+      description: List of rooms
+      items:
+        type: object
+        description: Information associated to the room
+        properties:
+          self:
+            type: string
+            format: uri
+            description: Link associated to this room
+          name:
+            type: string
+            description: The name of the room
+          details:
+            type: object
+            additionalProperties: true
+            description: Description of the room
+          seats:
+            type: integer
+            description: The number of seats in this room
+          floor:
+            type: integer
+            description: The floor number where the room is located
+
+    CreateBookingInfo:
+      type: object
+      properties:
+        room:
+          type: object
+          properties:
+            self:
+              type: string
+              format: uri
+              description: The link associated to the room for which you want to make this booking
+        start:
+          type: string
+          format: date-time
+          description: Date and time (in ISO format) of the booking start
+        end:
+          type: string
+          format: date-time
+          description: Date and time (in ISO format) of the booking end
+      required:
+        - room
+        - start
+        - end
+
+    BookingInfo:
+      type: object
+      description: Information associated to the room
+      properties:
+        self:
+          type: string
+          format: uri
+          description: Link associated to this booking
+        room:
+          type: object
+          properties:
+            self:
+              type: string
+              format: uri
+              description: Link to the room for which this booking was made
+        start:
+          type: string
+          format: date-time
+          description: Date and time (in ISO format) of the start of the booking
+        end:
+          type: string
+          format: date-time
+          description: Date and time (in ISO format) of the end of the booking
+
+    ListBookingInfo:
+      description: List of bookings
+      type: array
+      items:
+        type: object
+        description: Information associated to the room
+        properties:
+          self:
+            type: string
+            format: uri
+            description: Link associated to this booking
+          room:
+            type: object
+            properties:
+              self:
+                type: string
+                format: uri
+                description: Link to the room for which this booking was made
+          start:
+            type: string
+            format: date-time
+            description: Date and time (in ISO format) of the start of the booking
+          end:
+            type: string
+            format: date-time
+            description: Date and time (in ISO format) of the end of the booking
+
+  responses:
+    Unauthorized:
+      description: You have to authenticate youself before preceding
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    NotAdminForbidden:
+      description: To perform this operation you need to have an admin role
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    InternalServerError:
+      description: While processing your request, the server met some problems that it was not able to handle.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

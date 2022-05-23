@@ -67,13 +67,11 @@ common/autoinstallers/*/.npmrc
 # Heft
 .heft
 
-# projects
-backend/**/node_modules
-backend/**/.rush 
-backend/**/*.build.log
+# VSCode
+.vscode 
 
 #project
-backend/**/node_modules
-backend/**/dist
-backend/**/.rush 
-backend/**/*.build.log
+src/**/node_modules
+src/**/dist
+src/**/.rush 
+src/**/*.build.log
