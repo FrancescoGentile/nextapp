@@ -1,19 +1,43 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import store from "@/store";
+import HomePage from '../views/HomePage.vue'
 
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomePage
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('../views/DashBoard.vue')
+  },
+  {
+    path: "/noAuth",
+    name: "noAuth",
+    component: () => import('../views/noAuthentication.vue')
+  },
+  {
+    path: "/dashboardAdmin",
+    name: "dashboardAdmin",
+    component: () => import("../views/DashboardAdmin.vue")
+  },
+  {
+    path: "/settings",
+    name: "settings",
+    component: () => import("../views/SettingsPage.vue")
+  },
+  {
+    path: "/roomDetails/:id",
+    name: "roomDetails",
+    component: () => import("../views/RoomDetails.vue"),
+    props: true
+  },
+  {
+    path: "/rooms",
+    name: "reservationPage",
+    component: () => import("../views/ReservationPage.vue")
   }
 ]
 
@@ -22,4 +46,28 @@ const router = createRouter({
   routes
 })
 
+router.beforeEach((to, from, next) => {
+  const isLoggedIn = store.getters.isLoggedIn
+  //const user = store.getters.getUser
+  if (isLoggedIn) {
+    if(to.name === "home"){
+      next({name: "dashboard"})
+    }else{
+      /*
+      if((to.name === "dashboardAdmin" || to.name === "roomDetails") && user.role !== "admin") {
+        next({name: "dashboard"})
+      }else{
+        next()
+      }*/
+      next()
+    }
+  } else {
+    if(to.name === "home" || to.name === "login" || to.name === "noAuth" || to.name === "register"){
+      next();
+    }else{
+      next({name: "noAuth"})
+    }
+
+  }
+})
 export default router

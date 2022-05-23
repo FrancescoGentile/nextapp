@@ -1,0 +1,176 @@
+{
+  "users": [
+    {
+      "id": 2,
+      "username": "example",
+      "email": "example@gmail.com",
+      "password": "$2a$10$UScWI4EIfcSguYJKFkoSZ.LxMdQSXg1ORel4TYqkXKjtdiOnUq29.",
+      "firstName": "name1",
+      "lastName": "surname1",
+      "role": "admin"
+    },
+    {
+      "email": "user0@gmail.com",
+      "password": "$2a$10$5lm91ky47prtyBd.yZEzh./AExVoLw/O0LcsXWujPpQkCHXpyistu",
+      "id": 0,
+      "username": "user0",
+      "firstName": "name",
+      "lastName": "surname",
+      "role": "user"
+    },
+    {
+      "email": "user1@gmail.com",
+      "password": "$2a$10$krmM1OG3V/Ri7FArrDGfnemh6.KafrLJyQRfm3bLvU6EH7K3Ia9yi",
+      "id": 1,
+      "username": "user1",
+      "firstName": "name1",
+      "lastName": "surname1",
+      "role": "user"
+    },
+    {
+      "email": "prova@prova",
+      "password": "$2a$10$fE8bUMn2E05.zYpMjCbbseVNXxvFUj0ymJweuwxnyFKxoehj3lC9u",
+      "id": 15,
+      "username": "prova",
+      "firstName": "Name",
+      "lastName": "Surname",
+      "role": "user"
+    }
+  ],
+  "rooms": [
+    {
+      "id": 0,
+      "name": "Aula 1",
+      "floor": 2,
+      "totalSeats": 25,
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    {
+      "id": 1,
+      "name": "Aula 2",
+      "floor": 2,
+      "totalSeats": 10,
+      "description": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+    },
+    {
+      "id": 2,
+      "name": "Aula 3",
+      "floor": 1,
+      "totalSeats": 30,
+      "description": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    },
+    {
+      "id": 3,
+      "name": "Aula 4",
+      "floor": 2,
+      "totalSeats": 20,
+      "description": "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+    }
+  ],
+  "reservations": [
+    {
+      "id": 63,
+      "user": 1,
+      "room": 0,
+      "slot": 1,
+      "date": "10/5/2022"
+    },
+    {
+      "id": 6,
+      "user": 2,
+      "room": 2,
+      "slot": 7,
+      "date": "25/5/2022"
+    },
+    {
+      "id": 5,
+      "user": 2,
+      "room": 1,
+      "slot": 8,
+      "date": "24/5/2022"
+    },
+    {
+      "id": 49,
+      "user": 2,
+      "room": 0,
+      "slot": 3,
+      "date": "22/5/2022"
+    },
+    {
+      "id": 57,
+      "user": 2,
+      "room": 0,
+      "slot": 5,
+      "date": "22/5/2022"
+    },
+    {
+      "id": 87,
+      "user": 15,
+      "room": 2,
+      "slot": 7,
+      "date": "25/5/2022"
+    }
+  ],
+  "slots": [
+    {
+      "id": 0,
+      "start": 0,
+      "end": 2
+    },
+    {
+      "id": 1,
+      "start": 2,
+      "end": 4
+    },
+    {
+      "id": 2,
+      "start": 4,
+      "end": 6
+    },
+    {
+      "id": 3,
+      "start": 6,
+      "end": 8
+    },
+    {
+      "id": 4,
+      "start": 8,
+      "end": 10
+    },
+    {
+      "id": 5,
+      "start": 10,
+      "end": 12
+    },
+    {
+      "id": 6,
+      "start": 12,
+      "end": 14
+    },
+    {
+      "id": 7,
+      "start": 14,
+      "end": 16
+    },
+    {
+      "id": 8,
+      "start": 16,
+      "end": 18
+    },
+    {
+      "id": 9,
+      "start": 18,
+      "end": 20
+    },
+    {
+      "id": 10,
+      "start": 20,
+      "end": 22
+    },
+    {
+      "id": 11,
+      "start": 22,
+      "end": 24
+    }
+  ]
+}
