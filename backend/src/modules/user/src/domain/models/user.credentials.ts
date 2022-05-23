@@ -4,7 +4,7 @@
 
 import * as argon2 from 'argon2';
 import zxcvbn from 'zxcvbn';
-import { InvalidPassword, InvalidUsername } from '../errors/errors.index';
+import { InvalidPassword, InvalidUsername } from '../errors';
 
 /**
  * Username is used to uniquely identify a user in NextApp.
@@ -46,7 +46,10 @@ export class Password {
    * @param username
    * @returns
    */
-  public static async from_clear(password: string, username: Username): Promise<Password> {
+  public static async from_clear(
+    password: string,
+    username: Username
+  ): Promise<Password> {
     const res = zxcvbn(password, [username.to_string()]);
     if (res.score < 3) {
       throw new InvalidPassword(res.feedback.warning.toString());
@@ -66,9 +69,4 @@ export class Password {
   public async verify(password: string): Promise<boolean> {
     return argon2.verify(this.password, password);
   }
-}
-
-export interface Credentials {
-  username: Username,
-  password: Password
 }
