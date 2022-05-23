@@ -6,11 +6,8 @@ import { UserID } from '@nextapp/common/user';
 import { Username } from '../models/user.credentials';
 import { AuthService } from '../ports/auth.service';
 import { UserRepository } from '../ports/user.repository';
-import { InvalidCredentials } from '../errors/errors.index';
-import { 
-  AuthToken,
-  AuthKey
-} from '../models/auth';
+import { InvalidCredentials } from '../errors';
+import { AuthToken, AuthKey } from '../models/auth';
 
 export class NextAuthService implements AuthService {
   public constructor(
@@ -18,7 +15,10 @@ export class NextAuthService implements AuthService {
     private readonly key: AuthKey
   ) {}
 
-  public async login_with_credentials(uname: string, pwd: string): Promise<AuthToken> {
+  public async login_with_credentials(
+    uname: string,
+    pwd: string
+  ): Promise<AuthToken> {
     let username: Username;
     try {
       username = Username.from_string(uname);
