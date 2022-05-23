@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import { InvalidEndpoint } from './errors';
 import { init_user_module } from './user';
+import { init_room_module } from './room';
 
 async function get_neo4j(): Promise<Driver> {
   const url = process.env.NEO4J_URL;
@@ -42,8 +43,10 @@ async function init_gateway(): Promise<express.Router> {
   }
 
   const { routes, auth_middleware } = await init_user_module(driver, emitter, process.env.KEY);
+  const room_routes = await init_room_module(driver, emitter);
 
   router.use(routes);
+  router.use(auth_middleware, room_routes);
 
   return router;
 }
