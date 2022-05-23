@@ -3,24 +3,27 @@
 //
 
 import { UserID, UserRole } from '@nextapp/common/user';
+import { ModuleID } from '@nextapp/common/event';
+import { DateTime } from 'luxon';
 import {
   InternalServerError,
   NotAnAdmin,
   UsernameAlreadyUsed,
   UserNotFound,
-} from '../errors/errors.index';
+  OldPasswordWrong,
+} from '../errors';
 import { User } from '../models/user';
-import { 
-  Username,
-  Password
-} from '../models/user.credentials';
+import { Password } from '../models/user.credentials';
 import { UserInfoService } from '../ports/user.service';
 import { UserRepository } from '../ports/user.repository';
-import { InvalidCredentials } from '../errors/errors.index';
+import { EventBroker } from '../ports/event.broker';
+import { SearchOptions } from '../models/search';
 
 export class NextUserInfoService implements UserInfoService {
-  public constructor(private readonly user_repo: UserRepository) {}
-  
+  public constructor(
+    private readonly user_repo: UserRepository,
+    private readonly broker: EventBroker
+  ) {}
 
   public async register_user(
     requester: UserID,
@@ -34,14 +37,27 @@ export class NextUserInfoService implements UserInfoService {
     if (id === undefined) {
       throw new UsernameAlreadyUsed(new_user.username.to_string());
     }
+
+    this.broker.emit_user_created({
+      name: 'user_created',
+      module: ModuleID.USER,
+      timestamp: DateTime.utc(),
+      user_id: id,
+      role: new_user.role,
+    });
+
     return id;
   }
 
-  public async get_user_list(admin: UserID): Promise<User[]> {
+  public async get_users_list(
+    admin: UserID,
+    options: SearchOptions
+  ): Promise<User[]> {
     if (!(await this.is_admin(admin))) {
       throw new NotAnAdmin();
     }
-    return this.user_repo.get_user_list();
+
+    return this.user_repo.get_users_list(options);
   }
 
   public async get_user_info(requester: UserID, id: UserID): Promise<User> {
@@ -56,13 +72,78 @@ export class NextUserInfoService implements UserInfoService {
     return user;
   }
 
-  public async ban_user(requester: UserID, id: UserID): Promise<void> {
+  public async change_role(
+    requester: UserID,
+    user: UserID,
+    is_admin: boolean
+  ): Promise<void> {
     if (!(await this.is_admin(requester))) {
       throw new NotAnAdmin();
     }
+
+    const role = is_admin ? UserRole.SYS_ADMIN : UserRole.SIMPLE;
+    this.user_repo.change_role(user, role);
+
+    this.broker.emit_user_role_changed({
+      name: 'user_role_changed',
+      module: ModuleID.USER,
+      timestamp: DateTime.utc(),
+      user_id: user,
+      role,
+    });
+  }
+
+  public async remove_user(requester: UserID, id: UserID): Promise<void> {
+    if (!(await this.is_admin(requester)) && !requester.equals(id)) {
+      throw new NotAnAdmin();
+    }
+
     const deleted = await this.user_repo.delete_user(id);
     if (!deleted) {
       throw new UserNotFound(id.to_string());
+    }
+
+    this.broker.emit_user_deleted({
+      name: 'user_deleted',
+      module: ModuleID.USER,
+      timestamp: DateTime.utc(),
+      user_id: id,
+    });
+  }
+
+  public async delete_account(user_id: UserID) {
+    const deleted = await this.user_repo.delete_user(user_id);
+    if (!deleted) {
+      throw new InternalServerError();
+    }
+
+    this.broker.emit_user_deleted({
+      name: 'user_deleted',
+      module: ModuleID.USER,
+      timestamp: DateTime.utc(),
+      user_id,
+    });
+  }
+
+  public async change_password(
+    user_id: UserID,
+    old_password: string,
+    new_password: string
+  ): Promise<void> {
+    const info = await this.user_repo.get_user_info(user_id);
+    if (info === null) {
+      throw new InternalServerError();
+    }
+
+    const valid = await info.password.verify(old_password);
+    if (!valid) {
+      throw new OldPasswordWrong();
+    }
+
+    const new_pwd = await Password.from_clear(new_password, info.username);
+    const changed = this.user_repo.change_password(user_id, new_pwd);
+    if (!changed) {
+      throw new InternalServerError();
     }
   }
 
@@ -73,44 +154,5 @@ export class NextUserInfoService implements UserInfoService {
       throw new InternalServerError();
     }
     return role === UserRole.SYS_ADMIN;
-  }
-
-  public async change_role(
-    requester: UserID,
-    admin_to_down: UserID,
-    role: UserRole
-  ): Promise<void> {
-    if (!(await this.is_admin(requester))) {
-      throw new NotAnAdmin();
-    }
-    this.user_repo.change_role(admin_to_down, role);
-  }
-  
-  public async unsubscribe(requester_id: UserID){
-    const deleted = await this.user_repo.delete_user(requester_id);
-    if (!deleted) {
-      throw new UserNotFound(requester_id.to_string());
-    }
-  }
-  
-  public async change_password(
-    requester_username: string, 
-    old_password: string, 
-    new_password: string
-  ): Promise<boolean> {
-    const uname = Username.from_string(requester_username);
-    const info = await this.user_repo.get_id_password(uname);
-    const res = info!.password;
-    const valid = await res!.verify(old_password);
-    if (valid!) {
-      const passed_psw = await Password.from_clear(new_password, uname);
-      if(await this.user_repo.change_password(info!.id,passed_psw!)){
-        return true;
-      } else{
-        return false;
-      }
-    } else {
-      throw new InvalidCredentials();
-    }
   }
 }

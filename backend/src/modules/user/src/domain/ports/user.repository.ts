@@ -5,6 +5,7 @@
 import { UserID, UserRole } from '@nextapp/common/user';
 import { Password, Username } from '../models/user.credentials';
 import { User } from '../models/user';
+import { SearchOptions } from '../models/search';
 
 export interface UserRepository {
   /**
@@ -15,18 +16,11 @@ export interface UserRepository {
   create_user(user: User): Promise<UserID | undefined>;
 
   /**
-   * Returns if the user with the given id is a sys-admin.
-   * Note that if the id does not exist, the method simply returns false.
-   * @param user_id
-   */
-  check_system_administrator(user_id: UserID): Promise<boolean>;
-
-  /**
    * Gets the user list.
-   * @param user_id the user id who wants to get the list of all users
+   * @param options
    */
 
-  get_user_list(): Promise<User[]>;
+  get_users_list(options: SearchOptions): Promise<User[]>;
 
   /**
    * Gets the user information with the given id.
