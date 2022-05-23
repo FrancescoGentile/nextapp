@@ -2,15 +2,21 @@ lockfileVersion: 5.3
 
 specifiers:
   '@rush-temp/common': file:./projects/common.tgz
+  '@rush-temp/gateway': file:./projects/gateway.tgz
   '@rush-temp/room': file:./projects/room.tgz
   '@rush-temp/user': file:./projects/user.tgz
+  '@types/cookie-parser': ^1.4.3
   '@types/express': ^4.17.13
+  '@types/express-serve-static-core': ^4.17.28
   '@types/jsonwebtoken': ^8.5.8
   '@types/luxon': ^2.3.2
   '@types/zxcvbn': ^4.4.1
   '@typescript-eslint/eslint-plugin': ^5.23.0
   '@typescript-eslint/parser': ^5.23.0
   argon2: ^0.28.5
+  cookie-parser: ^1.4.6
+  cors: ^2.8.5
+  dotenv: ^16.0.1
   email-validator: ^2.0.4
   eslint: ^8.15.0
   eslint-config-airbnb-base: ^15.0.0
@@ -36,15 +42,21 @@ specifiers:
 
 dependencies:
   '@rush-temp/common': file:projects/common.tgz
+  '@rush-temp/gateway': file:projects/gateway.tgz
   '@rush-temp/room': file:projects/room.tgz
   '@rush-temp/user': file:projects/user.tgz
+  '@types/cookie-parser': 1.4.3
   '@types/express': 4.17.13
+  '@types/express-serve-static-core': 4.17.28
   '@types/jsonwebtoken': 8.5.8
   '@types/luxon': 2.3.2
   '@types/zxcvbn': 4.4.1
   '@typescript-eslint/eslint-plugin': 5.25.0_4ba2eb2aa3853cfb440cb10dd593ed15
   '@typescript-eslint/parser': 5.25.0_eslint@8.16.0+typescript@4.6.4
   argon2: 0.28.5
+  cookie-parser: 1.4.6
+  cors: 2.8.5
+  dotenv: 16.0.1
   email-validator: 2.0.4
   eslint: 8.16.0
   eslint-config-airbnb-base: 15.0.0_0ce4f552c18297c00de8a172104cf37a
@@ -188,6 +200,16 @@ packages:
     resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}
     dependencies:
       '@types/node': 17.0.35
+    dev: false
+
+  /@types/cookie-parser/1.4.3:
+    resolution: {integrity: sha512-CqSKwFwefj4PzZ5n/iwad/bow2hTCh0FlNAeWLtQM3JA/NX/iYagIpWG2cf1bQKQ2c9gU2log5VUCrn7LDOs0w==}
+    dependencies:
+      '@types/express': 4.17.13
+    dev: false
+
+  /@types/cors/2.8.12:
+    resolution: {integrity: sha512-vt+kDhq/M2ayberEtJcIN/hxXy1Pk+59g2FV/ZQceeaTyCtCucjL2Q7FXlFjtWn4n15KCr1NE2lNNFhp0lEThw==}
     dev: false
 
   /@types/express-serve-static-core/4.17.28:
@@ -619,13 +641,34 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /cookie-parser/1.4.6:
+    resolution: {integrity: sha512-z3IzaNjdwUC2olLIB5/ITd0/setiaFMLYiZJle7xg5Fe9KWAceil7xszYfHHBtDFYLSgJduS2Ty0P1uJdPDJeA==}
+    engines: {node: '>= 0.8.0'}
+    dependencies:
+      cookie: 0.4.1
+      cookie-signature: 1.0.6
+    dev: false
+
   /cookie-signature/1.0.6:
     resolution: {integrity: sha1-4wOogrNCzD7oylE6eZmXNNqzriw=}
+    dev: false
+
+  /cookie/0.4.1:
+    resolution: {integrity: sha512-ZwrFkGJxUR3EIoXtO+yVE69Eb7KlixbaeAWfBQB9vVsNn/o+Yw69gBWSSDK825hQNdN+wF8zELf3dFNl/kxkUA==}
+    engines: {node: '>= 0.6'}
     dev: false
 
   /cookie/0.5.0:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
     engines: {node: '>= 0.6'}
+    dev: false
+
+  /cors/2.8.5:
+    resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
+    engines: {node: '>= 0.10'}
+    dependencies:
+      object-assign: 4.1.1
+      vary: 1.1.2
     dev: false
 
   /cross-spawn/7.0.3:
@@ -711,6 +754,11 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       esutils: 2.0.3
+    dev: false
+
+  /dotenv/16.0.1:
+    resolution: {integrity: sha512-1K6hR6wtk2FviQ4kEiSjFiH5rpzEVi8WW0x96aztHVMhEspNpc4DVOUTEHtEva5VThQ8IaBX1Pe4gSzpVVUsKQ==}
+    engines: {node: '>=12'}
     dev: false
 
   /ecdsa-sig-formatter/1.0.11:
@@ -2375,6 +2423,35 @@ packages:
       http-status-codes: 2.2.0
       luxon: 2.4.0
       nanoid: 3.3.4
+      prettier: 2.6.2
+      typescript: 4.6.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/gateway.tgz:
+    resolution: {integrity: sha512-Vg808pgql2ozqE4+ogCzuW8WEx+yfLJJt+CacBji9dD8LUcPBvvzxsQW6jxlQA3iTk+saCH1Wyqi+2SD2wh3Cw==, tarball: file:projects/gateway.tgz}
+    name: '@rush-temp/gateway'
+    version: 0.0.0
+    dependencies:
+      '@types/cookie-parser': 1.4.3
+      '@types/cors': 2.8.12
+      '@types/express': 4.17.13
+      '@types/express-serve-static-core': 4.17.28
+      '@typescript-eslint/eslint-plugin': 5.25.0_4ba2eb2aa3853cfb440cb10dd593ed15
+      '@typescript-eslint/parser': 5.25.0_eslint@8.16.0+typescript@4.6.4
+      cookie-parser: 1.4.6
+      cors: 2.8.5
+      dotenv: 16.0.1
+      eslint: 8.16.0
+      eslint-config-airbnb-base: 15.0.0_0ce4f552c18297c00de8a172104cf37a
+      eslint-config-airbnb-typescript: 17.0.0_03f56410ba53b895ac02a6f83f8e7b87
+      eslint-config-prettier: 8.5.0_eslint@8.16.0
+      eslint-plugin-import: 2.26.0_eslint@8.16.0
+      eventemitter3: 4.0.7
+      express: 4.18.1
+      express-serve-static-core: 0.1.1
+      neo4j-driver: 4.4.5
       prettier: 2.6.2
       typescript: 4.6.4
     transitivePeerDependencies:

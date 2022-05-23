@@ -105,7 +105,7 @@ async function create_booking(request: Request, response: Response) {
   response
     .status(StatusCodes.CREATED)
     .location(`${API_VERSION}/users/me/bookings/${id.to_string()}`)
-    .send();
+    .end();
 }
 
 async function delete_booking(request: Request, response: Response) {
