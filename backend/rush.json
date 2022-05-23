@@ -402,6 +402,10 @@
     {
       "packageName": "@nextapp/room",
       "projectFolder": "src/modules/room"
+    }, 
+    {
+      "packageName": "@nextapp/gateway",
+      "projectFolder": "src/gateway"
     }
     // {
     //   /**

@@ -1,0 +1,60 @@
+{
+  "name": "@nextapp/gateway",
+  "version": "1.0.0",
+  "description": "Module responsible to initialize the backend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./service": "./dist/domain/services/index.js",
+    "./restapi": "./dist/application/rest/index.js",
+    "./infrastructure": "./dist/infrastructure/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "service": [
+        "./dist/domain/services/index.d.ts"
+      ],
+      "restapi": [
+        "./dist/application/rest/index.d.ts"
+      ],
+      "infrastructure": [
+        "./dist/infrastructure/index.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint --ignore-path .eslintignore --ext .ts",
+    "format": "prettier --ignore-path .prettierignore --write \"**/*.+(js|ts|json)\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.6.4",
+    "eslint": "^8.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.23.0",
+    "@typescript-eslint/parser": "^5.23.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "prettier": "^2.6.2",
+    "@types/express": "^4.17.13",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/express-serve-static-core": "^4.17.28"
+  },
+  "dependencies": {
+    "express": "^4.18.1",
+    "@nextapp/common": "^1.0.0",
+    "@nextapp/user": "^1.0.0",
+    "@nextapp/room": "^1.0.0",
+    "neo4j-driver": "^4.4.5",
+    "eventemitter3": "^4.0.7",
+    "dotenv": "^16.0.1",
+    "cookie-parser": "^1.4.6",
+    "express-serve-static-core": "^0.1.1"
+  }
+}
