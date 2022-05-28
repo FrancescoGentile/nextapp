@@ -404,6 +404,10 @@
       "projectFolder": "src/modules/room"
     }, 
     {
+      "packageName": "@nextapp/messenger",
+      "projectFolder": "src/modules/messenger"
+    }, 
+    {
       "packageName": "@nextapp/gateway",
       "projectFolder": "src/gateway"
     }
