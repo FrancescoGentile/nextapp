@@ -7,10 +7,15 @@ import { Interval } from 'luxon';
 
 export { InternalServerError } from '@nextapp/common/error';
 
+// ---------------------------------------------------------------
+// -------------------------- CHANNEL ----------------------------
+// ---------------------------------------------------------------
+
 enum ChannelErrorTypes {
     INVALID_ID = 1,
     INVALID_NAME,
-    INVALID_DESCRIPTION
+    INVALID_DESCRIPTION,
+    CHANNEL_NOT_FOUND
 }
 
 
@@ -57,3 +62,15 @@ export class InvalidChannelDescription extends NextError {
         );
     }
 }
+
+export class ChannelNotFound extends NextError {
+    public constructor(id: string, options?: ErrorOptions) {
+      super(
+        get_channel_type(ChannelErrorTypes.CHANNEL_NOT_FOUND),
+        StatusCodes.NOT_FOUND,
+        'Channel not found',
+        `Channel with id ${id} was not found.`,
+        options
+      );
+    }
+  }
