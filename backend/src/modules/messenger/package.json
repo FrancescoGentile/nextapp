@@ -27,6 +27,7 @@
     "email-validator": "^2.0.4",
     "mailgun.js": "^7.0.0",
     "form-data": "^4.0.0",
-    "eventemitter3": "^4.0.7"
+    "eventemitter3": "^4.0.7",
+    "neo4j-driver": "^4.4.5"
   }
 }
