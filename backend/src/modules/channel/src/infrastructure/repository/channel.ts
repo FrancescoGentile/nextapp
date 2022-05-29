@@ -2,9 +2,11 @@
 //
 //
 
+import { UserID, UserRole } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { ChannelID, Channel } from '../../domain/models/channel';
+import { User } from '../../domain/models/user';
 import { ChannelRepository } from '../../domain/ports/channel.repository';
 
 export class Neo4jRoomRepository implements ChannelRepository {
@@ -45,20 +47,33 @@ export class Neo4jRoomRepository implements ChannelRepository {
   public async get_channel(channel_id: ChannelID): Promise<Channel | null> {
     const session = this.driver.session();
     try {
-      const res = await session.readTransaction((tx) =>
+      const res_channel = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (channel:CHANNEL_Room { id: $id })
+          `MATCH (channel:CHANNEL_Channel { id: $id })
            RETURN channel`,
           { id: channel_id.to_string() }
         )
       );
 
-      if (res.records.length === 0) {
+      if (res_channel.records.length === 0) {
         return null;
       }
 
-      const { id, name, description, presidents } =
-        res.records[0].get('channel').properties;
+      const { id, name, description} =
+        res_channel.records[0].get('channel').properties;
+
+      const res_presidents = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]->(c:CHANNEL_Channel { id: $id })
+           RETURN u.id as uid, u.role as urole`,
+          { id: channel_id.to_string() }
+        )
+      );
+
+      const presidents: User[] = res_presidents.records.map((record) => ({
+        id: new UserID(record.get('uid')),
+        role: record.get('urole'),
+      }));
 
       return new Channel(
         name,

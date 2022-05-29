@@ -8,6 +8,7 @@ import {
     InvalidChannelName,
     InvalidChannelDescription
 } from '../errors';
+import { User } from './user';
 
 export class ChannelID {
     public static readonly LENGTH = 10;
@@ -46,10 +47,13 @@ export class Channel {
     public readonly name: string;
 
     public readonly description: string;
+    
+    public readonly presidents: User[];
 
     public constructor(
         name: string,
         description: string,
+        presidents: User[],
         id?: ChannelID
     ){
         if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
@@ -60,6 +64,7 @@ export class Channel {
         }
         this.name = name;
         this.description = description;
+        this.presidents = presidents;
         this.id = id;
     }
 

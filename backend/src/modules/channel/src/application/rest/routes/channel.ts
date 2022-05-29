@@ -18,6 +18,20 @@ import{
 
 const BASE_PATH = '/channels';
 
+function room_to_json(channel: Channel): any {
+  return {
+    self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
+    name: channel.name,
+    description: channel.description,
+    presidents: {
+      president1: channel.presidents[0],
+      president2: channel.presidents[1],
+      president3: channel.presidents[2],
+      president4: channel.presidents[3]
+    }
+  };
+}
+
 async function get_channel(request: Request, response: Response){
   let id;
   try {
@@ -26,8 +40,8 @@ async function get_channel(request: Request, response: Response){
     throw new ChannelNotFound(request.params.room_id);
   }
 
-  const room = await request.channel_service!.get_channel(id);
-  response.status(StatusCodes.OK).json(channel_to_json(room));
+  const channel = await request.channel_service!.get_channel(id);
+  response.status(StatusCodes.OK).json((channel));
 }
 
 export function init_channel_routes(): express.Router {
