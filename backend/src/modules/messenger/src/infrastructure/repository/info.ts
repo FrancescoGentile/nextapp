@@ -3,8 +3,9 @@
 //
 
 import { InternalServerError } from '@nextapp/common/error';
+import { UserID } from '@nextapp/common/user';
 import { Driver, Neo4jError } from 'neo4j-driver';
-import { User } from '../../domain/models/user';
+import { Email, EmailID } from '../../domain/models/email';
 import { InfoRepository } from '../../domain/ports/info.repository';
 
 export class Neo4jInfoRepository implements InfoRepository {
@@ -29,16 +30,17 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
-  public async create_user(user: User): Promise<boolean> {
+  public async create_user(user_id: UserID, email: Email): Promise<boolean> {
     const session = this.driver.session();
     try {
       await session.writeTransaction((tx) =>
         tx.run(
-          `CREATE (u:MESSENGER_User {
-                id: $id, 
-                email: $email
-            })`,
-          { id: user.id.to_string(), email: user.email.to_string() }
+          `CREATE (u:MESSENGER_User { id: $user_id })-[t:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, email: $email })`,
+          {
+            user_id: user_id.to_string(),
+            email_id: EmailID.generate().to_string(),
+            email: email.to_string(),
+          }
         )
       );
 

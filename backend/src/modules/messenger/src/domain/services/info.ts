@@ -22,7 +22,7 @@ export class NextUserInfoService implements UserInfoService {
   private async create_user(event: UserCreatedEvent): Promise<void> {
     try {
       const email = Email.from_string(event.email);
-      const created = this.repo.create_user({ id: event.id, email });
+      const created = this.repo.create_user(event.user_id, event.email);
 
       if (!created) {
         throw new InternalServerError();
