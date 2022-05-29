@@ -1,4 +1,9 @@
 <script>
+/*
+* Shows calendar to see reservations for specific day
+* Shows list of user channels with option to unsubscirbe and a show news/events button
+* toggle news/events (in events possibility to subscribe/unsubscribe from the event)
+*/
 import { defineComponent } from "vue";
 import { Modal } from "bootstrap"
 import Datepicker from '@vuepic/vue-datepicker';
@@ -7,10 +12,10 @@ import '@vuepic/vue-datepicker/dist/main.css';
 export default defineComponent({
   data(){
     return{
-        rooms: [],
+      rooms: [],
       reservations: [],
       chosenReservation: [],
-        printableReservations: [],
+      printableReservations: [],
       showReservations: false,
       minDate: "",
       maxDate: "",

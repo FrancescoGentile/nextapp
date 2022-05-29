@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import store from "@/store";
+//import store from "@/store"
 import HomePage from '../views/HomePage.vue'
 
 const routes = [
@@ -38,6 +38,22 @@ const routes = [
     path: "/rooms",
     name: "reservationPage",
     component: () => import("../views/ReservationPage.vue")
+  },
+  {
+    path: "/channels",
+    name: "ChannelsPage",
+    component: () => import("../views/ChannelsPage.vue")
+  },
+  {
+    path: "/channels/:id",
+    name: "ChannelDetails",
+    component: () => import("../views/ChannelDetails.vue"),
+    props: true
+  },
+  {
+    path:"/channelAdministration",
+    name: "ChannelAdministration",
+    component: () => import("../views/ChannelAdministration.vue")
   }
 ]
 
@@ -45,7 +61,7 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
-
+/*
 router.beforeEach((to, from, next) => {
   const isLoggedIn = store.getters.isLoggedIn
   //const user = store.getters.getUser
@@ -58,7 +74,7 @@ router.beforeEach((to, from, next) => {
         next({name: "dashboard"})
       }else{
         next()
-      }*/
+      }
       next()
     }
   } else {
@@ -69,5 +85,5 @@ router.beforeEach((to, from, next) => {
     }
 
   }
-})
+})*/
 export default router
