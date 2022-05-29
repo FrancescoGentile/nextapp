@@ -18,7 +18,7 @@ import{
 
 const BASE_PATH = '/channels';
 
-function room_to_json(channel: Channel): any {
+function channel_to_json(channel: Channel): any {
   return {
     self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
     name: channel.name,
@@ -41,7 +41,7 @@ async function get_channel(request: Request, response: Response){
   }
 
   const channel = await request.channel_service!.get_channel(id);
-  response.status(StatusCodes.OK).json((channel));
+  response.status(StatusCodes.OK).json(channel_to_json(channel));
 }
 
 export function init_channel_routes(): express.Router {
