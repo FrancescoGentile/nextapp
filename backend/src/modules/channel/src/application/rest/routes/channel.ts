@@ -16,7 +16,7 @@ import{
   ChannelNotFound
 } from '../../../domain/errors'
 
-const BASE_PATH = '/channel';
+const BASE_PATH = '/channels';
 
 async function get_channel(request: Request, response: Response){
   let id;
