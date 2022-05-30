@@ -57,9 +57,9 @@ export default defineComponent({
         let res = {
           self: reservation.self,
           room: name,
-          date: start.getDate() + "/" + (start.getMonth() + 1) + "/" + start.getFullYear(),
-          start: start.getHours() + ":" + start.getMinutes(),
-          end: end.getHours() + ":" + end.getMinutes(),
+          date: ("0"+start.getDate()).slice(-2) + "/" + ("0"+(start.getMonth() + 1)).slice(-2) + "/" + start.getFullYear(),
+          start: ("0"+start.getHours()).slice(-2) + ":" + ("0"+start.getMinutes()).slice(-2),
+          end: ("0"+end.getHours()).slice(-2) + ":" + ("0"+end.getMinutes()).slice(-2)
         }
         this.printableReservations.push(res)
       })
@@ -180,9 +180,9 @@ export default defineComponent({
               <td> {{ reservation.start }} - {{ reservation.end }}</td>
               <td>
                 <button class="btn btn-primary align-end" data-bs-toggle="modal" data-bs-target="#confirm" @click="() => {
-                  this.$data.chosenReservation = reservation
-                }">
-                  Delete reservation </button>
+                  this.$data.chosenReservation = reservation}">
+                  Delete reservation 
+                </button>
               </td>
             </tr>
           </tbody>

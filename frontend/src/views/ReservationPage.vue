@@ -76,7 +76,7 @@ export default defineComponent({
     chooseRoom() {
       this.showRooms = false
       this.showIntervals = false
-      if (this.startDate.valueOf() >= this.endDate.valueOf()) {
+      if (this.startDate.valueOf() >= this.endDate.valueOf() || this.endDate.valueOf() - this.startDate.valueOf() > 24*60*60*1000) {
         this.$notify({
           title: "Error",
           text: "Non valid interval"
@@ -133,7 +133,7 @@ export default defineComponent({
       const start = new Date(interval.split("/")[0])
       const end = new Date(interval.split("/")[1])
       //console.log(start, end)
-      return "" + start.getHours() + ":" + start.getMinutes() + " - " + end.getHours() + ":" + end.getMinutes()
+      return ("0"+start.getHours()).slice(-2) + ":" + ("0"+start.getMinutes()).slice(-2) + " - " + ("0"+end.getHours()).slice(-2) + ":" + ("0"+end.getMinutes()).slice(-2)
     },
 
     getId(room) {
@@ -187,7 +187,7 @@ export default defineComponent({
     </div>
   </div>
 
-  <div v-if="this.showRooms" class="container">
+  <div v-if="this.showRooms" class="container mb-3">
     <div class="row">
       <div class="col ">
         <div class="card">
@@ -201,7 +201,7 @@ export default defineComponent({
                       Filter rooms by floor:
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li class="dropdown-item" @click="this.filteredRooms = this.rooms"> remove filter</li>
+                      <li class="dropdown-item" @click="this.filteredRooms = this.rooms"> - </li>
                       <li v-for="(floor, i) in floors" :key="i">
                         <a class="dropdown-item" @click="filterByFloor(floor)">{{ floor }}</a>
                       </li>
@@ -226,13 +226,13 @@ export default defineComponent({
                 </thead>
                 <tbody>
                   <tr v-for="(room, i) in this.filteredRooms" :key="room.id">
-                    <td> {{i+1}} </td>
+                    <td> {{ i + 1 }} </td>
                     <td> {{ room.name }} </td>
                     <td> {{ room.floor }} </td>
                     <td> {{ room.seats }} </td>
                     <td> {{ room.details }} </td>
                     <td>
-                      <button class="btn btn-primary mb-3" @click="roomAvailability(room)">
+                      <button class="btn btn-primary mb-2" @click="roomAvailability(room)">
                         See room'a availability for selected time period
                       </button>
 
@@ -251,31 +251,33 @@ export default defineComponent({
   </div>
 
 
-  <div v-if="showIntervals" class="container ms-2">
+  <div v-if="showIntervals" class="container mb-3">
     <div class="row">
-      <table class="table table-striped align-middle text-center ">
-        <thead>
-          <th>{{ reservationRoom.name }}</th>
-          <th>Interval</th>
-          <th>Available Seats</th>
-          <th></th>
-        </thead>
-        <tbody>
-          <tr v-for="(roomInterval, i) in roomIntervals" :key="i">
-            <td> {{i+1}} </td>
-            <td> {{ printableInterval(roomInterval.interval) }} </td>
-            <td> {{ roomInterval.seats }}/{{reservationRoom.seats}} </td>
-            <td>
-              <CircleProgress :percent="((reservationRoom.seats - roomInterval.seats) / reservationRoom.seats) * 100"
-                :size="90" :viewport="true" :is-gradient="true" :gradient="{
-                  angle: 90,
-                  startColor: '#ff0000',
-                  stopColor: '#ff0000'
-                }"></CircleProgress>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="col">
+        <table class="table table-striped align-middle text-center ">
+          <thead>
+            <th>{{ reservationRoom.name }}</th>
+            <th>Interval</th>
+            <th>Available Seats</th>
+            <th></th>
+          </thead>
+          <tbody>
+            <tr v-for="(roomInterval, i) in roomIntervals" :key="i">
+              <td> {{ i + 1 }} </td>
+              <td> {{ printableInterval(roomInterval.interval) }} </td>
+              <td> {{ roomInterval.seats }}/{{ reservationRoom.seats }} </td>
+              <td>
+                <CircleProgress :percent="((reservationRoom.seats - roomInterval.seats) / reservationRoom.seats) * 100"
+                  :size="90" :viewport="true" :is-gradient="true" :gradient="{
+                    angle: 90,
+                    startColor: '#ff0000',
+                    stopColor: '#ff0000'
+                  }"></CircleProgress>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
