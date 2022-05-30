@@ -143,7 +143,7 @@ export default createStore({
     addUser({commit}, user) {
       //console.log(user)
       return new Promise((resolve, reject) => {
-        console.log(user)
+        //console.log(user)
         instance.post("users", {
           username: user.username,
           password: user.password,
@@ -340,7 +340,7 @@ export default createStore({
     },
 
     modifyRoom({commit}, {room, roomId}) {
-      console.log(room)
+      //console.log(room)
       return new Promise((resolve, reject) => {
         instance.patch("rooms/"+roomId, {
                 name: room.name,
@@ -407,46 +407,13 @@ export default createStore({
       })
     },
 
-    reservations({ commit }) {
-      return new Promise((resolve, reject) => {
-        instance.get("http://localhost:3000/reservations", {withCredentials: true}
-        ).then(response => {
-          const reservations = response.data
-          commit('setReservations', reservations)
-
-          resolve(response)
-        }).catch(err => {
-          notify({
-            title: "Error",
-            text: err.response.data.details
-          })
-          commit('setError')
-
-          reject(err)
-        })
-      })
-    },
-    /*
-    slots({commit}){
-      return new Promise((resolve, reject)=>{
-        axios.get("http://localhost:3000/slots"
-        ).then(response=>{
-          commit("setSlots", response.data)
-          resolve(response)
-        }).catch(err=>{
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
-  */
     deleteUserReservation({ commit }, id) {
       return new Promise((resolve, reject) => {
         instance.delete("users/me/bookings/" + id, {withCredentials: true}
         ).then(response => {
           notify({
             title: "Success",
-            text: response.data
+            text: "Reservation deleted"
           })
           resolve(response)
         }).catch(err => {
@@ -459,9 +426,9 @@ export default createStore({
         })
       })
     },
-    //TODO: time-filter
+  
     userReservations({commit}, filter){
-      console.log(filter)
+      //console.log(filter)
       return new Promise((resolve, reject)=>{
         instance.get("users/me/bookings?start="+filter.start+"&end="+filter.end, {withCredentials: true}
         ).then(response=>{
