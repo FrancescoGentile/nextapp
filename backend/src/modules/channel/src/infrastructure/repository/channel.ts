@@ -47,37 +47,32 @@ export class Neo4jRoomRepository implements ChannelRepository {
   public async get_channel(channel_id: ChannelID): Promise<Channel | null> {
     const session = this.driver.session();
     try {
-      const res_channel = await session.readTransaction((tx) =>
+      const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (channel:CHANNEL_Channel { id: $id })
-           RETURN channel`,
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]->(c:CHANNEL_Channel { id: $id })
+           RETURN u, c`,
           { id: channel_id.to_string() }
         )
       );
 
-      if (res_channel.records.length === 0) {
+      if (res.records.length === 0) {
         return null;
       }
 
-      const { id, name, description} =
-        res_channel.records[0].get('channel').properties;
+      const { id, name, description } =
+        res.records[0].get('c').properties;
 
-      const res_presidents = await session.readTransaction((tx) =>
-        tx.run(
-          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]->(c:CHANNEL_Channel { id: $id })
-           RETURN u.id as uid, u.role as urole`,
-          { id: channel_id.to_string() }
-        )
-      );
-
-      const presidents: User[] = res_presidents.records.map((record) => ({
-        id: new UserID(record.get('uid')),
-        role: record.get('urole'),
-      }));
+      const presidents: User[] = res.records.map((record) => {
+          const { id, role } = record.get('u').properties;
+          return {
+              id: new UserID(id),
+              role: role ? UserRole.SYS_ADMIN : UserRole.SIMPLE
+          }
+      });
 
       return new Channel(
         name,
-        description ? JSON.parse(description) : undefined,
+        description, // since description is a string you do not need to stringify and parse it
         presidents,
         ChannelID.from_string(id)
       );
