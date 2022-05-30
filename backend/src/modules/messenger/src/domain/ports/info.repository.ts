@@ -4,6 +4,7 @@
 
 import { UserID } from '@nextapp/common/user';
 import { Email, EmailID } from '../models/email';
+import { SearchOptions } from '../models/search';
 
 export interface InfoRepository {
   /**
@@ -19,6 +20,13 @@ export interface InfoRepository {
    * @param email_id
    */
   get_email(user_id: UserID, email_id: EmailID): Promise<Email | null>;
+
+  /**
+   * Returns the emails associated to the user with the given id.
+   * @param user_id
+   * @param options
+   */
+  get_emails(user_id: UserID, options: SearchOptions): Promise<Email[]>;
 
   /**
    * Checks if the user already has this email.
