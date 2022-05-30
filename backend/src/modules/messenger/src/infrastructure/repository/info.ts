@@ -6,6 +6,7 @@ import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
 import { Driver, Neo4jError } from 'neo4j-driver';
 import { Email, EmailID } from '../../domain/models/email';
+import { SearchOptions } from '../../domain/models/search';
 import { InfoRepository } from '../../domain/ports/info.repository';
 
 export class Neo4jInfoRepository implements InfoRepository {
@@ -128,14 +129,24 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
-  private async get_emails(user_id: UserID): Promise<Email[]> {
+  public async get_emails(
+    user_id: UserID,
+    options: SearchOptions
+  ): Promise<Email[]> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:MESSENGER_User { id: $id })-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
-           RETURN e`,
-          { id: user_id.to_string() }
+           RETURN e
+           ORDER BY e.name
+           SKIP $skip
+           LIMIT $limit`,
+          {
+            id: user_id.to_string(),
+            skip: options.offset,
+            limit: options.limit,
+          }
         )
       );
 

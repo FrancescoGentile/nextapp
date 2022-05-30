@@ -7,6 +7,7 @@ import { UserID } from '@nextapp/common/user';
 import { AlreadyUsedEmail, DeletingMainEmail, EmailNotFound } from '../errors';
 import { UserCreatedEvent } from '../events';
 import { Email, EmailID } from '../models/email';
+import { SearchOptions } from '../models/search';
 import { EmailSender } from '../ports/email.sender';
 import { EventBroker } from '../ports/event.broker';
 import { InfoRepository } from '../ports/info.repository';
@@ -41,6 +42,22 @@ export class NextUserInfoService implements UserInfoService {
   }
 
   // ------------------------------- EMAIL -------------------------------
+
+  public async get_email(user_id: UserID, email_id: EmailID): Promise<Email> {
+    const email = await this.repo.get_email(user_id, email_id);
+    if (email === null) {
+      throw new EmailNotFound(email_id.to_string());
+    }
+
+    return email;
+  }
+
+  public async get_emails(
+    user_id: UserID,
+    options: SearchOptions
+  ): Promise<Email[]> {
+    return this.repo.get_emails(user_id, options);
+  }
 
   public async add_email(user_id: UserID, email: Email): Promise<EmailID> {
     const already_used = await this.repo.check_email_by_name(user_id, email);
