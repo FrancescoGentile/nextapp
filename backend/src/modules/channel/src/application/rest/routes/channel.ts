@@ -44,10 +44,37 @@ async function get_channel(request: Request, response: Response){
   response.status(StatusCodes.OK).json(channel_to_json(channel));
 }
 
+async function create_channel(request: Request, response: Response){
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    description: Joi.string().required(),
+    presidents: {
+      president1: Joi.string().required(),
+      president2: Joi.string(),
+      president3: Joi.string(),
+      president4: Joi.string()
+    }
+  });
+
+  const value = validate(schema, request.body);
+
+  const id = await request.channel_service!.create_channel(
+    request.user_id!,
+    new Channel(value.name, value.description, value.presidents)
+  );
+
+  response
+    .status(StatusCodes.CREATED)
+    .location(`${API_VERSION}${BASE_PATH}/${id.to_string()}`)
+    .end();
+}
+
+
 export function init_channel_routes(): express.Router {
   const router = express.Router();
 
   router.get(`${BASE_PATH}/:channel_id`, asyncHandler(get_channel));
+  router.post(`${BASE_PATH}`, asyncHandler(create_channel));
 
   return router;
 }
