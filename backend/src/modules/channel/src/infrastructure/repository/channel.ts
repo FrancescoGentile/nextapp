@@ -82,5 +82,52 @@ export class Neo4jRoomRepository implements ChannelRepository {
       await session.close();
     }
   }
-  
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////// TODO: implement CHANNEL ---- PRESIDENTS connections ///////////////////// 
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+
+  public async create_channel(channel: Channel): Promise<ChannelID | undefined> {
+    const session = this.driver.session();
+    try {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const id = ChannelID.generate();
+        const { name } = channel;
+        const description =
+          channel.description === undefined || channel.description === null
+            ? null
+            : JSON.stringify(channel.description);
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await session.writeTransaction((tx) =>
+            tx.run(
+              `CREATE (c:CHANNEL_Channel {
+               id: $id, 
+               name: $name,
+               description: $description,
+            })`,
+              { id: id.to_string(), name, description }
+            )
+          );
+          return id;
+        } catch (e) {
+          const error = e as Neo4jError;
+          if (
+            error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'
+          ) {
+            throw e;
+          }
+          // there is already a room with the same name
+          if (error.message.includes(name)) {
+            return undefined;
+          }
+        }
+      }
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
 }

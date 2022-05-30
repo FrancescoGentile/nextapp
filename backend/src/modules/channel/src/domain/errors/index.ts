@@ -15,7 +15,9 @@ enum ChannelErrorTypes {
     INVALID_ID = 1,
     INVALID_NAME,
     INVALID_DESCRIPTION,
-    CHANNEL_NOT_FOUND
+    CHANNEL_NOT_FOUND,
+    CHANNEL_CREATION_NOT_AUTHORIZED,
+    NAME_ALREADY_USED
 }
 
 
@@ -64,13 +66,37 @@ export class InvalidChannelDescription extends NextError {
 }
 
 export class ChannelNotFound extends NextError {
-    public constructor(id: string, options?: ErrorOptions) {
-      super(
-        get_channel_type(ChannelErrorTypes.CHANNEL_NOT_FOUND),
-        StatusCodes.NOT_FOUND,
-        'Channel not found',
-        `Channel with id ${id} was not found.`,
-        options
-      );
-    }
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.CHANNEL_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Channel not found',
+      `Channel with id ${id} was not found.`,
+      options
+    );
   }
+}
+
+export class ChannelCreationNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.CHANNEL_CREATION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to create a channel',
+      'You have to be a system administator to create a channel.',
+      options
+    );
+  }
+}
+
+export class ChannelNameAlreadyUsed extends NextError {
+  public constructor(name: string, options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.NAME_ALREADY_USED),
+      StatusCodes.CONFLICT,
+      'Name already used',
+      `${name} is already assigned to another channel. Try another name.`,
+      options
+    );
+  }
+}

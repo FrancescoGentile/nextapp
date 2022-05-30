@@ -16,8 +16,8 @@ export interface ChannelRepository {
    * returns the new unique id associated to the channel.
    * This method returns undefined if a channel with the same name
    * already exists in the repository.
-   * @param room
+   * @param channel
    */
-   create_room(room: Channel): Promise<ChannelID | undefined>;
+   create_channel(channel: Channel): Promise<ChannelID | undefined>;
 
 }
