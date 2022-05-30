@@ -43,14 +43,24 @@ export class NextUserInfoService implements UserInfoService {
   // ------------------------------- EMAIL -------------------------------
 
   public async add_email(user_id: UserID, email: Email): Promise<EmailID> {
-    const { added, id } = await this.repo.add_email(user_id, email);
-    if (!added && id === undefined) {
-      throw new InternalServerError();
-    } else if (!added) {
+    const already_used = await this.repo.check_email_by_name(user_id, email);
+    if (already_used) {
       throw new AlreadyUsedEmail(email.to_string());
     }
 
-    return id!;
+    let id: EmailID | undefined;
+    if (email.main) {
+      await this.repo.change_email_main(user_id);
+      id = await this.repo.add_email(user_id, email);
+    } else {
+      id = await this.add_email(user_id, email);
+    }
+
+    if (id === undefined) {
+      throw new InternalServerError();
+    }
+
+    return id;
   }
 
   public async delete_email(user_id: UserID, email_id: EmailID): Promise<void> {

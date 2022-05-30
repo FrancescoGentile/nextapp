@@ -61,6 +61,45 @@ export class Neo4jInfoRepository implements InfoRepository {
 
   // --------------------------- EMAILS ---------------------------
 
+  public async check_email_by_name(
+    user_id: UserID,
+    email: Email
+  ): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User { id: $id })-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { email: $email })
+           RETURN e`,
+          { id: user_id.to_string(), email: email.to_string() }
+        )
+      );
+
+      return res.records.length > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async change_email_main(user_id: UserID): Promise<void> {
+    const session = this.driver.session();
+    try {
+      await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User { id: $id })-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { main: true })
+           SET e.main = false`,
+          { id: user_id.to_string() }
+        )
+      );
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public async get_email(
     user_id: UserID,
     email_id: EmailID
@@ -116,24 +155,17 @@ export class Neo4jInfoRepository implements InfoRepository {
   public async add_email(
     user_id: UserID,
     email: Email
-  ): Promise<{ added: boolean; id?: EmailID | undefined }> {
+  ): Promise<EmailID | undefined> {
     const session = this.driver.session();
     try {
-      const emails = await this.get_emails(user_id);
-      let id: EmailID = EmailID.generate();
-      let found = false;
-      while (!found) {
-        found = true;
+      let id: EmailID;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
         id = EmailID.generate();
-        // eslint-disable-next-line no-restricted-syntax
-        for (const e of emails) {
-          if (e.equals(email)) {
-            return { added: false, id: e.id! };
-          }
-          if (e.id!.equals(id)) {
-            found = false;
-            break;
-          }
+        // eslint-disable-next-line no-await-in-loop
+        const e = await this.get_email(user_id, id);
+        if (e === null) {
+          break;
         }
       }
 
@@ -150,10 +182,7 @@ export class Neo4jInfoRepository implements InfoRepository {
         )
       );
 
-      if (res.summary.counters.updates().nodesCreated === 0) {
-        return { added: false, id: undefined };
-      }
-      return { added: true, id };
+      return res.summary.counters.updates().nodesCreated > 0 ? id : undefined;
     } catch {
       throw new InternalServerError();
     } finally {

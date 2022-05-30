@@ -21,17 +21,27 @@ export interface InfoRepository {
   get_email(user_id: UserID, email_id: EmailID): Promise<Email | null>;
 
   /**
-   * Adds the new email to the emails of the user.
-   * If the given email is already associated to the user,
-   * this method returns the id associated to the already existing email.
-   * If no user with the given id exists, added is set to false and id is undefined.
+   * Checks if the user already has this email.
    * @param user_id
    * @param email
    */
-  add_email(
-    user_id: UserID,
-    email: Email
-  ): Promise<{ added: boolean; id?: EmailID }>;
+  check_email_by_name(user_id: UserID, email: Email): Promise<boolean>;
+
+  /**
+   * Sets the current main mail as not main.
+   * @param user_id
+   * @param email_id
+   * @param main
+   */
+  change_email_main(user_id: UserID): Promise<void>;
+
+  /**
+   * Adds the new email to the emails of the user.
+   * If no user with the given id exists, undefined is returned.
+   * @param user_id
+   * @param email
+   */
+  add_email(user_id: UserID, email: Email): Promise<EmailID | undefined>;
 
   /**
    * Deletes the given email from the ones the user has associated.
