@@ -4,7 +4,7 @@
 
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
-import { AlreadyUsedEmail } from '../errors';
+import { AlreadyUsedEmail, DeletingMainEmail, EmailNotFound } from '../errors';
 import { UserCreatedEvent } from '../events';
 import { Email, EmailID } from '../models/email';
 import { EmailSender } from '../ports/email.sender';
@@ -23,11 +23,8 @@ export class NextUserInfoService implements UserInfoService {
 
   public async create_user(event: UserCreatedEvent): Promise<void> {
     try {
-      const email = Email.from_string(event.email);
-      const created = this.repo.create_user(
-        event.user_id,
-        Email.from_string(event.email)
-      );
+      const email = Email.from_string(event.email, true);
+      const created = this.repo.create_user(event.user_id, email);
 
       if (!created) {
         throw new InternalServerError();
@@ -43,6 +40,8 @@ export class NextUserInfoService implements UserInfoService {
     }
   }
 
+  // ------------------------------- EMAIL -------------------------------
+
   public async add_email(user_id: UserID, email: Email): Promise<EmailID> {
     const { added, id } = await this.repo.add_email(user_id, email);
     if (!added && id === undefined) {
@@ -52,5 +51,21 @@ export class NextUserInfoService implements UserInfoService {
     }
 
     return id!;
+  }
+
+  public async delete_email(user_id: UserID, email_id: EmailID): Promise<void> {
+    const email = await this.repo.get_email(user_id, email_id);
+    if (email === null) {
+      throw new EmailNotFound(email_id.to_string());
+    }
+
+    if (email.main) {
+      throw new DeletingMainEmail();
+    }
+
+    const deleted = await this.repo.delete_email(user_id, email_id);
+    if (!deleted) {
+      throw new InternalServerError();
+    }
   }
 }

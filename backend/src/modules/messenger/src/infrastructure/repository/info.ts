@@ -35,10 +35,11 @@ export class Neo4jInfoRepository implements InfoRepository {
     try {
       await session.writeTransaction((tx) =>
         tx.run(
-          `CREATE (u:MESSENGER_User { id: $user_id })-[t:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, email: $email })`,
+          `CREATE (u:MESSENGER_User { id: $user_id })-[t:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, main: $main, email: $email })`,
           {
             user_id: user_id.to_string(),
             email_id: EmailID.generate().to_string(),
+            main: email.main,
             email: email.to_string(),
           }
         )
@@ -58,6 +59,36 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
+  // --------------------------- EMAILS ---------------------------
+
+  public async get_email(
+    user_id: UserID,
+    email_id: EmailID
+  ): Promise<Email | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
+           WHERE u.id = $user_id AND e.id = $email_id
+           RETURN e`,
+          { user_id: user_id.to_string(), email_id: email_id.to_string() }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      const { email, main } = res.records[0].get('e').properties;
+      return Email.from_string(email, main, email_id);
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   private async get_emails(user_id: UserID): Promise<Email[]> {
     const session = this.driver.session();
     try {
@@ -70,8 +101,8 @@ export class Neo4jInfoRepository implements InfoRepository {
       );
 
       const emails = res.records.map((record) => {
-        const { id, email } = record.get('e').properties;
-        return Email.from_string(email, EmailID.from_string(id));
+        const { id, main, email } = record.get('e').properties;
+        return Email.from_string(email, main, EmailID.from_string(id));
       });
 
       return emails;
@@ -109,10 +140,11 @@ export class Neo4jInfoRepository implements InfoRepository {
       const res = await session.writeTransaction((tx) =>
         tx.run(
           `MATCH (u:MESSENGER_User { id: $user_id })
-           CREATE (u)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, email: $email })`,
+           CREATE (u)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, main: $main, email: $email })`,
           {
             user_id: user_id.to_string(),
             email_id: id.to_string(),
+            main: email.main,
             email: email.to_string(),
           }
         )
@@ -122,6 +154,29 @@ export class Neo4jInfoRepository implements InfoRepository {
         return { added: false, id: undefined };
       }
       return { added: true, id };
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async delete_email(
+    user_id: UserID,
+    email_id: EmailID
+  ): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
+           WHERE u.id = $user_id AND e.id = $email_id
+           DETACH DELETE e`,
+          { user_id: user_id.to_string(), email_id: email_id.to_string() }
+        )
+      );
+
+      return res.summary.counters.updates().nodesDeleted > 0;
     } catch {
       throw new InternalServerError();
     } finally {
