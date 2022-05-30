@@ -57,4 +57,75 @@ export class Neo4jInfoRepository implements InfoRepository {
       await session.close();
     }
   }
+
+  private async get_emails(user_id: UserID): Promise<Email[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User { id: $id })-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
+           RETURN e`,
+          { id: user_id.to_string() }
+        )
+      );
+
+      const emails = res.records.map((record) => {
+        const { id, email } = record.get('e').properties;
+        return Email.from_string(email, EmailID.from_string(id));
+      });
+
+      return emails;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async add_email(
+    user_id: UserID,
+    email: Email
+  ): Promise<{ added: boolean; id?: EmailID | undefined }> {
+    const session = this.driver.session();
+    try {
+      const emails = await this.get_emails(user_id);
+      let id: EmailID = EmailID.generate();
+      let found = false;
+      while (!found) {
+        found = true;
+        id = EmailID.generate();
+        // eslint-disable-next-line no-restricted-syntax
+        for (const e of emails) {
+          if (e.equals(email)) {
+            return { added: false, id: e.id! };
+          }
+          if (e.id!.equals(id)) {
+            found = false;
+            break;
+          }
+        }
+      }
+
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User { id: $user_id })
+           CREATE (u)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, email: $email })`,
+          {
+            user_id: user_id.to_string(),
+            email_id: id.to_string(),
+            email: email.to_string(),
+          }
+        )
+      );
+
+      if (res.summary.counters.updates().nodesCreated === 0) {
+        return { added: false, id: undefined };
+      }
+      return { added: true, id };
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
 }
