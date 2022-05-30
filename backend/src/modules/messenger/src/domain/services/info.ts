@@ -3,8 +3,10 @@
 //
 
 import { InternalServerError } from '@nextapp/common/error';
+import { UserID } from '@nextapp/common/user';
+import { AlreadyUsedEmail } from '../errors';
 import { UserCreatedEvent } from '../events';
-import { Email } from '../models/email';
+import { Email, EmailID } from '../models/email';
 import { EmailSender } from '../ports/email.sender';
 import { EventBroker } from '../ports/event.broker';
 import { InfoRepository } from '../ports/info.repository';
@@ -19,10 +21,13 @@ export class NextUserInfoService implements UserInfoService {
     broker.on_user_created(this.create_user, this);
   }
 
-  private async create_user(event: UserCreatedEvent): Promise<void> {
+  public async create_user(event: UserCreatedEvent): Promise<void> {
     try {
       const email = Email.from_string(event.email);
-      const created = this.repo.create_user(event.user_id, event.email);
+      const created = this.repo.create_user(
+        event.user_id,
+        Email.from_string(event.email)
+      );
 
       if (!created) {
         throw new InternalServerError();
@@ -36,5 +41,16 @@ export class NextUserInfoService implements UserInfoService {
     } catch {
       // TODO: write log error
     }
+  }
+
+  public async add_email(user_id: UserID, email: Email): Promise<EmailID> {
+    const { added, id } = await this.repo.add_email(user_id, email);
+    if (!added && id === undefined) {
+      throw new InternalServerError();
+    } else if (!added) {
+      throw new AlreadyUsedEmail(email.to_string());
+    }
+
+    return id!;
   }
 }
