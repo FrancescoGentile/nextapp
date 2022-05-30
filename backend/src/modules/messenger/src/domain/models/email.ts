@@ -51,6 +51,7 @@ export class EmailID {
 export class Email {
   private constructor(
     private readonly email: string,
+    public readonly main: boolean,
     public readonly id?: EmailID
   ) {}
 
@@ -61,13 +62,13 @@ export class Email {
    * @param email
    * @returns
    */
-  public static from_string(email: string, id?: EmailID) {
+  public static from_string(email: string, main: boolean, id?: EmailID) {
     const valid = EmailValidator.validate(email);
     if (!valid) {
       throw new InvalidEmail(email);
     }
 
-    return new Email(email, id);
+    return new Email(email, main, id);
   }
 
   public to_string(): string {
