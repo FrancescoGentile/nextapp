@@ -39,13 +39,20 @@ export class EmailID {
   public to_string(): string {
     return this.id;
   }
+
+  public equals(other: EmailID): boolean {
+    return this.id === other.id;
+  }
 }
 
 /**
  * Class used to represent a valid (but not necessarily existing) email.
  */
 export class Email {
-  private constructor(private readonly email: string) {}
+  private constructor(
+    private readonly email: string,
+    public readonly id?: EmailID
+  ) {}
 
   /**
    * Creates a new Email from the given string.
@@ -54,16 +61,20 @@ export class Email {
    * @param email
    * @returns
    */
-  public static from_string(email: string) {
+  public static from_string(email: string, id?: EmailID) {
     const valid = EmailValidator.validate(email);
     if (!valid) {
       throw new InvalidEmail(email);
     }
 
-    return new Email(email);
+    return new Email(email, id);
   }
 
   public to_string(): string {
     return this.email;
+  }
+
+  public equals(other: Email): boolean {
+    return this.email === other.email;
   }
 }
