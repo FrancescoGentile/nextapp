@@ -296,7 +296,7 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
-  private async get_device(
+  public async get_device(
     user_id: UserID,
     device_id: WebDeviceID
   ): Promise<WebDevice | null> {
@@ -328,6 +328,50 @@ export class Neo4jInfoRepository implements InfoRepository {
         name,
         timestamp: neo4j_to_luxon(timestamp),
       };
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_devices(
+    user_id: UserID,
+    options: SearchOptions
+  ): Promise<WebDevice[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User { id: $id })-[m:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
+           RETURN w
+           ORDER BY w.timestamp
+           SKIP $skip
+           LIMIT $limit`,
+          {
+            id: user_id.to_string(),
+            skip: options.offset,
+            limit: options.limit,
+          }
+        )
+      );
+
+      const devices = res.records.map((record) => {
+        const { id, fingerprint, token, name, timestamp } = record.get('w');
+
+        return {
+          id: WebDeviceID.from_string(id),
+          fingerprint:
+            fingerprint !== undefined
+              ? new WebDeviceFingerprint(fingerprint)
+              : undefined,
+          token: new FCMToken(token),
+          name,
+          timestamp: neo4j_to_luxon(timestamp),
+        };
+      });
+
+      return devices;
     } catch {
       throw new InternalServerError();
     } finally {

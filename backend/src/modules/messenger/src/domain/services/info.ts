@@ -76,6 +76,25 @@ export class NextUserInfoService implements UserInfoService {
 
   // ----------------------------------------------------------
 
+  public async get_device(
+    user_id: UserID,
+    device_id: WebDeviceID
+  ): Promise<WebDevice> {
+    const device = await this.repo.get_device(user_id, device_id);
+    if (device === null) {
+      throw new DeviceNotFound(device_id.to_string());
+    }
+
+    return device;
+  }
+
+  public async get_devices(
+    user_id: UserID,
+    options: SearchOptions
+  ): Promise<WebDevice[]> {
+    return this.repo.get_devices(user_id, options);
+  }
+
   public async add_device(
     user_id: UserID,
     device: WebDevice

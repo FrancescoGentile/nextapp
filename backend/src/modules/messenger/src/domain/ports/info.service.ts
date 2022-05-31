@@ -43,6 +43,21 @@ export interface UserInfoService {
   // -----------------------------------------------------------------
 
   /**
+   * Returns the device with the given id.
+   * This method throws an error if no device was found.
+   * @param user_id
+   * @param device_id
+   */
+  get_device(user_id: UserID, device_id: WebDeviceID): Promise<WebDevice>;
+
+  /**
+   * returns the devices saved by the user.
+   * @param user_id
+   * @param options
+   */
+  get_devices(user_id: UserID, options: SearchOptions): Promise<WebDevice[]>;
+
+  /**
    * Adds the passed device to the one already saved by the user.
    * @param user_id
    * @param device
