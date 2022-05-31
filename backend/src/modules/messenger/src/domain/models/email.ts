@@ -79,3 +79,9 @@ export class EmailAddress {
     return this.email === other.email;
   }
 }
+
+export interface Email {
+  subject: string;
+  text: string;
+  html?: string;
+}
