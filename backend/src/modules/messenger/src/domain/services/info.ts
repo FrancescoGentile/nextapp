@@ -19,7 +19,8 @@ export class NextUserInfoService implements UserInfoService {
     private readonly email_sender: EmailSender,
     private readonly broker: EventBroker
   ) {
-    broker.on_user_created(this.create_user, this);
+    broker.on_user_created('user_created', this.create_user, this);
+    broker.on_user_deleted('user_deleted', this.delete_user, this);
   }
 
   public async create_user(event: UserCreatedEvent): Promise<void> {
