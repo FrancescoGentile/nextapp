@@ -12,12 +12,13 @@ import {
   UserNotFound,
   OldPasswordWrong,
 } from '../errors';
-import { User } from '../models/user';
-import { Password } from '../models/user.credentials';
+import { IdentityInfo, User } from '../models/user';
+import { Password, Username } from '../models/credentials';
 import { UserInfoService } from '../ports/user.service';
 import { UserRepository } from '../ports/user.repository';
 import { EventBroker } from '../ports/event.broker';
 import { SearchOptions } from '../models/search';
+import { Email } from '../models/email';
 
 export class NextUserInfoService implements UserInfoService {
   public constructor(
@@ -48,14 +49,28 @@ export class NextUserInfoService implements UserInfoService {
     return this.user_repo.get_users(options);
   }
 
-  public async create_user(requester: UserID, new_user: User): Promise<UserID> {
+  public async create_user(
+    requester: UserID,
+    uname: string,
+    pwd: string,
+    is_admin: boolean,
+    identity: IdentityInfo,
+    email: Email
+  ): Promise<UserID> {
     if (!(await this.is_admin(requester))) {
       throw new NotAnAdmin();
     }
 
-    const id = await this.user_repo.create_user(new_user);
+    const username = Username.from_string(uname);
+    const password = await Password.from_clear(pwd, username);
+    const credentials = { username, password };
+    const role = is_admin ? UserRole.SYS_ADMIN : UserRole.SIMPLE;
+    const user: User = { credentials, role, identity };
+
+    const id = await this.user_repo.create_user(user);
+
     if (id === undefined) {
-      throw new UsernameAlreadyUsed(new_user.username.to_string());
+      throw new UsernameAlreadyUsed(uname);
     }
 
     this.broker.emit_user_created({
@@ -63,7 +78,11 @@ export class NextUserInfoService implements UserInfoService {
       module: ModuleID.USER,
       timestamp: DateTime.utc(),
       user_id: id,
-      role: new_user.role,
+      role,
+      fullname: identity.fullname,
+      username: uname,
+      password: pwd,
+      email: email.to_string(),
     });
 
     return id;
@@ -113,17 +132,20 @@ export class NextUserInfoService implements UserInfoService {
     old_password: string,
     new_password: string
   ): Promise<void> {
-    const info = await this.user_repo.get_user(user_id);
-    if (info === null) {
+    const user = await this.user_repo.get_user(user_id);
+    if (user === null) {
       throw new InternalServerError();
     }
 
-    const valid = await info.password.verify(old_password);
+    const valid = await user.credentials.password.verify(old_password);
     if (!valid) {
       throw new OldPasswordWrong();
     }
 
-    const new_pwd = await Password.from_clear(new_password, info.username);
+    const new_pwd = await Password.from_clear(
+      new_password,
+      user.credentials.username
+    );
     const changed = this.user_repo.change_password(user_id, new_pwd);
     if (!changed) {
       throw new InternalServerError();

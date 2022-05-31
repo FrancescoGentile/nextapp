@@ -3,7 +3,7 @@
 //
 
 import { UserID, UserRole } from '@nextapp/common/user';
-import { Password, Username } from '../models/user.credentials';
+import { Password, Username } from '../models/credentials';
 import { User } from '../models/user';
 import { SearchOptions } from '../models/search';
 
