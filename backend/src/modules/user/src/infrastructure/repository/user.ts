@@ -150,7 +150,7 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-  public async get_user_info(user_id: UserID): Promise<User | null> {
+  public async get_user(user_id: UserID): Promise<User | null> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -184,7 +184,7 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-  public async get_users_list(options: SearchOptions): Promise<User[]> {
+  public async get_users(options: SearchOptions): Promise<User[]> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>

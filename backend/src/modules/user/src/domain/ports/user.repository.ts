@@ -20,13 +20,13 @@ export interface UserRepository {
    * @param options
    */
 
-  get_users_list(options: SearchOptions): Promise<User[]>;
+  get_users(options: SearchOptions): Promise<User[]>;
 
   /**
    * Gets the user information with the given id.
    * @param user_id the id of the user to get
    */
-  get_user_info(user_id: UserID): Promise<User | null>;
+  get_user(user_id: UserID): Promise<User | null>;
 
   /**
    * Returns the user role if they exist.
