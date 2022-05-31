@@ -214,6 +214,31 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
+  public async get_users_emails(user_ids: UserID[]): Promise<EmailAddress[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
+           WHERE u.id IN $ids
+           RETURN e`,
+          { ids: user_ids.map((id) => id.to_string()) }
+        )
+      );
+
+      const emails = res.records.map((record) => {
+        const { id, main, email } = record.get('e').properties;
+        return EmailAddress.from_string(email, main, EmailID.from_string(id));
+      });
+
+      return emails;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public async add_email(
     user_id: UserID,
     email: EmailAddress

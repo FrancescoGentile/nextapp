@@ -40,6 +40,12 @@ export interface InfoRepository {
   get_emails(user_id: UserID, options: SearchOptions): Promise<EmailAddress[]>;
 
   /**
+   * Returns the emails associated to the given users.
+   * @param user_ids
+   */
+  get_users_emails(user_ids: UserID[]): Promise<EmailAddress[]>;
+
+  /**
    * Checks if the user already has this email.
    * @param user_id
    * @param email

@@ -66,6 +66,29 @@ export class MessageService {
   }
 
   public async send_message(event: SendMessageEvent): Promise<void> {
+    if (event.type === 'email') {
+      await this.send_email(event);
+    } else if (event.type === 'notification') {
+      await this.send_notification(event);
+    } else {
+      // TODO: write log error
+    }
+  }
+
+  private async send_email(event: SendMessageEvent): Promise<void> {
+    try {
+      const emails = await this.repo.get_users_emails(event.users);
+      await this.email_sender.send_email(emails, {
+        subject: event.title,
+        text: event.body,
+        html: event.html,
+      });
+    } catch {
+      // TODO: write log error
+    }
+  }
+
+  private async send_notification(event: SendMessageEvent): Promise<void> {
     try {
       const tokens = await this.repo.get_notification_tokens(event.users);
       const notification: Notification = {
