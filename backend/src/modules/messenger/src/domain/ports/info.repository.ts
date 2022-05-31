@@ -15,6 +15,13 @@ export interface InfoRepository {
   create_user(user_id: UserID, email: Email): Promise<boolean>;
 
   /**
+   * Removes the user and all their associated information from the repository.
+   * This method returns false if no user with the given id was found.
+   * @param user_id
+   */
+  delete_user(user_id: UserID): Promise<boolean>;
+
+  /**
    * Returns the email of the user if it exists.
    * @param user_id
    * @param email_id
