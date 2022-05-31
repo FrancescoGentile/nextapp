@@ -380,4 +380,27 @@ export class Neo4jInfoRepository implements InfoRepository {
       await session.close();
     }
   }
+
+  public async delete_device(
+    user_id: UserID,
+    device_id: WebDeviceID
+  ): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
+           WHERE u.id = $user_id AND w.id = $device_id
+           DETACH DELETE w`,
+          { user_id: user_id.to_string(), device_id: device_id.to_string() }
+        )
+      );
+
+      return res.summary.counters.updates().nodesDeleted > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
 }
