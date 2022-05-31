@@ -51,7 +51,7 @@ async function register_user(request: Request, response: Response) {
     password,
     value.email
   );
-  const id = await request.user_service.register_user(request.user_id, user);
+  const id = await request.user_service.create_user(request.user_id, user);
 
   response
     .status(StatusCodes.NO_CONTENT)
@@ -70,10 +70,7 @@ async function get_users_list(request: Request, response: Response) {
   });
   const options = SearchOptions.build(value.offset, value.limit);
 
-  const users = await request.user_service.get_users_list(
-    request.user_id,
-    options
-  );
+  const users = await request.user_service.get_users(request.user_id, options);
   response.status(StatusCodes.OK).json(users.map(user_to_json));
 }
 
@@ -94,7 +91,7 @@ async function change_role(request: Request, response: Response) {
 }
 
 async function get_user_info(request: Request, response: Response) {
-  const user = await request.user_service.get_user_info(
+  const user = await request.user_service.get_user(
     request.user_id,
     new UserID(request.params.user_id)
   );
@@ -102,7 +99,7 @@ async function get_user_info(request: Request, response: Response) {
 }
 
 async function get_my_info(request: Request, response: Response) {
-  const user = await request.user_service.get_user_info(
+  const user = await request.user_service.get_user(
     request.user_id,
     request.user_id
   );
@@ -110,7 +107,7 @@ async function get_my_info(request: Request, response: Response) {
 }
 
 async function remove_user(request: Request, response: Response) {
-  await request.user_service.remove_user(
+  await request.user_service.delete_user(
     request.user_id,
     new UserID(request.params.user_id)
   );
@@ -118,7 +115,7 @@ async function remove_user(request: Request, response: Response) {
 }
 
 async function delete_account(request: Request, response: Response) {
-  await request.user_service.delete_account(request.user_id);
+  await request.user_service.delete_user(request.user_id, request.user_id);
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
