@@ -17,9 +17,13 @@ export class NextUserService {
     private readonly broker: EventBroker,
     private readonly repo: UserRepository
   ) {
-    this.broker.on_user_created(this.create_user, this);
-    this.broker.on_user_deleted(this.delete_user, this);
-    this.broker.on_user_role_changed(this.change_user_role, this);
+    this.broker.on_user_created('user_created', this.create_user, this);
+    this.broker.on_user_deleted('user_deleted', this.delete_user, this);
+    this.broker.on_user_role_changed(
+      'user_role_changed',
+      this.change_user_role,
+      this
+    );
   }
 
   private async create_user(event: UserCreatedEvent) {
