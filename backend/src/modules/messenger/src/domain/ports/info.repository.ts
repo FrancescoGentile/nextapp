@@ -5,7 +5,7 @@
 import { UserID } from '@nextapp/common/user';
 import { WebDevice, WebDeviceID } from '../models/device';
 import { NotificationToken } from '../models/notification';
-import { Email, EmailID } from '../models/email';
+import { EmailAddress, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 
 export interface InfoRepository {
@@ -14,7 +14,7 @@ export interface InfoRepository {
    * does not already exist.
    * @param user_id
    */
-  create_user(user_id: UserID, email: Email): Promise<boolean>;
+  create_user(user_id: UserID, email: EmailAddress): Promise<boolean>;
 
   /**
    * Removes the user and all their associated information from the repository.
@@ -30,21 +30,27 @@ export interface InfoRepository {
    * @param user_id
    * @param email_id
    */
-  get_email(user_id: UserID, email_id: EmailID): Promise<Email | null>;
+  get_email(user_id: UserID, email_id: EmailID): Promise<EmailAddress | null>;
 
   /**
    * Returns the emails associated to the user with the given id.
    * @param user_id
    * @param options
    */
-  get_emails(user_id: UserID, options: SearchOptions): Promise<Email[]>;
+  get_emails(user_id: UserID, options: SearchOptions): Promise<EmailAddress[]>;
+
+  /**
+   * Returns the emails associated to the given users.
+   * @param user_ids
+   */
+  get_users_emails(user_ids: UserID[]): Promise<EmailAddress[]>;
 
   /**
    * Checks if the user already has this email.
    * @param user_id
    * @param email
    */
-  check_email_by_name(user_id: UserID, email: Email): Promise<boolean>;
+  check_email_by_name(user_id: UserID, email: EmailAddress): Promise<boolean>;
 
   /**
    * Sets the current main mail as not main.
@@ -60,7 +66,7 @@ export interface InfoRepository {
    * @param user_id
    * @param email
    */
-  add_email(user_id: UserID, email: Email): Promise<EmailID | undefined>;
+  add_email(user_id: UserID, email: EmailAddress): Promise<EmailID | undefined>;
 
   /**
    * Deletes the given email from the ones the user has associated.

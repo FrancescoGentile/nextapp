@@ -11,7 +11,7 @@ import {
   EmailNotFound,
 } from '../errors';
 import { WebDevice, WebDeviceID } from '../models/device';
-import { Email, EmailID } from '../models/email';
+import { EmailAddress, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 import { InfoRepository } from '../ports/info.repository';
 import { UserInfoService } from '../ports/info.service';
@@ -21,7 +21,10 @@ export class NextUserInfoService implements UserInfoService {
 
   // ------------------------------- EMAIL -------------------------------
 
-  public async get_email(user_id: UserID, email_id: EmailID): Promise<Email> {
+  public async get_email(
+    user_id: UserID,
+    email_id: EmailID
+  ): Promise<EmailAddress> {
     const email = await this.repo.get_email(user_id, email_id);
     if (email === null) {
       throw new EmailNotFound(email_id.to_string());
@@ -33,11 +36,14 @@ export class NextUserInfoService implements UserInfoService {
   public async get_emails(
     user_id: UserID,
     options: SearchOptions
-  ): Promise<Email[]> {
+  ): Promise<EmailAddress[]> {
     return this.repo.get_emails(user_id, options);
   }
 
-  public async add_email(user_id: UserID, email: Email): Promise<EmailID> {
+  public async add_email(
+    user_id: UserID,
+    email: EmailAddress
+  ): Promise<EmailID> {
     const already_used = await this.repo.check_email_by_name(user_id, email);
     if (already_used) {
       throw new AlreadyUsedEmail(email.to_string());

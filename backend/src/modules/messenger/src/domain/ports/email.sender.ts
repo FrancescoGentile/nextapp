@@ -2,12 +2,8 @@
 //
 //
 
-import { Email } from '../models/email';
+import { Email, EmailAddress } from '../models/email';
 
 export interface EmailSender {
-  send_account_created(
-    email: Email,
-    name: string,
-    password: string
-  ): Promise<void>;
+  send_email(to: EmailAddress[], email: Email): Promise<void>;
 }

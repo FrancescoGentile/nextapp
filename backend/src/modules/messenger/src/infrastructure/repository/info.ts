@@ -18,7 +18,7 @@ import {
   WebDeviceID,
 } from '../../domain/models/device';
 import { NotificationToken } from '../../domain/models/notification';
-import { Email, EmailID } from '../../domain/models/email';
+import { EmailAddress, EmailID } from '../../domain/models/email';
 import { SearchOptions } from '../../domain/models/search';
 import { InfoRepository } from '../../domain/ports/info.repository';
 
@@ -62,7 +62,10 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
-  public async create_user(user_id: UserID, email: Email): Promise<boolean> {
+  public async create_user(
+    user_id: UserID,
+    email: EmailAddress
+  ): Promise<boolean> {
     const session = this.driver.session();
     try {
       await session.writeTransaction((tx) =>
@@ -112,7 +115,7 @@ export class Neo4jInfoRepository implements InfoRepository {
 
   public async check_email_by_name(
     user_id: UserID,
-    email: Email
+    email: EmailAddress
   ): Promise<boolean> {
     const session = this.driver.session();
     try {
@@ -152,7 +155,7 @@ export class Neo4jInfoRepository implements InfoRepository {
   public async get_email(
     user_id: UserID,
     email_id: EmailID
-  ): Promise<Email | null> {
+  ): Promise<EmailAddress | null> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -169,7 +172,7 @@ export class Neo4jInfoRepository implements InfoRepository {
       }
 
       const { email, main } = res.records[0].get('e').properties;
-      return Email.from_string(email, main, email_id);
+      return EmailAddress.from_string(email, main, email_id);
     } catch {
       throw new InternalServerError();
     } finally {
@@ -180,7 +183,7 @@ export class Neo4jInfoRepository implements InfoRepository {
   public async get_emails(
     user_id: UserID,
     options: SearchOptions
-  ): Promise<Email[]> {
+  ): Promise<EmailAddress[]> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -200,7 +203,32 @@ export class Neo4jInfoRepository implements InfoRepository {
 
       const emails = res.records.map((record) => {
         const { id, main, email } = record.get('e').properties;
-        return Email.from_string(email, main, EmailID.from_string(id));
+        return EmailAddress.from_string(email, main, EmailID.from_string(id));
+      });
+
+      return emails;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_users_emails(user_ids: UserID[]): Promise<EmailAddress[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
+           WHERE u.id IN $ids
+           RETURN e`,
+          { ids: user_ids.map((id) => id.to_string()) }
+        )
+      );
+
+      const emails = res.records.map((record) => {
+        const { id, main, email } = record.get('e').properties;
+        return EmailAddress.from_string(email, main, EmailID.from_string(id));
       });
 
       return emails;
@@ -213,7 +241,7 @@ export class Neo4jInfoRepository implements InfoRepository {
 
   public async add_email(
     user_id: UserID,
-    email: Email
+    email: EmailAddress
   ): Promise<EmailID | undefined> {
     const session = this.driver.session();
     try {

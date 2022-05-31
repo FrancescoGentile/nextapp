@@ -4,7 +4,7 @@
 
 import { UserID } from '@nextapp/common/user';
 import { WebDevice, WebDeviceID } from '../models/device';
-import { Email, EmailID } from '../models/email';
+import { EmailAddress, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 
 export interface UserInfoService {
@@ -14,14 +14,14 @@ export interface UserInfoService {
    * @param user_id
    * @param email_id
    */
-  get_email(user_id: UserID, email_id: EmailID): Promise<Email>;
+  get_email(user_id: UserID, email_id: EmailID): Promise<EmailAddress>;
 
   /**
    * Returns the emails added by the user.
    * @param user_id
    * @param options
    */
-  get_emails(user_id: UserID, options: SearchOptions): Promise<Email[]>;
+  get_emails(user_id: UserID, options: SearchOptions): Promise<EmailAddress[]>;
 
   /**
    * Adds the given emails to the user.
@@ -29,7 +29,7 @@ export interface UserInfoService {
    * @param user_id
    * @param email
    */
-  add_email(user_id: UserID, email: Email): Promise<EmailID>;
+  add_email(user_id: UserID, email: EmailAddress): Promise<EmailID>;
 
   /**
    * Deletes the given mail from the set of the user's emails.

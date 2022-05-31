@@ -3,7 +3,7 @@
 //
 
 import {
-  SendNotificationEvent,
+  SendMessageEvent,
   UserCreatedEvent,
   UserDeletedEvent,
 } from '../events';
@@ -21,9 +21,9 @@ export interface EventBroker {
     context?: any
   ): void;
 
-  on_send_notification(
+  on_send_message(
     name: string,
-    listener: (event: SendNotificationEvent) => void,
+    listener: (event: SendMessageEvent) => void,
     context?: any
   ): void;
 }

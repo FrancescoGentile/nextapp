@@ -8,17 +8,21 @@ import { UserID, UserRole } from '@nextapp/common/user';
 export interface UserCreatedEvent extends NextEvent {
   user_id: UserID;
   role: UserRole;
-  user_name: string;
-  email: string;
+  fullname: string;
+  username: string;
   password: string;
+  email: string;
 }
 
 export interface UserDeletedEvent extends NextEvent {
   user_id: UserID;
+  fullname: string;
 }
 
-export interface SendNotificationEvent extends NextEvent {
+export interface SendMessageEvent extends NextEvent {
   users: UserID[];
+  type: string;
   title: string;
   body: string;
+  html?: string;
 }

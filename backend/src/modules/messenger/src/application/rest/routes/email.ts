@@ -7,7 +7,7 @@ import express from 'express';
 import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import { EmailNotFound } from '../../../domain/errors';
-import { Email, EmailID } from '../../../domain/models/email';
+import { EmailAddress, EmailID } from '../../../domain/models/email';
 import { SearchOptions } from '../../../domain/models/search';
 import { asyncHandler, validate } from '../utils';
 
@@ -17,7 +17,7 @@ function id_to_self(id: EmailID): string {
   return `${BASE_PATH}/${id.to_string()}`;
 }
 
-function email_to_json(email: Email) {
+function email_to_json(email: EmailAddress) {
   return {
     self: id_to_self(email.id!),
     main: email.main,
@@ -66,7 +66,7 @@ async function add_email(request: Request, response: Response) {
   const value = validate(schema, request.body);
   const id = await request.info_service.add_email(
     request.user_id,
-    Email.from_string(value.email, value.main)
+    EmailAddress.from_string(value.email, value.main)
   );
 
   response.status(StatusCodes.OK).location(id_to_self(id)).end();
