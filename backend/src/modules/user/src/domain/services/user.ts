@@ -26,10 +26,7 @@ export class NextUserInfoService implements UserInfoService {
     private readonly broker: EventBroker
   ) {}
 
-  public async get_user(requester: UserID, id: UserID): Promise<User> {
-    if (!(await this.is_admin(requester)) && !requester.equals(id)) {
-      throw new NotAnAdmin();
-    }
+  public async get_user(id: UserID): Promise<User> {
     const user = await this.user_repo.get_user(id);
     if (user === null) {
       throw new UserNotFound(id.to_string());

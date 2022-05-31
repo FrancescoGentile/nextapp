@@ -93,17 +93,13 @@ async function change_role(request: Request, response: Response) {
 
 async function get_user_info(request: Request, response: Response) {
   const user = await request.user_service.get_user(
-    request.user_id,
     new UserID(request.params.user_id)
   );
   response.status(StatusCodes.OK).json(user_to_json(user));
 }
 
 async function get_my_info(request: Request, response: Response) {
-  const user = await request.user_service.get_user(
-    request.user_id,
-    request.user_id
-  );
+  const user = await request.user_service.get_user(request.user_id);
   response.status(StatusCodes.OK).json(user_to_json(user));
 }
 
