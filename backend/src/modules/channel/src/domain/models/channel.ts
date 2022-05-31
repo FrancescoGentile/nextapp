@@ -2,13 +2,13 @@
 //
 //
 
+import { UserID } from '@nextapp/common/user';
 import { customAlphabet } from 'nanoid';
 import {
     InvalidChannelID,
     InvalidChannelName,
     InvalidChannelDescription
 } from '../errors';
-import { User } from './user';
 
 export class ChannelID {
     public static readonly LENGTH = 10;
@@ -42,18 +42,21 @@ export class ChannelID {
 }
   
 export class Channel {
+  
+    public static readonly MAX_PRESIDENTS = 4;
+    
     public id?: ChannelID;
 
     public readonly name: string;
 
     public readonly description: string;
     
-    public readonly presidents: User[];
+    public readonly presID_array: string[] = [];
 
     public constructor(
         name: string,
         description: string,
-        presidents: User[],
+        presID_array: string[],
         id?: ChannelID
     ){
         if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
@@ -64,7 +67,7 @@ export class Channel {
         }
         this.name = name;
         this.description = description;
-        this.presidents = presidents;
+        this.presID_array = presID_array;
         this.id = id;
     }
 

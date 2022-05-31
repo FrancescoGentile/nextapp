@@ -24,10 +24,10 @@ function channel_to_json(channel: Channel): any {
     name: channel.name,
     description: channel.description,
     presidents: {
-      president1: channel.presidents[0],
-      president2: channel.presidents[1],
-      president3: channel.presidents[2],
-      president4: channel.presidents[3]
+      president1: channel.presID_array[0],
+      president2: channel.presID_array[1],
+      president3: channel.presID_array[2],
+      president4: channel.presID_array[3]
     }
   };
 }
@@ -57,10 +57,12 @@ async function create_channel(request: Request, response: Response){
   });
 
   const value = validate(schema, request.body);
+  
+  let presID_array: string[] = Object.values(value.presidents);
 
   const id = await request.channel_service!.create_channel(
     request.user_id!,
-    new Channel(value.name, value.description, value.presidents)
+    new Channel(value.name, value.description, presID_array)
   );
 
   response

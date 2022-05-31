@@ -87,7 +87,7 @@ export class Neo4jRoomRepository implements ChannelRepository {
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
   public async create_channel(channel: Channel): Promise<ChannelID | undefined> {
-    const session = this.driver.session();
+    let session = this.driver.session();
     try {
       // eslint-disable-next-line no-constant-condition
       while (true) {
@@ -109,6 +109,28 @@ export class Neo4jRoomRepository implements ChannelRepository {
               { id: id.to_string(), name, description }
             )
           );
+          
+          await session.close();
+          session = this.driver.session();
+
+          for (
+              let i = 0; 
+              i < Channel.MAX_PRESIDENTS;
+              i++
+            ) {
+            await session.writeTransaction((tx) =>
+              tx.run(
+                `MATCH (u:CHANNEL_User), (r:CHANNEL_Channel)
+                WHERE u.id = $user_id AND c.id = $channel_id
+                CREATE (u)-[p:CHANNEL_PRESIDENT]->(c)`,
+                { 
+                  user_id: channel.presID_array[i],
+                  channel_id: channel.id!.to_string()
+                }
+              )
+            );
+          }
+
           return id;
         } catch (e) {
           const error = e as Neo4jError;
