@@ -8,7 +8,7 @@ import {
   UserCreatedEvent,
   UserDeletedEvent,
 } from '../events';
-import { Email } from '../models/email';
+import { EmailAddress } from '../models/email';
 import { EmailSender } from '../ports/email.sender';
 import { EventBroker } from '../ports/event.broker';
 import { InfoRepository } from '../ports/info.repository';
@@ -33,7 +33,7 @@ export class NotificationService {
 
   public async create_user(event: UserCreatedEvent): Promise<void> {
     try {
-      const email = Email.from_string(event.email, true);
+      const email = EmailAddress.from_string(event.email, true);
       const created = this.repo.create_user(event.user_id, email);
 
       if (!created) {

@@ -48,7 +48,7 @@ export class EmailID {
 /**
  * Class used to represent a valid (but not necessarily existing) email.
  */
-export class Email {
+export class EmailAddress {
   private constructor(
     private readonly email: string,
     public readonly main: boolean,
@@ -68,14 +68,14 @@ export class Email {
       throw new InvalidEmail(email);
     }
 
-    return new Email(email, main, id);
+    return new EmailAddress(email, main, id);
   }
 
   public to_string(): string {
     return this.email;
   }
 
-  public equals(other: Email): boolean {
+  public equals(other: EmailAddress): boolean {
     return this.email === other.email;
   }
 }

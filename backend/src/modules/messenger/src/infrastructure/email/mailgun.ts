@@ -5,7 +5,8 @@
 import Mailgun from 'mailgun.js';
 import FormData from 'form-data';
 import Client from 'mailgun.js/client';
-import { Email } from '../../domain/models/email';
+import { InternalServerError } from '@nextapp/common/error';
+import { EmailAddress } from '../../domain/models/email';
 import { EmailSender } from '../../domain/ports/email.sender';
 
 export class MailgunEmailSender implements EmailSender {
@@ -20,7 +21,7 @@ export class MailgunEmailSender implements EmailSender {
   }
 
   public async send_account_created(
-    email: Email,
+    email: EmailAddress,
     fullname: string,
     username: string,
     password: string
@@ -40,5 +41,24 @@ export class MailgunEmailSender implements EmailSender {
         `Your account has been created. Your username is ${username} and the temporary password is ${password}.<p>` +
         `<p>For security reasons, please change it as soon as you can.</p>`,
     });
+  }
+
+  public async send_email(
+    to: EmailAddress[],
+    subject: string,
+    body: string,
+    html: string
+  ): Promise<void> {
+    try {
+      await this.mg.messages.create(this.domain, {
+        from: `NextApp Team <nextapp@${this.domain}>`,
+        to: to.map((e) => e.to_string()),
+        subject,
+        text: body,
+        html,
+      });
+    } catch {
+      throw new InternalServerError();
+    }
   }
 }
