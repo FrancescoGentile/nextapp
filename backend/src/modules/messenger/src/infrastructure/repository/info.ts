@@ -53,7 +53,24 @@ export class Neo4jInfoRepository implements InfoRepository {
         return false;
       }
       throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
 
+  public async delete_user(user_id: UserID): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH path = (:MESSENGER_User { id: $id })-[:MESSENGER_MEDIUM]->()
+           DETACH DELETE path`,
+          { id: user_id.to_string() }
+        )
+      );
+
+      return res.summary.counters.updates().nodesDeleted > 0;
+    } catch {
       throw new InternalServerError();
     } finally {
       await session.close();

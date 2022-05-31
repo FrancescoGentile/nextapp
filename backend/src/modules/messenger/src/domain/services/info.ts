@@ -5,7 +5,7 @@
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
 import { AlreadyUsedEmail, DeletingMainEmail, EmailNotFound } from '../errors';
-import { UserCreatedEvent } from '../events';
+import { UserCreatedEvent, UserDeletedEvent } from '../events';
 import { Email, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 import { EmailSender } from '../ports/email.sender';
@@ -19,7 +19,8 @@ export class NextUserInfoService implements UserInfoService {
     private readonly email_sender: EmailSender,
     private readonly broker: EventBroker
   ) {
-    broker.on_user_created(this.create_user, this);
+    broker.on_user_created('user_created', this.create_user, this);
+    broker.on_user_deleted('user_deleted', this.delete_user, this);
   }
 
   public async create_user(event: UserCreatedEvent): Promise<void> {
@@ -36,6 +37,17 @@ export class NextUserInfoService implements UserInfoService {
         event.user_name,
         event.password
       );
+    } catch {
+      // TODO: write log error
+    }
+  }
+
+  public async delete_user(event: UserDeletedEvent): Promise<void> {
+    try {
+      const deleted = await this.repo.delete_user(event.user_id);
+      if (!deleted) {
+        throw new InternalServerError();
+      }
     } catch {
       // TODO: write log error
     }

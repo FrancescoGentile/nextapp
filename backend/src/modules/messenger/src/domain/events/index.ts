@@ -12,3 +12,7 @@ export interface UserCreatedEvent extends NextEvent {
   email: string;
   password: string;
 }
+
+export interface UserDeletedEvent extends NextEvent {
+  user_id: UserID;
+}
