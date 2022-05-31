@@ -86,4 +86,11 @@ export interface InfoRepository {
     user_id: UserID,
     device: WebDevice
   ): Promise<WebDeviceID | undefined>;
+
+  /**
+   * Removes the device with the given id from the ones saved by the user.
+   * @param user_id
+   * @param device_id
+   */
+  delete_device(user_id: UserID, device_id: WebDeviceID): Promise<boolean>;
 }

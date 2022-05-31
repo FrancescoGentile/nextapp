@@ -4,7 +4,12 @@
 
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
-import { AlreadyUsedEmail, DeletingMainEmail, EmailNotFound } from '../errors';
+import {
+  AlreadyUsedEmail,
+  DeletingMainEmail,
+  DeviceNotFound,
+  EmailNotFound,
+} from '../errors';
 import { WebDevice, WebDeviceID } from '../models/device';
 import { Email, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
@@ -81,6 +86,7 @@ export class NextUserInfoService implements UserInfoService {
     );
 
     if (present) {
+      // TODO: decide what to do
       throw new Error('');
     }
 
@@ -90,5 +96,15 @@ export class NextUserInfoService implements UserInfoService {
     }
 
     return id;
+  }
+
+  public async delete_device(
+    user_id: UserID,
+    device_id: WebDeviceID
+  ): Promise<void> {
+    const deleted = await this.repo.delete_device(user_id, device_id);
+    if (!deleted) {
+      throw new DeviceNotFound(device_id.to_string());
+    }
   }
 }

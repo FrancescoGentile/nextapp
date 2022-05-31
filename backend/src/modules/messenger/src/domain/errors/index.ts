@@ -101,3 +101,15 @@ export class InvalidDeviceID extends NextError {
     );
   }
 }
+
+export class DeviceNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_device_type(DeviceErrorTypes.DEVICE_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Device not found',
+      `No device with id ${id} was found among your saved devices.`,
+      options
+    );
+  }
+}

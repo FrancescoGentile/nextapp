@@ -42,5 +42,18 @@ export interface UserInfoService {
 
   // -----------------------------------------------------------------
 
+  /**
+   * Adds the passed device to the one already saved by the user.
+   * @param user_id
+   * @param device
+   */
   add_device(user_id: UserID, device: WebDevice): Promise<WebDeviceID>;
+
+  /**
+   * Removes the device from the ones saved by the user.
+   * This method throws an error if no device with the given id was found.
+   * @param user_id
+   * @param device_id
+   */
+  delete_device(user_id: UserID, device_id: WebDeviceID): Promise<void>;
 }
