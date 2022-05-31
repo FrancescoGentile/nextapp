@@ -13,7 +13,7 @@ enum EmailErrorTypes {
 }
 
 function get_email_type(type: EmailErrorTypes): string {
-  return `user-${String(type).padStart(3, '0')}`;
+  return `email-${String(type).padStart(3, '0')}`;
 }
 
 export class InvalidEmail extends NextError {
@@ -72,6 +72,31 @@ export class DeletingMainEmail extends NextError {
       'Deleting main email',
       `You cannot delete your main email. ` +
         `To delete this email, please set another one as the main one.`,
+      options
+    );
+  }
+}
+
+// --------------------------------------------------------
+// ---------------------- DEVICE ----------------------
+// --------------------------------------------------------
+
+enum DeviceErrorTypes {
+  INVALID_DEVICE_ID = 1,
+  DEVICE_NOT_FOUND,
+}
+
+function get_device_type(type: DeviceErrorTypes): string {
+  return `device-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidDeviceID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_device_type(DeviceErrorTypes.INVALID_DEVICE_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid id',
+      `${id} is not a valid device id.`,
       options
     );
   }
