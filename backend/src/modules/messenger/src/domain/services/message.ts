@@ -24,7 +24,11 @@ export class MessageService {
   ) {
     this.broker.on_user_created('user_created', this.create_user, this);
     this.broker.on_user_deleted('user_deleted', this.delete_user, this);
-    this.broker.on_send_message('send_message', this.send_message, this);
+    this.broker.on_send_message(
+      'send_notification',
+      this.send_notification,
+      this
+    );
   }
 
   public async create_user(event: UserCreatedEvent): Promise<void> {
@@ -65,7 +69,7 @@ export class MessageService {
     }
   }
 
-  public async send_message(event: SendMessageEvent): Promise<void> {
+  public async send_notification(event: SendMessageEvent): Promise<void> {
     try {
       const tokens = await this.repo.get_notification_tokens(event.users);
       const notification: Notification = {

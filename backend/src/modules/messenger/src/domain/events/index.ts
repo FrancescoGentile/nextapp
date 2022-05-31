@@ -18,8 +18,10 @@ export interface UserDeletedEvent extends NextEvent {
   user_id: UserID;
 }
 
-export interface SendNotificationEvent extends NextEvent {
+export interface SendMessageEvent extends NextEvent {
   users: UserID[];
+  type: string;
   title: string;
   body: string;
+  html?: string;
 }
