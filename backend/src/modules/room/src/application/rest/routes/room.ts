@@ -8,15 +8,19 @@ import Joi from 'joi';
 import express from 'express';
 import { DateTime } from 'luxon';
 import { Room, RoomID } from '../../../domain/models/room';
-import { API_VERSION, asyncHandler, validate } from '../utils';
+import { asyncHandler, validate } from '../utils';
 import { SearchOptions } from '../../../domain/models/search';
 import { RoomNotFound } from '../../../domain/errors';
 
 const BASE_PATH = '/rooms';
 
+function id_to_self(id: RoomID): string {
+  return `${BASE_PATH}/${id.to_string()}`;
+}
+
 function room_to_json(room: Room): any {
   return {
-    self: `${API_VERSION}${BASE_PATH}/${room.id!.to_string()}`,
+    self: id_to_self(room.id!),
     name: room.name,
     details: room.details,
     seats: room.seats,
@@ -117,10 +121,7 @@ async function create_room(request: Request, response: Response) {
     new Room(value.name, value.details, value.seats, value.floor)
   );
 
-  response
-    .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}${BASE_PATH}/${id.to_string()}`)
-    .send();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function update_room(request: Request, response: Response) {
