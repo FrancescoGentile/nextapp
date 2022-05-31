@@ -8,21 +8,20 @@ import { Request, Response } from 'express-serve-static-core';
 import express from 'express';
 import { UserID, UserRole } from '@nextapp/common/user';
 import { asyncHandler, validate, AuthMiddleware, API_VERSION } from '../utils';
-import { User } from '../../../domain/models/user';
-import { Username, Password } from '../../../domain/models/user.credentials';
+import { IdentityInfo, User } from '../../../domain/models/user';
 import { SearchOptions } from '../../../domain/models/search';
+import { Email } from '../../../domain/models/email';
 
 const BASE_PATH = '/users';
 
 function user_to_json(user: User) {
   return {
     self: `${API_VERSION}${BASE_PATH}/${user.id!.to_string()}`,
-    username: user.username.to_string(),
-    first_name: user.first_name,
-    middle_name: user.middle_name,
-    surname: user.surname,
+    username: user.credentials.username.to_string(),
+    first_name: user.identity.first_name,
+    middle_name: user.identity.middle_name,
+    surname: user.identity.surname,
     is_admin: user.role === UserRole.SYS_ADMIN,
-    email: user.email.to_string(),
   };
 }
 
@@ -39,24 +38,25 @@ async function register_user(request: Request, response: Response) {
 
   const value = validate(schema, request.body);
 
-  const username = Username.from_string(value.username);
-  const password = await Password.from_clear(value.password, username);
-
-  const user = new User(
+  const identity = new IdentityInfo(
     value.first_name,
     value.middle_name,
-    value.surname,
-    value.is_admin,
-    username,
-    password,
-    value.email
+    value.surname
   );
-  const id = await request.user_service.create_user(request.user_id, user);
+  const email = Email.from_string(value.email);
+  const id = await request.user_service.create_user(
+    request.user_id,
+    value.username,
+    value.password,
+    value.is_admin,
+    identity,
+    email
+  );
 
   response
     .status(StatusCodes.NO_CONTENT)
     .location(`${API_VERSION}${BASE_PATH}/${id.to_string()}`)
-    .send();
+    .end();
 }
 
 async function get_users_list(request: Request, response: Response) {

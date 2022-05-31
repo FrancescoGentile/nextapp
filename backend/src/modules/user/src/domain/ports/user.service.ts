@@ -3,8 +3,9 @@
 //
 
 import { UserID } from '@nextapp/common/user';
+import { Email } from '../models/email';
 import { SearchOptions } from '../models/search';
-import { User } from '../models/user';
+import { IdentityInfo, User } from '../models/user';
 
 export interface UserInfoService {
   /**
@@ -31,7 +32,14 @@ export interface UserInfoService {
    * @param requester the user who wants to create a new user
    * (only sys-admins can create new users)
    */
-  create_user(requester: UserID, user: User): Promise<UserID>;
+  create_user(
+    requester: UserID,
+    username: string,
+    password: string,
+    is_admin: boolean,
+    identity: IdentityInfo,
+    email: Email
+  ): Promise<UserID>;
 
   /**
    * Change user's password to the requested password.

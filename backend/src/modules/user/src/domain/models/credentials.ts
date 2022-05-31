@@ -70,3 +70,8 @@ export class Password {
     return argon2.verify(this.password, password);
   }
 }
+
+export interface Credentials {
+  username: Username;
+  password: Password;
+}
