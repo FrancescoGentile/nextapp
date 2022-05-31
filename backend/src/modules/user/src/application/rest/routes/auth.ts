@@ -22,16 +22,19 @@ async function login(request: Request, response: Response) {
     value.password
   );
 
-  const expires = DateTime.utc().plus({ hours: 24 });
-
-  response
-    .status(StatusCodes.NO_CONTENT)
-    .cookie(COOKIE_NAME, token.to_string(), {
-      secure: true,
-      httpOnly: true,
-      expires: expires.toJSDate(),
-    })
-    .send();
+  if (request.header('Accept').includes('cookie')) {
+    const expires = DateTime.utc().plus({ hours: 24 });
+    response
+      .status(StatusCodes.NO_CONTENT)
+      .cookie(COOKIE_NAME, token.to_string(), {
+        secure: true,
+        httpOnly: true,
+        expires: expires.toJSDate(),
+      })
+      .send();
+  } else {
+    response.status(StatusCodes.OK).json({ token: token.to_string() });
+  }
 }
 
 function logout(request: Request, response: Response) {
