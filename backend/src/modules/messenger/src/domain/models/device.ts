@@ -72,7 +72,7 @@ export class FCMToken {
  */
 export interface WebDevice {
   id?: WebDeviceID;
-  fingerprint: WebDeviceFingerprint;
+  fingerprint?: WebDeviceFingerprint;
   token: FCMToken;
   name: string;
   timestamp: DateTime;

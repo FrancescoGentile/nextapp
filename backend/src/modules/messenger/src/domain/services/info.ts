@@ -5,6 +5,7 @@
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
 import { AlreadyUsedEmail, DeletingMainEmail, EmailNotFound } from '../errors';
+import { WebDevice, WebDeviceID } from '../models/device';
 import { Email, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 import { InfoRepository } from '../ports/info.repository';
@@ -66,5 +67,28 @@ export class NextUserInfoService implements UserInfoService {
     if (!deleted) {
       throw new InternalServerError();
     }
+  }
+
+  // ----------------------------------------------------------
+
+  public async add_device(
+    user_id: UserID,
+    device: WebDevice
+  ): Promise<WebDeviceID> {
+    const present = await this.repo.check_device_by_token(
+      user_id,
+      device.token
+    );
+
+    if (present) {
+      throw new Error('');
+    }
+
+    const id = await this.repo.add_device(user_id, device);
+    if (id === undefined) {
+      throw new InternalServerError();
+    }
+
+    return id;
   }
 }

@@ -3,6 +3,7 @@
 //
 
 import { UserID } from '@nextapp/common/user';
+import { WebDevice, WebDeviceID } from '../models/device';
 import { Email, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 
@@ -38,4 +39,8 @@ export interface UserInfoService {
    * @param email_id
    */
   delete_email(user_id: UserID, email_id: EmailID): Promise<void>;
+
+  // -----------------------------------------------------------------
+
+  add_device(user_id: UserID, device: WebDevice): Promise<WebDeviceID>;
 }

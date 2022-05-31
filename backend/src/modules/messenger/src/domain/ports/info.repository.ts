@@ -3,6 +3,7 @@
 //
 
 import { UserID } from '@nextapp/common/user';
+import { FCMToken, WebDevice, WebDeviceID } from '../models/device';
 import { Email, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 
@@ -65,4 +66,24 @@ export interface InfoRepository {
    * @param email_id
    */
   delete_email(user_id: UserID, email_id: EmailID): Promise<boolean>;
+
+  // -----------------------------------------------------------
+
+  /**
+   * Checks if the given user has a device associated to the given token.
+   * @param user_id
+   * @param token
+   */
+  check_device_by_token(user_id: UserID, token: FCMToken): Promise<boolean>;
+
+  /**
+   * Adds the passed device to the user.
+   * This method returns undefined if no user with the given id was found.
+   * @param user_id
+   * @param device
+   */
+  add_device(
+    user_id: UserID,
+    device: WebDevice
+  ): Promise<WebDeviceID | undefined>;
 }
