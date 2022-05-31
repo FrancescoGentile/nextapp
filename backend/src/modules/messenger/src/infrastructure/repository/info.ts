@@ -4,14 +4,45 @@
 
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
-import { Driver, Neo4jError } from 'neo4j-driver';
+import {
+  Driver,
+  Neo4jError,
+  DateTime as NeoDateTime,
+  Integer,
+  int,
+} from 'neo4j-driver';
+import { DateTime } from 'luxon';
+import {
+  FCMToken,
+  WebDevice,
+  WebDeviceFingerprint,
+  WebDeviceID,
+} from '../../domain/models/device';
 import { Email, EmailID } from '../../domain/models/email';
 import { SearchOptions } from '../../domain/models/search';
 import { InfoRepository } from '../../domain/ports/info.repository';
 
+function luxon_to_neo4j(dt: DateTime): NeoDateTime {
+  return new NeoDateTime<Integer>(
+    int(dt.year),
+    int(dt.month),
+    int(dt.day),
+    int(dt.hour),
+    int(dt.minute),
+    int(dt.second),
+    int(0),
+    int(dt.offset)
+  );
+}
+
+function neo4j_to_luxon(dt: NeoDateTime): DateTime {
+  return DateTime.fromISO(dt.toString());
+}
+
 export class Neo4jInfoRepository implements InfoRepository {
   private constructor(private readonly driver: Driver) {}
 
+  // TODO: decide which indexes create
   public static async create(driver: Driver): Promise<Neo4jInfoRepository> {
     const session = driver.session();
     try {
@@ -234,6 +265,115 @@ export class Neo4jInfoRepository implements InfoRepository {
       );
 
       return res.summary.counters.updates().nodesDeleted > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  // --------------------------------------------------------------
+
+  public async check_device_by_token(
+    user_id: UserID,
+    token: FCMToken
+  ): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
+           WHERE u.id = $id AND w.token = $token
+           RETURN w.id`,
+          { id: user_id.to_string(), token: token.to_string() }
+        )
+      );
+      return res.records.length > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  private async get_device(
+    user_id: UserID,
+    device_id: WebDeviceID
+  ): Promise<WebDevice | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
+           WHERE u.id = $user_id AND w.id = $device_id
+           RETURN w`,
+          { user_id: user_id.to_string(), device_id: device_id.to_string() }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      const { id, fingerprint, token, name, timestamp } =
+        res.records[0].get('w').properties;
+
+      return {
+        id: WebDeviceID.from_string(id),
+        fingerprint:
+          fingerprint !== undefined
+            ? new WebDeviceFingerprint(fingerprint)
+            : undefined,
+        token: new FCMToken(token),
+        name,
+        timestamp: neo4j_to_luxon(timestamp),
+      };
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async add_device(
+    user_id: UserID,
+    device: WebDevice
+  ): Promise<WebDeviceID | undefined> {
+    const session = this.driver.session();
+    try {
+      let id: WebDeviceID;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        id = WebDeviceID.generate();
+        // eslint-disable-next-line no-await-in-loop
+        const e = await this.get_device(user_id, id);
+        if (e === null) {
+          break;
+        }
+      }
+
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User { id: $user_id })
+           CREATE (u)->[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice {
+             id: $id,
+             fingerprint: $fingerprint,
+             token: $token,
+             name: $name, 
+             timestamp: $timestamp
+           })`,
+          {
+            user_id: user_id.to_string(),
+            id,
+            fingerprint: device.fingerprint?.to_string() || null,
+            token: device.token.to_string(),
+            name: device.name,
+            timestamp: luxon_to_neo4j(device.timestamp),
+          }
+        )
+      );
+
+      return res.summary.counters.updates().nodesCreated > 0 ? id : undefined;
     } catch {
       throw new InternalServerError();
     } finally {

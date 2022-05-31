@@ -5,53 +5,14 @@
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
 import { AlreadyUsedEmail, DeletingMainEmail, EmailNotFound } from '../errors';
-import { UserCreatedEvent, UserDeletedEvent } from '../events';
+import { WebDevice, WebDeviceID } from '../models/device';
 import { Email, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
-import { EmailSender } from '../ports/email.sender';
-import { EventBroker } from '../ports/event.broker';
 import { InfoRepository } from '../ports/info.repository';
 import { UserInfoService } from '../ports/info.service';
 
 export class NextUserInfoService implements UserInfoService {
-  public constructor(
-    private readonly repo: InfoRepository,
-    private readonly email_sender: EmailSender,
-    private readonly broker: EventBroker
-  ) {
-    broker.on_user_created('user_created', this.create_user, this);
-    broker.on_user_deleted('user_deleted', this.delete_user, this);
-  }
-
-  public async create_user(event: UserCreatedEvent): Promise<void> {
-    try {
-      const email = Email.from_string(event.email, true);
-      const created = this.repo.create_user(event.user_id, email);
-
-      if (!created) {
-        throw new InternalServerError();
-      }
-
-      await this.email_sender.send_account_created(
-        email,
-        event.user_name,
-        event.password
-      );
-    } catch {
-      // TODO: write log error
-    }
-  }
-
-  public async delete_user(event: UserDeletedEvent): Promise<void> {
-    try {
-      const deleted = await this.repo.delete_user(event.user_id);
-      if (!deleted) {
-        throw new InternalServerError();
-      }
-    } catch {
-      // TODO: write log error
-    }
-  }
+  public constructor(private readonly repo: InfoRepository) {}
 
   // ------------------------------- EMAIL -------------------------------
 
@@ -106,5 +67,28 @@ export class NextUserInfoService implements UserInfoService {
     if (!deleted) {
       throw new InternalServerError();
     }
+  }
+
+  // ----------------------------------------------------------
+
+  public async add_device(
+    user_id: UserID,
+    device: WebDevice
+  ): Promise<WebDeviceID> {
+    const present = await this.repo.check_device_by_token(
+      user_id,
+      device.token
+    );
+
+    if (present) {
+      throw new Error('');
+    }
+
+    const id = await this.repo.add_device(user_id, device);
+    if (id === undefined) {
+      throw new InternalServerError();
+    }
+
+    return id;
   }
 }
