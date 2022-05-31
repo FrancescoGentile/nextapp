@@ -44,7 +44,8 @@
     "@types/zxcvbn": "^4.4.1",
     "@types/luxon": "^2.3.2",
     "@types/express": "^4.17.13",
-    "@types/jsonwebtoken": "^8.5.8"
+    "@types/jsonwebtoken": "^8.5.8",
+    "@types/express-version-request": "^1.7.1"
   },
   "dependencies": {
     "@nextapp/common": "^1.0.0",
@@ -62,6 +63,7 @@
     "joi": "^17.6.0",
     "json-joi-converter": "^17.2.1-f",
     "jsonwebtoken": "^8.5.1",
-    "email-validator": "^2.0.4"
+    "email-validator": "^2.0.4",
+    "express-version-request": "^1.7.0"
   }
 }

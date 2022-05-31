@@ -7,16 +7,20 @@ import Joi from 'joi';
 import { Request, Response } from 'express-serve-static-core';
 import express from 'express';
 import { UserID, UserRole } from '@nextapp/common/user';
-import { asyncHandler, validate, AuthMiddleware, API_VERSION } from '../utils';
+import { asyncHandler, validate, AuthMiddleware } from '../utils';
 import { IdentityInfo, User } from '../../../domain/models/user';
 import { SearchOptions } from '../../../domain/models/search';
 import { Email } from '../../../domain/models/email';
 
 const BASE_PATH = '/users';
 
+function id_to_self(id: UserID): string {
+  return `${BASE_PATH}/${id.to_string()}`;
+}
+
 function user_to_json(user: User) {
   return {
-    self: `${API_VERSION}${BASE_PATH}/${user.id!.to_string()}`,
+    self: id_to_self(user.id!),
     username: user.credentials.username.to_string(),
     first_name: user.identity.first_name,
     middle_name: user.identity.middle_name,
@@ -53,10 +57,7 @@ async function register_user(request: Request, response: Response) {
     email
   );
 
-  response
-    .status(StatusCodes.NO_CONTENT)
-    .location(`${API_VERSION}${BASE_PATH}/${id.to_string()}`)
-    .end();
+  response.status(StatusCodes.NO_CONTENT).location(id_to_self(id)).end();
 }
 
 async function get_users_list(request: Request, response: Response) {
