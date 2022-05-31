@@ -22,6 +22,8 @@ export interface InfoRepository {
    */
   delete_user(user_id: UserID): Promise<boolean>;
 
+  // -----------------------------------------------------------
+
   /**
    * Returns the email of the user if it exists.
    * @param user_id
@@ -68,6 +70,23 @@ export interface InfoRepository {
   delete_email(user_id: UserID, email_id: EmailID): Promise<boolean>;
 
   // -----------------------------------------------------------
+
+  /**
+   * Returns the device with the given id if it exists.
+   * @param user_id
+   * @param device_id
+   */
+  get_device(
+    user_id: UserID,
+    device_id: WebDeviceID
+  ): Promise<WebDevice | null>;
+
+  /**
+   * returns the devices saved by the user.
+   * @param user_id
+   * @param options
+   */
+  get_devices(user_id: UserID, options: SearchOptions): Promise<WebDevice[]>;
 
   /**
    * Checks if the given user has a device associated to the given token.
