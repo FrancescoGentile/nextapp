@@ -13,11 +13,11 @@ import {
 } from 'neo4j-driver';
 import { DateTime } from 'luxon';
 import {
-  FCMToken,
   WebDevice,
   WebDeviceFingerprint,
   WebDeviceID,
 } from '../../domain/models/device';
+import { NotificationToken } from '../../domain/models/notification';
 import { Email, EmailID } from '../../domain/models/email';
 import { SearchOptions } from '../../domain/models/search';
 import { InfoRepository } from '../../domain/ports/info.repository';
@@ -276,7 +276,7 @@ export class Neo4jInfoRepository implements InfoRepository {
 
   public async check_device_by_token(
     user_id: UserID,
-    token: FCMToken
+    token: NotificationToken
   ): Promise<boolean> {
     const session = this.driver.session();
     try {
@@ -289,6 +289,32 @@ export class Neo4jInfoRepository implements InfoRepository {
         )
       );
       return res.records.length > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_notification_tokens(
+    user_ids: UserID[]
+  ): Promise<NotificationToken[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
+           WHERE u.id in $ids
+           RETURN w.token as token`,
+          { ids: user_ids.map(user_ids.toString) }
+        )
+      );
+
+      const tokens = res.records.map(
+        (record) => new NotificationToken(record.get('token'))
+      );
+
+      return tokens;
     } catch {
       throw new InternalServerError();
     } finally {
@@ -324,7 +350,7 @@ export class Neo4jInfoRepository implements InfoRepository {
           fingerprint !== undefined
             ? new WebDeviceFingerprint(fingerprint)
             : undefined,
-        token: new FCMToken(token),
+        token: new NotificationToken(token),
         name,
         timestamp: neo4j_to_luxon(timestamp),
       };
@@ -365,7 +391,7 @@ export class Neo4jInfoRepository implements InfoRepository {
             fingerprint !== undefined
               ? new WebDeviceFingerprint(fingerprint)
               : undefined,
-          token: new FCMToken(token),
+          token: new NotificationToken(token),
           name,
           timestamp: neo4j_to_luxon(timestamp),
         };

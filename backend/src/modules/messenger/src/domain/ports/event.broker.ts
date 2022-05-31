@@ -2,7 +2,11 @@
 //
 //
 
-import { UserCreatedEvent, UserDeletedEvent } from '../events';
+import {
+  SendNotificationEvent,
+  UserCreatedEvent,
+  UserDeletedEvent,
+} from '../events';
 
 export interface EventBroker {
   on_user_created(
@@ -14,6 +18,12 @@ export interface EventBroker {
   on_user_deleted(
     name: string,
     listener: (event: UserDeletedEvent) => void,
+    context?: any
+  ): void;
+
+  on_send_notification(
+    name: string,
+    listener: (event: SendNotificationEvent) => void,
     context?: any
   ): void;
 }

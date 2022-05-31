@@ -36,6 +36,7 @@
     "express": "^4.18.1",
     "express-serve-static-core": "^0.1.1",
     "json-joi-converter": "^17.2.1-f",
-    "luxon": "^2.4.0"
+    "luxon": "^2.4.0",
+    "firebase-admin": "^10.2.0"
   }
 }
