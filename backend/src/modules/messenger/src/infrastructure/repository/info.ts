@@ -296,6 +296,32 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
+  public async get_notification_tokens(
+    user_ids: UserID[]
+  ): Promise<NotificationToken[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
+           WHERE u.id in $ids
+           RETURN w.token as token`,
+          { ids: user_ids.map(user_ids.toString) }
+        )
+      );
+
+      const tokens = res.records.map(
+        (record) => new NotificationToken(record.get('token'))
+      );
+
+      return tokens;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public async get_device(
     user_id: UserID,
     device_id: WebDeviceID

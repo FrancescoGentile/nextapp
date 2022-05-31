@@ -90,6 +90,12 @@ export interface InfoRepository {
   get_devices(user_id: UserID, options: SearchOptions): Promise<WebDevice[]>;
 
   /**
+   * Returns the notification tokens associated to the passed users.
+   * @param user_ids
+   */
+  get_notification_tokens(user_ids: UserID[]): Promise<NotificationToken[]>;
+
+  /**
    * Checks if the given user has a device associated to the given token.
    * @param user_id
    * @param token
