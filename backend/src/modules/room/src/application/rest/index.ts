@@ -2,14 +2,18 @@
 //
 //
 
-import { InternalServerError, NextError } from '@nextapp/common/error';
+import {
+  InternalServerError,
+  InvalidRequestError,
+  NextError,
+} from '@nextapp/common/error';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import express from 'express';
+import versionRequest from 'express-version-request';
 import { RoomInfoService } from '../../domain/ports/room.service';
 import { init_room_routes } from './routes/room';
 import { BookingService } from '../../domain/ports/booking.service';
 import { init_booking_routes } from './routes/booking';
-import { API_VERSION } from './utils';
 
 function init_request(
   room_service: RoomInfoService,
@@ -39,19 +43,37 @@ function handle_error(
   res.status(error.code).json(error);
 }
 
+function check_api_version(
+  request: Request,
+  response: Response,
+  next?: NextFunction
+) {
+  // if the version is not specified, we use the last available version
+  if (request.version === '2.0.0' || request.version === undefined) {
+    next!();
+  } else {
+    // TODO: change error returned
+    const error = new InvalidRequestError('Invalid API version.');
+    response.status(error.code).send(error);
+  }
+}
+
 export function init_rest_api(
   room_service: RoomInfoService,
   booking_service: BookingService
 ) {
   const router = express.Router();
 
+  router.use(versionRequest.setVersionByAcceptHeader());
+  router.use(check_api_version);
+
   router.use(express.urlencoded() as any);
   router.use(express.json() as any);
 
   router.use(init_request(room_service, booking_service));
 
-  router.use(API_VERSION, init_room_routes());
-  router.use(API_VERSION, init_booking_routes());
+  router.use(init_room_routes());
+  router.use(init_booking_routes());
 
   router.use(handle_error);
 

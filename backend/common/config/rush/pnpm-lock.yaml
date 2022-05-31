@@ -4,6 +4,7 @@ specifiers:
   '@rush-temp/common': file:./projects/common.tgz
   '@rush-temp/room': file:./projects/room.tgz
   '@types/express': ^4.17.13
+  '@types/express-version-request': ^1.7.1
   '@types/luxon': ^2.3.2
   '@typescript-eslint/eslint-plugin': ^5.23.0
   '@typescript-eslint/parser': ^5.23.0
@@ -21,6 +22,7 @@ specifiers:
   luxon: ^2.4.0
   nanoid: ^3.3.4
   neo4j-driver: ^4.4.5
+  neo4j-driver-core: ^4.4.5
   prettier: ^2.6.2
   typescript: ^4.6.4
 
@@ -28,6 +30,7 @@ dependencies:
   '@rush-temp/common': file:projects/common.tgz
   '@rush-temp/room': file:projects/room.tgz
   '@types/express': 4.17.13
+  '@types/express-version-request': 1.7.1
   '@types/luxon': 2.3.2
   '@typescript-eslint/eslint-plugin': 5.25.0_83b4734ba99fefa06dfff9f51a4c4301
   '@typescript-eslint/parser': 5.25.0_eslint@8.15.0+typescript@4.6.4
@@ -45,6 +48,7 @@ dependencies:
   luxon: 2.4.0
   nanoid: 3.3.4
   neo4j-driver: 4.4.5
+  neo4j-driver-core: 4.4.5
   prettier: 2.6.2
   typescript: 4.6.4
 
@@ -164,6 +168,18 @@ packages:
       '@types/node': 17.0.35
       '@types/qs': 6.9.7
       '@types/range-parser': 1.2.4
+    dev: false
+
+  /@types/express-version-request/1.7.1:
+    resolution: {integrity: sha512-PtcUl+R6IjcZxYV/esmBKtyQO15zl06eBAdOaz9I6zFClp7aitDm/dlcbWaRkwtnwK6oZPapmahWw3z8KkxoBA==}
+    dependencies:
+      '@types/express': 4.17.13
+    dev: false
+
+  /@types/express-version-route/1.0.1:
+    resolution: {integrity: sha512-3Pel525jzOdoHAjujJvf8sJhvYZz42ZubbAUZDdi2TOSCnPYipixt5hiMzfXa9+w0sKZkQh8d5LalbbsDTrjaQ==}
+    dependencies:
+      '@types/express': 4.17.13
     dev: false
 
   /@types/express/4.17.13:
@@ -893,6 +909,16 @@ packages:
 
   /express-serve-static-core/0.1.1:
     resolution: {integrity: sha1-IiNYESp5vJ++AIOCMujNLjEy7zc=}
+    dev: false
+
+  /express-version-request/1.7.0:
+    resolution: {integrity: sha512-arhavpFgjpfIOvpUt/U5h7azHq3y8atJYQOY2XaOUx1+pvZ+kU6qumkICPBdtzlt9lxnHme9tN55kgIugUHgdw==}
+    dev: false
+
+  /express-version-route/1.2.4:
+    resolution: {integrity: sha512-MhciKG12Ef4fw0MfvKmUJES9X7/vfHhNBv9ryHr5n57I+muS3ZCGGOZeeIIems0pgLFzjWbpzVRWFGJ3vbNFDQ==}
+    dependencies:
+      semver: 6.3.0
     dev: false
 
   /express/4.18.1:
@@ -2030,13 +2056,15 @@ packages:
     dev: false
 
   file:projects/room.tgz:
-    resolution: {integrity: sha512-BkxJwVhDCJKA8GMTjDS64MHd9yYau0y72dweH4YWG79riMiHTN8VIKTfY3Cg3TjL5DNTXSEFYKMNpjiJbAlVzA==, tarball: file:projects/room.tgz}
+    resolution: {integrity: sha512-YVMur3QmWEo97ceEOsQTVHcRLrqzTpIEVdDan+sgBZO82obnWRhiQ9u1s5cUhQB3FoCp231KWxezllzxC7dGsw==, tarball: file:projects/room.tgz}
     name: '@rush-temp/room'
     version: 0.0.0
     dependencies:
       '@awaitjs/express': 0.9.0_5fc442aff46a8b0fc079a3259addb84e
       '@types/express': 4.17.13
       '@types/express-serve-static-core': 4.17.28
+      '@types/express-version-request': 1.7.1
+      '@types/express-version-route': 1.0.1
       '@types/luxon': 2.3.2
       '@types/node': 17.0.35
       '@typescript-eslint/eslint-plugin': 5.25.0_83b4734ba99fefa06dfff9f51a4c4301
@@ -2052,6 +2080,8 @@ packages:
       express-async-handler: 1.2.0
       express-promise-router: 4.1.1_5fc442aff46a8b0fc079a3259addb84e
       express-serve-static-core: 0.1.1
+      express-version-request: 1.7.0
+      express-version-route: 1.2.4
       joi: 17.6.0
       joi-to-json: 2.2.4
       joi-to-json-schema: 5.1.0
