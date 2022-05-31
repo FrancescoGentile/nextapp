@@ -13,9 +13,13 @@ import { asyncHandler, validate } from '../utils';
 
 const BASE_PATH = '/users/me/emails';
 
+function id_to_self(id: EmailID): string {
+  return `${BASE_PATH}/${id.to_string()}`;
+}
+
 function email_to_json(email: Email) {
   return {
-    self: `${BASE_PATH}/${email.id!.to_string()}`,
+    self: id_to_self(email.id!),
     main: email.main,
     email: email.to_string(),
   };
@@ -65,7 +69,7 @@ async function add_email(request: Request, response: Response) {
     Email.from_string(value.email, value.main)
   );
 
-  response.status(StatusCodes.OK).location(`${BASE_PATH}/${id}`).end();
+  response.status(StatusCodes.OK).location(id_to_self(id)).end();
 }
 
 async function delete_email(request: Request, response: Response) {
