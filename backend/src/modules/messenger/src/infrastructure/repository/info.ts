@@ -13,11 +13,11 @@ import {
 } from 'neo4j-driver';
 import { DateTime } from 'luxon';
 import {
-  FCMToken,
   WebDevice,
   WebDeviceFingerprint,
   WebDeviceID,
 } from '../../domain/models/device';
+import { NotificationToken } from '../../domain/models/notification';
 import { Email, EmailID } from '../../domain/models/email';
 import { SearchOptions } from '../../domain/models/search';
 import { InfoRepository } from '../../domain/ports/info.repository';
@@ -276,7 +276,7 @@ export class Neo4jInfoRepository implements InfoRepository {
 
   public async check_device_by_token(
     user_id: UserID,
-    token: FCMToken
+    token: NotificationToken
   ): Promise<boolean> {
     const session = this.driver.session();
     try {
@@ -324,7 +324,7 @@ export class Neo4jInfoRepository implements InfoRepository {
           fingerprint !== undefined
             ? new WebDeviceFingerprint(fingerprint)
             : undefined,
-        token: new FCMToken(token),
+        token: new NotificationToken(token),
         name,
         timestamp: neo4j_to_luxon(timestamp),
       };
@@ -365,7 +365,7 @@ export class Neo4jInfoRepository implements InfoRepository {
             fingerprint !== undefined
               ? new WebDeviceFingerprint(fingerprint)
               : undefined,
-          token: new FCMToken(token),
+          token: new NotificationToken(token),
           name,
           timestamp: neo4j_to_luxon(timestamp),
         };

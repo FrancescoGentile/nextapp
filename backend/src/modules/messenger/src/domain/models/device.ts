@@ -5,6 +5,7 @@
 import { customAlphabet } from 'nanoid';
 import { DateTime } from 'luxon';
 import { InvalidDeviceID } from '../errors';
+import { NotificationToken } from './notification';
 
 /**
  * ID associated to each user's device.
@@ -57,23 +58,12 @@ export class WebDeviceFingerprint {
 }
 
 /**
- * A Firebase Cloud Messaging registration token.
- */
-export class FCMToken {
-  public constructor(private readonly token: string) {}
-
-  public to_string(): string {
-    return this.token;
-  }
-}
-
-/**
  * Information associated to a web device.
  */
 export interface WebDevice {
   id?: WebDeviceID;
   fingerprint?: WebDeviceFingerprint;
-  token: FCMToken;
+  token: NotificationToken;
   name: string;
   timestamp: DateTime;
 }

@@ -3,7 +3,8 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { FCMToken, WebDevice, WebDeviceID } from '../models/device';
+import { WebDevice, WebDeviceID } from '../models/device';
+import { NotificationToken } from '../models/notification';
 import { Email, EmailID } from '../models/email';
 import { SearchOptions } from '../models/search';
 
@@ -93,7 +94,10 @@ export interface InfoRepository {
    * @param user_id
    * @param token
    */
-  check_device_by_token(user_id: UserID, token: FCMToken): Promise<boolean>;
+  check_device_by_token(
+    user_id: UserID,
+    token: NotificationToken
+  ): Promise<boolean>;
 
   /**
    * Adds the passed device to the user.

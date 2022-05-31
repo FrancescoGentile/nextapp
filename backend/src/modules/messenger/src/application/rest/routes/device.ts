@@ -7,9 +7,9 @@ import express from 'express';
 import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import { DateTime } from 'luxon';
+import { NotificationToken } from '../../../domain/models/notification';
 import { DeviceNotFound } from '../../../domain/errors';
 import {
-  FCMToken,
   WebDevice,
   WebDeviceFingerprint,
   WebDeviceID,
@@ -77,7 +77,7 @@ async function add_device(request: Request, response: Response) {
 
   const value = validate(schema, request.body);
   const id = await request.info_service.add_device(request.user_id, {
-    token: new FCMToken(value.token),
+    token: new NotificationToken(value.token),
     fingerprint: new WebDeviceFingerprint(value.fingerprint),
     name: value.name,
     timestamp: DateTime.utc(),
