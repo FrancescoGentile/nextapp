@@ -10,13 +10,9 @@ import { IdentityInfo, User } from '../models/user';
 export interface UserInfoService {
   /**
    * Returns the information of the user with the passed id.
-   * This method can throw an error if the user is not authorized to do so.
-   * @param requester the user who wants to get the information of the user
-   * with the passed id
    * @param id the id of the user to get info
-   * (only sys-admins can get the information of any user)
    */
-  get_user(requester: UserID, id: UserID): Promise<User>;
+  get_user(id: UserID): Promise<User>;
 
   /**
    * Return the list of all users.
