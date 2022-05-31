@@ -23,12 +23,7 @@ function channel_to_json(channel: Channel): any {
     self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
     name: channel.name,
     description: channel.description,
-    presidents: {
-      president1: channel.presID_array[0],
-      president2: channel.presID_array[1],
-      president3: channel.presID_array[2],
-      president4: channel.presID_array[3]
-    }
+    array: Joi.array().items(Joi.string())
   };
 }
 
@@ -48,21 +43,14 @@ async function create_channel(request: Request, response: Response){
   const schema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().required(),
-    presidents: {
-      president1: Joi.string().required(),
-      president2: Joi.string(),
-      president3: Joi.string(),
-      president4: Joi.string()
-    }
+    presID_array: Joi.array().items(Joi.string())
   });
 
   const value = validate(schema, request.body);
-  
-  let presID_array: string[] = Object.values(value.presidents);
 
   const id = await request.channel_service!.create_channel(
     request.user_id!,
-    new Channel(value.name, value.description, presID_array)
+    new Channel(value.name, value.description, value.presID_array)
   );
 
   response

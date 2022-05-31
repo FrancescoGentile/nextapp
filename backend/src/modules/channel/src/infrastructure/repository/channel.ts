@@ -6,13 +6,12 @@ import { UserID, UserRole } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { ChannelID, Channel } from '../../domain/models/channel';
-import { User } from '../../domain/models/user';
 import { ChannelRepository } from '../../domain/ports/channel.repository';
 
-export class Neo4jRoomRepository implements ChannelRepository {
+export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
 
-  public static async create(driver: Driver): Promise<Neo4jRoomRepository> {
+  public static async create(driver: Driver): Promise<Neo4jChannelRepository> {
     let session = driver.session();
     try {
       // unique constraint on ID
@@ -36,7 +35,7 @@ export class Neo4jRoomRepository implements ChannelRepository {
         )
       );
 
-      return new Neo4jRoomRepository(driver);
+      return new Neo4jChannelRepository(driver);
     } catch {
       throw new InternalServerError();
     } finally {
@@ -62,12 +61,9 @@ export class Neo4jRoomRepository implements ChannelRepository {
       const { id, name, description } =
         res.records[0].get('c').properties;
 
-      const presidents: User[] = res.records.map((record) => {
-          const { id, role } = record.get('u').properties;
-          return {
-              id: new UserID(id),
-              role: role ? UserRole.SYS_ADMIN : UserRole.SIMPLE
-          }
+      const presidents: string[] = res.records.map((record) => {
+          const id = record.get('u').properties;
+          return id
       });
 
       return new Channel(
@@ -82,9 +78,6 @@ export class Neo4jRoomRepository implements ChannelRepository {
       await session.close();
     }
   }
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////// TODO: implement CHANNEL ---- PRESIDENTS connections ///////////////////// 
-  ///////////////////////////////////////////////////////////////////////////////////////////////
 
   public async create_channel(channel: Channel): Promise<ChannelID | undefined> {
     let session = this.driver.session();

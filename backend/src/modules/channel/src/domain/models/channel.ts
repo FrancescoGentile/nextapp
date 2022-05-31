@@ -44,6 +44,7 @@ export class ChannelID {
 export class Channel {
   
     public static readonly MAX_PRESIDENTS = 4;
+    public static readonly MIN_PRESIDENTS = 1;
     
     public id?: ChannelID;
 
@@ -51,7 +52,7 @@ export class Channel {
 
     public readonly description: string;
     
-    public readonly presID_array: string[] = [];
+    public readonly presID_array: UserID[] = [];
 
     public constructor(
         name: string,
@@ -67,7 +68,9 @@ export class Channel {
         }
         this.name = name;
         this.description = description;
-        this.presID_array = presID_array;
+        for (let i = 0; i < presID_array.length; i++) {
+          this.presID_array[i] = new UserID(presID_array[i]);
+        }
         this.id = id;
     }
 

@@ -8,7 +8,8 @@ import { DateTime } from 'luxon';
 import {
   ChannelNotFound, 
   ChannelCreationNotAuthorized,
-  ChannelNameAlreadyUsed
+  ChannelNameAlreadyUsed,
+  InvalidPresidentsNumber
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -22,18 +23,23 @@ export class NextChannelInfoService implements ChannelInfoService {
   ) {}
   
   public async get_channel(id: ChannelID): Promise<Channel> {
-    const room = await this.channel_repo.get_channel(id);
-    if (room === null) {
+    const channel = await this.channel_repo.get_channel(id);
+    if (channel === null) {
       throw new ChannelNotFound(id.to_string());
     }
-    return room;
+    return channel;
   }
   
   public async create_channel(admin: UserID, channel: Channel): Promise<ChannelID> {
     if (!(await this.is_admin(admin))) {
       throw new ChannelCreationNotAuthorized();
     }
-
+    if (
+      channel.presID_array.length > Channel.MAX_PRESIDENTS 
+      || channel.presID_array.length < Channel.MIN_PRESIDENTS 
+    ) {
+      throw new InvalidPresidentsNumber(channel.presID_array.length);
+    }
     const id = await this.channel_repo.create_channel(channel);
     if (id === undefined) {
       throw new ChannelNameAlreadyUsed(channel.name);

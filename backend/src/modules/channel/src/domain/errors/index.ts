@@ -3,7 +3,7 @@
 //
 
 import { NextError, StatusCodes } from '@nextapp/common/error';
-import { Interval } from 'luxon';
+import { Channel } from '../models/channel';
 
 export { InternalServerError } from '@nextapp/common/error';
 
@@ -17,7 +17,8 @@ enum ChannelErrorTypes {
     INVALID_DESCRIPTION,
     CHANNEL_NOT_FOUND,
     CHANNEL_CREATION_NOT_AUTHORIZED,
-    NAME_ALREADY_USED
+    NAME_ALREADY_USED,
+    INVALID_PRESIDENT_NUMBERS
 }
 
 
@@ -98,5 +99,20 @@ export class ChannelNameAlreadyUsed extends NextError {
       `${name} is already assigned to another channel. Try another name.`,
       options
     );
+  }
+}
+
+export class InvalidPresidentsNumber extends NextError {
+  public constructor(presidents_number: number, options?: ErrorOptions) {
+      super(
+      get_channel_type(ChannelErrorTypes.INVALID_PRESIDENT_NUMBERS),
+      StatusCodes.BAD_REQUEST,
+      'Invalid number of presidents',
+      `You requested ${presidents_number} users to be assigned the role of club president.
+       This number not meet the following conditions: ` +
+      `The number of presidents must be at least ${Channel.MIN_PRESIDENTS} and ${Channel.MAX_PRESIDENTS} at most` +
+      `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
+    options
+      );
   }
 }
