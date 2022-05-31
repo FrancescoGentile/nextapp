@@ -42,7 +42,8 @@ export class NotificationService {
 
       await this.email_sender.send_account_created(
         email,
-        event.user_name,
+        event.fullname,
+        event.username,
         event.password
       );
     } catch {
