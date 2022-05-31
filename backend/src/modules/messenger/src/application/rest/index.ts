@@ -6,6 +6,8 @@ import { InternalServerError, NextError } from '@nextapp/common/error';
 import express from 'express';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { UserInfoService } from '../../domain/ports/info.service';
+import { init_device_routes } from './routes/device';
+import { init_email_routes } from './routes/email';
 
 function init_request(
   info_service: UserInfoService
@@ -40,6 +42,9 @@ export function init_rest_api(info_service: UserInfoService): express.Router {
   router.use(express.json() as any);
 
   router.use(init_request(info_service));
+
+  router.use(init_email_routes());
+  router.use(init_device_routes());
 
   router.use(handle_error);
 
