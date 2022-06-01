@@ -57,7 +57,7 @@ export class Channel {
     public constructor(
         name: string,
         description: string,
-        presID_array: string[],
+        presID_array: string[] | UserID[],
         id?: ChannelID
     ){
         if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
@@ -68,9 +68,16 @@ export class Channel {
         }
         this.name = name;
         this.description = description;
-        for (let i = 0; i < presID_array.length; i++) {
-          this.presID_array[i] = new UserID(presID_array[i]);
+        if (typeof presID_array[0] === 'string') {
+          for (let i = 0; i < presID_array.length; i++) {
+            presID_array as string[];
+            this.presID_array[i] = 
+              new UserID(presID_array[i] as string);
+          }
+        }else{
+          this.presID_array = presID_array as UserID[];
         }
+        
         this.id = id;
     }
 

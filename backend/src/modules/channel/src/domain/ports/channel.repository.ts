@@ -2,6 +2,7 @@
 //
 //
 
+import { UserID } from '@nextapp/common/user';
 import { Channel, ChannelID } from '../models/channel';
 import { SearchOptions } from '../models/search';
 
@@ -19,13 +20,18 @@ export interface ChannelRepository {
    * already exists in the repository.
    * @param channel
    */
-   create_channel(channel: Channel): Promise<ChannelID | undefined>;
+  create_channel(channel: Channel): Promise<ChannelID | undefined>;
 
    /**
    * Gets the channel list.
    * @param options
    */
-
   get_channel_list(options: SearchOptions): Promise<Channel[]>;
+
+  /**
+   * Gets the presidents of a channel
+   * @param channel_id
+   */
+  get_channel_presidents(channel_id: ChannelID): Promise<UserID[]>
 
 }

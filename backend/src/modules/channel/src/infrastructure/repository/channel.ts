@@ -7,6 +7,7 @@ import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { ChannelID, Channel } from '../../domain/models/channel';
 import { ChannelRepository } from '../../domain/ports/channel.repository';
+import { SearchOptions } from '../../domain/models/search';
 
 export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
@@ -48,7 +49,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]->(c:CHANNEL_Channel { id: $id })
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel { id: $id })
            RETURN u, c`,
           { id: channel_id.to_string() }
         )
@@ -139,6 +140,68 @@ export class Neo4jChannelRepository implements ChannelRepository {
         }
       }
     } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_channel_list(options: SearchOptions): Promise<Channel[]> {
+    let session = this.driver.session();
+    try {
+      const res_chan = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (c:CHANNEL_Channel)-[p:CHANNEL_PRESIDENT]-(u:CHANNEL_User)
+           RETURN c, u
+           ORDER BY c.id
+           SKIP $skip
+           LIMIT $limit`,
+          { skip: int(options.offset), limit: int(options.limit) }
+        )
+      );
+
+      const channels: Channel[] = res_chan.records.map((record) => {
+        const info = record.get('c').properties;
+        const channel_id = ChannelID.from_string(info.id);
+        const presidents: string[] = res_chan.records.map((record) => {
+          const id = record.get('u').properties;
+          return id
+      });
+        return new Channel(
+          info.name,
+          info.description,
+          presidents,
+          channel_id
+        )
+      });
+
+      return channels;
+    } catch (e) {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_channel_presidents(channel_id: ChannelID): Promise<UserID[]>{
+    const session = this.driver.session();
+    try {
+      const res_pres = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (c:CHANNEL_Channel { id: $id })-[p:CHANNEL_PRESIDENT]-(u:CHANNEL_User)
+           RETURN u.id as uid
+           ORDER BY u.id`,
+           
+          { id: channel_id }
+        )
+      );
+
+      const presidents: UserID[] = res_pres.records.map((record) => {
+        return new UserID(record.get('uid'))
+      });
+
+      return presidents;
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();
