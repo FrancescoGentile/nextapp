@@ -5,6 +5,7 @@
 import { UserID } from '@nextapp/common/user';
 import { DateTime } from 'luxon';
 import { Channel, ChannelID } from '../models/channel';
+import { SearchOptions } from '../models/search';
 
 export interface ChannelInfoService {
   /**
@@ -21,4 +22,11 @@ export interface ChannelInfoService {
    * @param channel
    */
   create_channel(admin: UserID, channel: Channel): Promise<ChannelID>;
+
+  /**
+   * Return the list of all channels.
+   * @param requester the user who wants to get the list of all channels
+   */
+   get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]>;
+
 }

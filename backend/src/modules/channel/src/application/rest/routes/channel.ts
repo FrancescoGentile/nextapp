@@ -15,6 +15,7 @@ import {
 import{
   ChannelNotFound
 } from '../../../domain/errors'
+import { SearchOptions } from '../../../domain/models/search';
 
 const BASE_PATH = '/channels';
 
@@ -59,10 +60,28 @@ async function create_channel(request: Request, response: Response){
     .end();
 }
 
+async function get_channel_list(request: Request, response: Response) {
+  const schema = Joi.object({
+    offset: Joi.number(),
+    limit: Joi.number(),
+  });
+  const value = validate(schema, {
+    offset: request.query.offset,
+    limit: request.query.limit,
+  });
+  const options = SearchOptions.build(value.offset, value.limit);
+
+  const users = await request.channel_service!.get_channel_list(
+    request.user_id!,
+    options
+  );
+  response.status(StatusCodes.OK).json(users.map(channel_to_json));
+}
 
 export function init_channel_routes(): express.Router {
   const router = express.Router();
 
+  router.get(BASE_PATH, asyncHandler(get_channel_list));
   router.get(`${BASE_PATH}/:channel_id`, asyncHandler(get_channel));
   router.post(`${BASE_PATH}`, asyncHandler(create_channel));
 
