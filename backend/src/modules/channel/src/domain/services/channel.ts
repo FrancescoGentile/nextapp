@@ -23,10 +23,7 @@ export class NextChannelInfoService implements ChannelInfoService {
     private readonly user_repo: UserRepository
   ) {}
 
-  //TODO: WRITE FUNCTION//
-  get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]> {
-    throw new Error('Method not implemented.');
-  }
+ 
   
   public async get_channel(id: ChannelID): Promise<Channel> {
     const channel = await this.channel_repo.get_channel(id);
@@ -51,6 +48,11 @@ export class NextChannelInfoService implements ChannelInfoService {
       throw new ChannelNameAlreadyUsed(channel.name);
     }
     return id;
+  }
+  
+  
+  public async get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]> {
+    return this.channel_repo.get_channel_list(options);
   }
 
   private async is_admin(user_id: UserID): Promise<boolean> {

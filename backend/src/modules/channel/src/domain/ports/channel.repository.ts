@@ -3,6 +3,7 @@
 //
 
 import { Channel, ChannelID } from '../models/channel';
+import { SearchOptions } from '../models/search';
 
 export interface ChannelRepository {
   /**
@@ -19,5 +20,12 @@ export interface ChannelRepository {
    * @param channel
    */
    create_channel(channel: Channel): Promise<ChannelID | undefined>;
+
+   /**
+   * Gets the channel list.
+   * @param options
+   */
+
+  get_channel_list(options: SearchOptions): Promise<Channel[]>;
 
 }
