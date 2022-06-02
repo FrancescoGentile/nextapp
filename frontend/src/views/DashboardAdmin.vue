@@ -77,18 +77,18 @@ export default defineComponent({
                 <div class="card-body h-100">
                     <h5 class="card-text">From here you'll be able to add, delete and modify news and events from the general channel</h5>
                     <div class="text-center">
-                       <button class="btn btn-primary" @click="toggleGeneral()"> Manage users </button> 
+                       <button class="btn btn-primary" @click="toggleGeneral()"> Manage general channel </button> 
                     </div>
                 </div>
             </div>
       </div>
       <div class="col">
           <div class="card h-100">
-                <h5 class="card-header text-center">Channels </h5>
+                <h5 class="card-header text-center">Clubs </h5>
                 <div class="card-body h-100">
-                    <h5 class="card-text">From here you'll be able to add, delete and modify channels and add users as their administrators</h5>
+                    <h5 class="card-text">From here you'll be able to add and delete clubs and add users as their administrators</h5>
                     <div class="text-center">
-                       <button class="btn btn-primary" @click="toggleChannels()"> Manage users </button> 
+                       <button class="btn btn-primary" @click="toggleChannels()"> Manage clubs </button> 
                     </div>
                 </div>
             </div>

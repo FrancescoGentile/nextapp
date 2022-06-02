@@ -591,7 +591,54 @@ export default createStore({
           reject(err)
         })
       })
+    },
+
+    addChannel({ commit }, channel) {
+      return new Promise((resolve, reject) => {
+        instance.post("channels",
+          {
+            name: channel.name,
+            description: channel.description,
+            array: channel.array
+          }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteChannel({ commit }, channelId) {
+      return new Promise((resolve, reject) => {
+        instance.delete("channels/"+channelId,
+        { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
     }
+
 
   },
   modules: {
