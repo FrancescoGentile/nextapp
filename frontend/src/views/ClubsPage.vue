@@ -106,7 +106,7 @@ export default defineComponent({
               <button v-if="isSubscribed(channel)" @click="unsubscribeFromChannel(channel)"
                 class="btn btn-primary mb-1"> Unsubscribe </button>
               <button v-else @click="subscribeToChannel(channel)" class="btn btn-primary mb-1"> Subscribe </button>
-              <button @click="this.$router.push({ name: 'clubDetails', params: { id: 1, subscribed: isSubscribed() } })"
+              <button @click="this.$router.push({ name: 'clubDetails', params: { id: 1, isSubscribed: true } })"
                 class="btn btn-primary stretched-link">See details</button>
             </div>
 
