@@ -29,4 +29,12 @@ export interface ChannelInfoService {
    */
    get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]>;
 
+   /**
+   * Removes the channel with the given id only if it was made by the passed user.
+   * Can throw an error if the passed user is not an admin.
+   * @param user_id
+   * @param channel_id
+   */
+  delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void>;
+
 }

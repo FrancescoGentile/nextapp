@@ -22,8 +22,6 @@ export class NextChannelInfoService implements ChannelInfoService {
     private readonly channel_repo: ChannelRepository,
     private readonly user_repo: UserRepository
   ) {}
-
- 
   
   public async get_channel(id: ChannelID): Promise<Channel> {
     const channel = await this.channel_repo.get_channel(id);
@@ -55,6 +53,16 @@ export class NextChannelInfoService implements ChannelInfoService {
     return this.channel_repo.get_channel_list(options);
   }
 
+  private async delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void> {
+    if (!(await this.is_admin(user_id))) {
+      throw new ChannelCreationNotAuthorized();
+    }
+    const deleted = await this.channel_repo.delete_booking(user_id, channel_id);
+    if (!deleted) {
+      throw new ChannelNotFound(channel_id.to_string());
+    }
+  }
+  
   private async is_admin(user_id: UserID): Promise<boolean> {
     const role = await this.user_repo.get_user_role(user_id);
     if (role === null) {
@@ -63,5 +71,5 @@ export class NextChannelInfoService implements ChannelInfoService {
     }
     return role === UserRole.SYS_ADMIN;
   }
-  
+
 }
