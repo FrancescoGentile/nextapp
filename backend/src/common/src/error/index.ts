@@ -69,7 +69,8 @@ export class InternalServerError extends NextError {
 
 enum RequestErrorTypes {
   INVALID_REQUEST = 1,
-  NOT_FOUND = 2,
+  INVALID_API_VERSION = 2,
+  NOT_FOUND = 3,
 }
 
 function get_request_type(type: RequestErrorTypes): string {
@@ -83,6 +84,18 @@ export class InvalidRequestError extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid request',
       format,
+      options
+    );
+  }
+}
+
+export class InvalidAPIVersion extends NextError {
+  public constructor(versions: [string], options?: ErrorOptions) {
+    super(
+      get_request_type(RequestErrorTypes.INVALID_API_VERSION),
+      StatusCodes.NOT_ACCEPTABLE,
+      'Invalid API version',
+      `For this endpoint valid API versions are ${versions.join(', ')}`,
       options
     );
   }
