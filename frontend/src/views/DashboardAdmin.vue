@@ -49,7 +49,7 @@ export default defineComponent({
 <div class="container">
     <div class="row my-4">
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 border">
                 <h5 class="card-header text-center">Users</h5>
                 <div class="card-body h-100">
                     <h5 class="card-text">From here you'll be able to add, delete and modify users and their information</h5>
@@ -61,7 +61,7 @@ export default defineComponent({
         </div>
 
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 border">
                 <h5 class="card-header text-center">Rooms</h5>
                 <div class="card-body">
                     <h5 class="card-text">From here you'll be able to add, delete and modify rooms</h5>
@@ -72,7 +72,7 @@ export default defineComponent({
             </div>
         </div>
       <div class="col">
-          <div class="card h-100">
+          <div class="card h-100 border">
                 <h5 class="card-header text-center">General channel </h5>
                 <div class="card-body h-100">
                     <h5 class="card-text">From here you'll be able to add, delete and modify news and events from the general channel</h5>
@@ -83,7 +83,7 @@ export default defineComponent({
             </div>
       </div>
       <div class="col">
-          <div class="card h-100">
+          <div class="card h-100 border">
                 <h5 class="card-header text-center">Clubs </h5>
                 <div class="card-body h-100">
                     <h5 class="card-text">From here you'll be able to add and delete clubs and add users as their administrators</h5>
@@ -101,5 +101,5 @@ export default defineComponent({
   
 </template>
 
-<style>
+<style scoped>
 </style>

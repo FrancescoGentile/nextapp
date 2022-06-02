@@ -637,8 +637,53 @@ export default createStore({
           reject(err)
         })
       })
-    }
+    },
 
+    subscribeUserToChannel({commit}, channel){
+      return new Promise((resolve, reject)=>{
+        instance.post("users/me/channels",
+        {
+          name: channel.name,
+          description: channel.description,
+          array: channel.array
+        }, { withCredentials: true }
+        ).then(response=>{
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err=>{
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    unsubscribeUserFromChannel({commit}, channelId){
+      return new Promise((resolve, reject)=>{
+        instance.delete("users/me/channels/"+channelId,
+          { withCredentials: true }
+        ).then(response=>{
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err=>{
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    }
 
   },
   modules: {
