@@ -48,13 +48,13 @@ export default defineComponent({
             <router-link to="/dashboardAdmin" class="nav-link">Administration</router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/channelAdministration" class="nav-link">ChannelAdministration</router-link>
+            <router-link to="/clubsAdministration" class="nav-link">Clubs Administration</router-link>
           </li>
           <li class="nav-item">
             <router-link to="/rooms" class="nav-link">Reservations</router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/channels" class="nav-link">Channels</router-link>
+            <router-link to="/clubs" class="nav-link">Clubs</router-link>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown" aria-expanded="false">Profile</a>

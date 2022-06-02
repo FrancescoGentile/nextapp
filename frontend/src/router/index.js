@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
-//import store from "@/store"
+import { createRouter, createWebHistory} from 'vue-router'
+import store from "@/store";
 import HomePage from '../views/HomePage.vue'
 
 const routes = [
@@ -40,28 +40,29 @@ const routes = [
     component: () => import("../views/ReservationPage.vue")
   },
   {
-    path: "/channels",
-    name: "ChannelsPage",
-    component: () => import("../views/ChannelsPage.vue")
+    path: "/clubs",
+    name: "clubs",
+    component: () => import("../views/ClubsPage.vue")
   },
   {
-    path: "/channels/:id",
-    name: "ChannelDetails",
-    component: () => import("../views/ChannelDetails.vue"),
+    path: "/clubs/:id",
+    name: "clubDetails",
+    component: () => import("../views/ClubDetails.vue"),
     props: true
   },
   {
-    path:"/channelAdministration",
-    name: "ChannelAdministration",
-    component: () => import("../views/ChannelAdministration.vue")
+    path: "/clubsAdministration",
+    name: "clubsAdministration",
+    component: () => import("../views/ClubsAdministration.vue")
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
+  base: "/",
   routes
 })
-/*
+
 router.beforeEach((to, from, next) => {
   const isLoggedIn = store.getters.isLoggedIn
   //const user = store.getters.getUser
@@ -74,7 +75,7 @@ router.beforeEach((to, from, next) => {
         next({name: "dashboard"})
       }else{
         next()
-      }
+      }*/
       next()
     }
   } else {
@@ -85,5 +86,5 @@ router.beforeEach((to, from, next) => {
     }
 
   }
-})*/
+})
 export default router

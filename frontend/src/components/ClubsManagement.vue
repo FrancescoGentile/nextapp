@@ -10,7 +10,7 @@ export default defineComponent({
 
 <template>
     <div>
-        Channels Management
+        Clubs Management
     </div>
 </template>
 

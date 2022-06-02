@@ -2,7 +2,7 @@
 import { defineComponent } from "vue"
 import UsersManagement from "@/components/UsersManagement.vue"
 import RoomsManagement from "@/components/RoomsManagement"
-import ChannelsManagement from "@/components/ChannelsManagement.vue"
+import ClubsManagement from "@/components/ClubsManagement.vue"
 
 export default defineComponent({
     data(){
@@ -40,7 +40,7 @@ export default defineComponent({
         }
     },
     components:{
-        UsersManagement, RoomsManagement, ChannelsManagement
+        UsersManagement, RoomsManagement, ClubsManagement
     }
 })
 </script>
@@ -97,7 +97,7 @@ export default defineComponent({
 </div>
   <UsersManagement v-if="showUsers"></UsersManagement>
   <RoomsManagement v-if="showRooms"></RoomsManagement>
-  <ChannelsManagement v-if="showChannels"></ChannelsManagement>
+  <ClubsManagement v-if="showChannels"></ClubsManagement>
   
 </template>
 
