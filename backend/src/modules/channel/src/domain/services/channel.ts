@@ -10,7 +10,7 @@ import {
   ChannelCreationNotAuthorized,
   ChannelNameAlreadyUsed,
   InvalidPresidentsNumber
-} from '../errors';
+} from '../errors/channel';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
 import { ChannelInfoService } from '../ports/channel.service';

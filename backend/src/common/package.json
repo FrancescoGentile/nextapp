@@ -8,7 +8,9 @@
     ".": "./dist/index.js",
     "./error": "./dist/error/index.js",
     "./user": "./dist/user/index.js",
-    "./event": "./dist/event/index.js"
+    "./event": "./dist/event/index.js",
+    "./room": "./dist/room/index.js"
+
   },
   "typesVersions": {
     "*": {
@@ -20,6 +22,9 @@
       ],
       "event": [
         "dist/event/index.d.ts"
+      ],
+      "room":[
+        "dist/room/index.d.ts"
       ]
     }
   },

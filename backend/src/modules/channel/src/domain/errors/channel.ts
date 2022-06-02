@@ -4,7 +4,7 @@
 
 import { NextError, StatusCodes } from '@nextapp/common/error';
 import { Channel } from '../models/channel';
-
+import { DateTime } from 'luxon';
 export { InternalServerError } from '@nextapp/common/error';
 
 // ---------------------------------------------------------------
@@ -18,7 +18,8 @@ enum ChannelErrorTypes {
     CHANNEL_NOT_FOUND,
     CHANNEL_CREATION_NOT_AUTHORIZED,
     NAME_ALREADY_USED,
-    INVALID_PRESIDENT_NUMBERS
+    INVALID_PRESIDENT_NUMBERS,
+    EVENT_CREATION_NOT_AUTHORIZED
 }
 
 
@@ -115,4 +116,6 @@ export class InvalidPresidentsNumber extends NextError {
     options
       );
   }
+
 }
+

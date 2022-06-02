@@ -3,7 +3,6 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { DateTime } from 'luxon';
 import { Channel, ChannelID } from '../models/channel';
 
 export interface ChannelInfoService {
@@ -21,4 +20,7 @@ export interface ChannelInfoService {
    * @param channel
    */
   create_channel(admin: UserID, channel: Channel): Promise<ChannelID>;
+
+  
+
 }

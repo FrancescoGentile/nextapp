@@ -6,7 +6,6 @@ import { StatusCodes } from '@nextapp/common/error';
 import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import express, { Router } from 'express';
-import { DateTime } from 'luxon';
 import { API_VERSION, asyncHandler, validate } from '../utils';
 import {
   Channel,
@@ -14,7 +13,7 @@ import {
 } from '../../../domain/models/channel'
 import{
   ChannelNotFound
-} from '../../../domain/errors'
+} from '../../../domain/errors/channel'
 
 const BASE_PATH = '/channels';
 

@@ -7,7 +7,7 @@ import {
   InvalidFloor,
   InvalidRoomID,
   InvalidRoomName,
-  InvalidSeatNumber,
+  InvalidSeatNumber
 } from '../errors';
 import { BuildingInfo } from './building';
 

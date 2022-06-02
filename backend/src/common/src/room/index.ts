@@ -4,10 +4,7 @@
 
 import { customAlphabet } from 'nanoid';
 
-/**
- * ID used to identify a user.
- */
-export class UserID {
+export class RoomID {
   public static LENGTH = 10;
 
   public constructor(private readonly id: string) {}
@@ -16,21 +13,18 @@ export class UserID {
    * Generates a UserID of 10 digits.
    * @returns
    */
-  public static generate(): UserID {
-    const nanoid = customAlphabet('1234567890', UserID.LENGTH);
-    return new UserID(nanoid());
+  
+  public static generate(): RoomID {
+    const nanoid = customAlphabet('1234567890', RoomID.LENGTH);
+    return new RoomID(nanoid());
   }
 
   public to_string(): string {
     return this.id;
   }
 
-  public equals(other: UserID): boolean {
+  public equals(other: RoomID): boolean {
     return this.id === other.id;
   }
 }
 
-export enum UserRole {
-  SIMPLE,
-  SYS_ADMIN
-}
