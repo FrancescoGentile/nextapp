@@ -24,7 +24,8 @@ async function login(request: Request, response: Response) {
   );
 
   const expires = DateTime.utc().plus(AuthToken.ttl());
-  if (request.header('Accept').includes('cookie')) {
+  const accept = request.header('Accept');
+  if (accept !== undefined && accept.includes('cookie')) {
     response
       .status(StatusCodes.NO_CONTENT)
       .cookie(COOKIE_NAME, token.to_string(), {
@@ -32,7 +33,7 @@ async function login(request: Request, response: Response) {
         httpOnly: true,
         expires: expires.toJSDate(),
       })
-      .send();
+      .end();
   } else {
     response
       .status(StatusCodes.OK)
