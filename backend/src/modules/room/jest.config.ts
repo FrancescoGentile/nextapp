@@ -10,4 +10,5 @@ export default async (): Promise<Config.InitialOptions> => ({
   collectCoverage: true,
   coverageDirectory: 'src',
   coverageReporters: ['json-summary'],
+  testTimeout: 10000,
 });
