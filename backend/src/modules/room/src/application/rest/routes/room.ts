@@ -92,8 +92,15 @@ async function get_slots(request: Request, response: Response) {
     end: request.query.end,
   });
 
+  let id: RoomID;
+  try {
+    id = RoomID.from_string(request.params.room_id);
+  } catch {
+    throw new RoomNotFound(request.params.room_id);
+  }
+
   const slots = await request.room_service!.get_available_slots(
-    RoomID.from_string(request.params.room_id),
+    id,
     DateTime.fromJSDate(value.start),
     DateTime.fromJSDate(value.end)
   );
