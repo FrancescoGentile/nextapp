@@ -3,17 +3,16 @@
 //
 
 import { UserID } from '@nextapp/common/user';
+import { Email } from '../models/email';
 import { SearchOptions } from '../models/search';
-import { User } from '../models/user';
+import { IdentityInfo, User } from '../models/user';
 
 export interface UserInfoService {
   /**
-   * Creates a new user with the passed information.
-   * This method can throw an error if the given information are not correct.
-   * @param requester the user who wants to create a new user
-   * (only sys-admins can create new users)
+   * Returns the information of the user with the passed id.
+   * @param id the id of the user to get info
    */
-  register_user(requester: UserID, user: User): Promise<UserID>;
+  get_user(id: UserID): Promise<User>;
 
   /**
    * Return the list of all users.
@@ -21,17 +20,22 @@ export interface UserInfoService {
    * @param requester the user who wants to get the list of all users
    * (only sys-admins can get the list of all users)
    */
-  get_users_list(requester: UserID, options: SearchOptions): Promise<User[]>;
+  get_users(requester: UserID, options: SearchOptions): Promise<User[]>;
 
   /**
-   * Returns the information of the user with the passed id.
-   * This method can throw an error if the user is not authorized to do so.
-   * @param requester the user who wants to get the information of the user
-   * with the passed id
-   * @param id the id of the user to get info
-   * (only sys-admins can get the information of any user)
+   * Creates a new user with the passed information.
+   * This method can throw an error if the given information are not correct.
+   * @param requester the user who wants to create a new user
+   * (only sys-admins can create new users)
    */
-  get_user_info(requester: UserID, id: UserID): Promise<User>;
+  create_user(
+    requester: UserID,
+    username: string,
+    password: string,
+    is_admin: boolean,
+    identity: IdentityInfo,
+    email: Email
+  ): Promise<UserID>;
 
   /**
    * Change user's password to the requested password.
@@ -58,16 +62,10 @@ export interface UserInfoService {
   ): Promise<void>;
 
   /**
-   * Bans the user with the passed id.
-   * @param requester the user who wants to ban the user with the passed id
-   * (only sys-admins can ban any user)
-   * @param id the id of the user to ban
+   * Deletes the account associated to the user.
+   * This method can be invoked only by the user or by an admin.
+   * @param requester
+   * @param user
    */
-  remove_user(requester: UserID, id: UserID): Promise<void>;
-
-  /**
-   * Deletes the account of the requester.
-   * @param user_id user who wants to delete thier account
-   */
-  delete_account(user_id: UserID): Promise<void>;
+  delete_user(requester: UserID, user: UserID): Promise<void>;
 }

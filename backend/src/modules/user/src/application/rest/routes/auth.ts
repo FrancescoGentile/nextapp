@@ -8,6 +8,7 @@ import { Request, Response } from 'express-serve-static-core';
 import express from 'express';
 import { DateTime } from 'luxon';
 import { asyncHandler, AuthMiddleware, COOKIE_NAME, validate } from '../utils';
+import { AuthToken } from '../../../domain/models/auth';
 
 async function login(request: Request, response: Response) {
   const schema = Joi.object({
@@ -22,16 +23,21 @@ async function login(request: Request, response: Response) {
     value.password
   );
 
-  const expires = DateTime.utc().plus({ hours: 24 });
-
-  response
-    .status(StatusCodes.NO_CONTENT)
-    .cookie(COOKIE_NAME, token.to_string(), {
-      secure: true,
-      httpOnly: true,
-      expires: expires.toJSDate(),
-    })
-    .send();
+  const expires = DateTime.utc().plus(AuthToken.ttl());
+  if (request.header('Accept').includes('cookie')) {
+    response
+      .status(StatusCodes.NO_CONTENT)
+      .cookie(COOKIE_NAME, token.to_string(), {
+        secure: true,
+        httpOnly: true,
+        expires: expires.toJSDate(),
+      })
+      .send();
+  } else {
+    response
+      .status(StatusCodes.OK)
+      .json({ token: token.to_string(), expires: expires.toISO() });
+  }
 }
 
 function logout(request: Request, response: Response) {

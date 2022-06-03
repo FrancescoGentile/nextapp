@@ -12,12 +12,13 @@ import {
   UserNotFound,
   OldPasswordWrong,
 } from '../errors';
-import { User } from '../models/user';
-import { Password } from '../models/user.credentials';
+import { IdentityInfo, User } from '../models/user';
+import { Password, Username } from '../models/credentials';
 import { UserInfoService } from '../ports/user.service';
 import { UserRepository } from '../ports/user.repository';
 import { EventBroker } from '../ports/event.broker';
 import { SearchOptions } from '../models/search';
+import { Email } from '../models/email';
 
 export class NextUserInfoService implements UserInfoService {
   public constructor(
@@ -25,31 +26,16 @@ export class NextUserInfoService implements UserInfoService {
     private readonly broker: EventBroker
   ) {}
 
-  public async register_user(
-    requester: UserID,
-    new_user: User
-  ): Promise<UserID> {
-    if (!(await this.is_admin(requester))) {
-      throw new NotAnAdmin();
+  public async get_user(id: UserID): Promise<User> {
+    const user = await this.user_repo.get_user(id);
+    if (user === null) {
+      throw new UserNotFound(id.to_string());
     }
 
-    const id = await this.user_repo.create_user(new_user);
-    if (id === undefined) {
-      throw new UsernameAlreadyUsed(new_user.username.to_string());
-    }
-
-    this.broker.emit_user_created({
-      name: 'user_created',
-      module: ModuleID.USER,
-      timestamp: DateTime.utc(),
-      user_id: id,
-      role: new_user.role,
-    });
-
-    return id;
+    return user;
   }
 
-  public async get_users_list(
+  public async get_users(
     admin: UserID,
     options: SearchOptions
   ): Promise<User[]> {
@@ -57,19 +43,46 @@ export class NextUserInfoService implements UserInfoService {
       throw new NotAnAdmin();
     }
 
-    return this.user_repo.get_users_list(options);
+    return this.user_repo.get_users(options);
   }
 
-  public async get_user_info(requester: UserID, id: UserID): Promise<User> {
-    if (!(await this.is_admin(requester)) && !requester.equals(id)) {
+  public async create_user(
+    requester: UserID,
+    uname: string,
+    pwd: string,
+    is_admin: boolean,
+    identity: IdentityInfo,
+    email: Email
+  ): Promise<UserID> {
+    if (!(await this.is_admin(requester))) {
       throw new NotAnAdmin();
     }
-    const user = await this.user_repo.get_user_info(id);
-    if (user === null) {
-      throw new UserNotFound(id.to_string());
+
+    const username = Username.from_string(uname);
+    const password = await Password.from_clear(pwd, username);
+    const credentials = { username, password };
+    const role = is_admin ? UserRole.SYS_ADMIN : UserRole.SIMPLE;
+    const user: User = { credentials, role, identity };
+
+    const id = await this.user_repo.create_user(user);
+
+    if (id === undefined) {
+      throw new UsernameAlreadyUsed(uname);
     }
 
-    return user;
+    this.broker.emit_user_created({
+      name: 'user_created',
+      module: ModuleID.USER,
+      timestamp: DateTime.utc(),
+      user_id: id,
+      role,
+      fullname: identity.fullname,
+      username: uname,
+      password: pwd,
+      email: email.to_string(),
+    });
+
+    return id;
   }
 
   public async change_role(
@@ -93,35 +106,21 @@ export class NextUserInfoService implements UserInfoService {
     });
   }
 
-  public async remove_user(requester: UserID, id: UserID): Promise<void> {
-    if (!(await this.is_admin(requester)) && !requester.equals(id)) {
+  public async delete_user(requester: UserID, user: UserID): Promise<void> {
+    if (!(await this.is_admin(requester)) && !requester.equals(user)) {
       throw new NotAnAdmin();
     }
 
-    const deleted = await this.user_repo.delete_user(id);
+    const deleted = await this.user_repo.delete_user(user);
     if (!deleted) {
-      throw new UserNotFound(id.to_string());
+      throw new UserNotFound(user.to_string());
     }
 
     this.broker.emit_user_deleted({
       name: 'user_deleted',
       module: ModuleID.USER,
       timestamp: DateTime.utc(),
-      user_id: id,
-    });
-  }
-
-  public async delete_account(user_id: UserID) {
-    const deleted = await this.user_repo.delete_user(user_id);
-    if (!deleted) {
-      throw new InternalServerError();
-    }
-
-    this.broker.emit_user_deleted({
-      name: 'user_deleted',
-      module: ModuleID.USER,
-      timestamp: DateTime.utc(),
-      user_id,
+      user_id: user,
     });
   }
 
@@ -130,17 +129,20 @@ export class NextUserInfoService implements UserInfoService {
     old_password: string,
     new_password: string
   ): Promise<void> {
-    const info = await this.user_repo.get_user_info(user_id);
-    if (info === null) {
+    const user = await this.user_repo.get_user(user_id);
+    if (user === null) {
       throw new InternalServerError();
     }
 
-    const valid = await info.password.verify(old_password);
+    const valid = await user.credentials.password.verify(old_password);
     if (!valid) {
       throw new OldPasswordWrong();
     }
 
-    const new_pwd = await Password.from_clear(new_password, info.username);
+    const new_pwd = await Password.from_clear(
+      new_password,
+      user.credentials.username
+    );
     const changed = this.user_repo.change_password(user_id, new_pwd);
     if (!changed) {
       throw new InternalServerError();

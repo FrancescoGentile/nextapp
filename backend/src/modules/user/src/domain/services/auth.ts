@@ -3,7 +3,7 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { Username } from '../models/user.credentials';
+import { Username } from '../models/credentials';
 import { AuthService } from '../ports/auth.service';
 import { UserRepository } from '../ports/user.repository';
 import { InvalidCredentials } from '../errors';

@@ -4,6 +4,7 @@
 
 import { UserID } from '@nextapp/common/user';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { Duration } from 'luxon';
 import { InvalidAuthToken } from '../errors';
 
 export class AuthKey {
@@ -36,5 +37,9 @@ export class AuthToken {
 
   public to_string(): string {
     return this.token;
+  }
+
+  public static ttl(): Duration {
+    return Duration.fromObject({ hours: 24 });
   }
 }
