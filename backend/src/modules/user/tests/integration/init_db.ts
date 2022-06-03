@@ -36,6 +36,18 @@ async function populate_users(driver: Driver): Promise<User[]> {
         ),
       },
     },
+    {
+      id: new UserID('3333333333'),
+      role: UserRole.SIMPLE,
+      identity: new IdentityInfo('Lorenzo', undefined, 'Cereser'),
+      credentials: {
+        username: Username.from_string('lorenzo_cereser'),
+        password: await Password.from_clear(
+          'ReallyComplicatedPassword',
+          Username.from_string('manuela_cortepause')
+        ),
+      },
+    },
   ];
 
   for (const user of users) {
