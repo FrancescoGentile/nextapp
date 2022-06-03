@@ -24,6 +24,6 @@ export interface SubService {
   get_user_subscriptions(
     user_id: UserID,
     options: SearchOptions
-  ): Promise<Channel[] | null>
+  ): Promise<Sub[] | null>
 
 }

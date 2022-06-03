@@ -16,8 +16,9 @@ import{
     InvalidSubscribeChannel
 } from '../../../domain/errors'
 import { SearchOptions } from '../../../domain/models/search';
+import { Sub } from '../../../domain/models/sub';
 
-const BASE_PATH = '/user/me/subscriptions';
+const BASE_PATH = '/users/me/subscriptions';
 
 function channel_to_json(channel: Channel): any {
   return {
@@ -25,6 +26,19 @@ function channel_to_json(channel: Channel): any {
     name: channel.name,
     description: channel.description,
     array: Joi.array().items(Joi.string())
+  };
+}
+
+function subscription_to_json(subscription: Sub): any {
+  return {
+    self: `${API_VERSION}${BASE_PATH}/${subscription.id!.to_string()}`,
+    channel: {
+      self: `${API_VERSION}/channels/${subscription.channel.to_string()}`,
+    },
+    user: {
+      self: `${API_VERSION}/users/${subscription.user.to_string()}`
+    }
+
   };
 }
 
@@ -39,12 +53,12 @@ async function get_user_subscriptions(request: Request, response: Response){
     limit: request.query.limit,
   });
 
-  const sub_channels = await request.sub_service!.get_user_subscriptions(
+  const subs = await request.sub_service!.get_user_subscriptions(
     request.user_id!,
     SearchOptions.build(value.offset, value.limit)
   );
 
-  response.status(StatusCodes.OK).json(sub_channels!.map(channel_to_json));
+  response.status(StatusCodes.OK).json(subs!.map(subscription_to_json));
 
 }
 

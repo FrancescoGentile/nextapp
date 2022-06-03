@@ -45,7 +45,7 @@ export class NextSubService implements SubService {
   
   }
   
-  public async get_user_subscriptions(user_id: UserID, options: SearchOptions): Promise<Channel[] | null> {
+  public async get_user_subscriptions(user_id: UserID, options: SearchOptions): Promise<Sub[] | null> {
     return await this.sub_repo.get_user_subscriptions(user_id, options);
   }
 

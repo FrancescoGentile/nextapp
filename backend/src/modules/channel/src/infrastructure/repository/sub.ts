@@ -45,13 +45,13 @@ export class Neo4jSubRepository implements SubRepository {
     }
   }
 
-  public async get_user_subscriptions(user_id : UserID, options: SearchOptions): Promise<Channel[] | null> {
+  public async get_user_subscriptions(user_id : UserID, options: SearchOptions): Promise<Sub[] | null> {
     const session = this.driver.session();
     try {
-      const res_chan = await session.readTransaction((tx) =>
+      const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (user:CHANNEL_User{id: $id})-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel)-[p:CHANNEL_PRESIDENT]-(pres:CHANNEL_User)
-           RETURN chan, pres
+          `MATCH (user:CHANNEL_User{id: $id})-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel)
+           RETURN chan.id as cid, s.id as sid
            ORDER BY chan.id
            SKIP $skip
            LIMIT $limit`,
@@ -63,22 +63,13 @@ export class Neo4jSubRepository implements SubRepository {
         )
       );
 
-      const channels: Channel[] = res_chan.records.map((record) => {
-        const info = record.get('chan').properties;
-        const channel_id = ChannelID.from_string(info.id);
-        const presidents: string[] = res_chan.records.map((record) => {
-          const id = record.get('pres').properties;
-          return id
-      });
-        return new Channel(
-          info.name,
-          info.description,
-          presidents,
-          channel_id
-        )
-      });
+      const subs: Sub[] = res.records.map((record) => ({
+        id: SubID.from_string(record.get('sid')),
+        channel: ChannelID.from_string(record.get('cid')),
+        user: user_id
+      }));
 
-      return channels;
+      return subs;
     } catch (e) {
       throw new InternalServerError();
     } finally {

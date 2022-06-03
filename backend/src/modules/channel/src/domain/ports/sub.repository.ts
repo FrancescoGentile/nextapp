@@ -16,6 +16,6 @@ export interface SubRepository {
    */
   create_sub(sub: Sub): Promise<SubID | undefined>;
 
-  get_user_subscriptions(user_id: UserID, options: SearchOptions): Promise<Channel[] | null>
+  get_user_subscriptions(user_id: UserID, options: SearchOptions): Promise<Sub[] | null>
 
 }
