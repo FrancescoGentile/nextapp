@@ -23,7 +23,7 @@ export interface ChannelRepository {
    */
   create_channel(channel: Channel): Promise<ChannelID | undefined>;
 
-   /**
+  /**
    * Gets the channel list.
    * @param options
    */
@@ -35,5 +35,12 @@ export interface ChannelRepository {
    * @param channel_id
    */
    delete_channel(channel_id: ChannelID): Promise<boolean>;
+
+   /**
+   * Gets the list of channel managed by the requester.
+   * @param requester
+   * @param options
+   */
+   get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]>
 
 }

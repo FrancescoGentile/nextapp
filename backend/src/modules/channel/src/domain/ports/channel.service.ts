@@ -37,4 +37,11 @@ export interface ChannelInfoService {
    */
   delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void>;
 
+
+  /**
+   * Return the list of the channels that are managed by the requester.
+   * @param requester the user who wants to get the list of all channels
+   */
+  get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]>;
+
 }

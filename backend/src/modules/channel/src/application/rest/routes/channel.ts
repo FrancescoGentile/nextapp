@@ -71,11 +71,11 @@ async function get_channel_list(request: Request, response: Response) {
   });
   const options = SearchOptions.build(value.offset, value.limit);
 
-  const users = await request.channel_service!.get_channel_list(
+  const channels = await request.channel_service!.get_channel_list(
     request.user_id!,
     options
   );
-  response.status(StatusCodes.OK).json(users.map(channel_to_json));
+  response.status(StatusCodes.OK).json(channels.map(channel_to_json));
 }
 
 async function delete_channel(request: Request, response: Response) {
@@ -121,6 +121,24 @@ async function create_subscriber(request: Request, response: Response){
     .end();
 }
 
+async function get_pres_channels(request: Request, response: Response){
+  const schema = Joi.object({
+    offset: Joi.number(),
+    limit: Joi.number(),
+  });
+  const value = validate(schema, {
+    offset: request.query.offset,
+    limit: request.query.limit,
+  });
+  const options = SearchOptions.build(value.offset, value.limit);
+
+  const users = await request.channel_service!.get_pres_channels(
+    request.user_id!,
+    options
+  );
+  response.status(StatusCodes.OK).json(users.map(channel_to_json));
+}
+
 export function init_channel_routes(): express.Router {
   const router = express.Router();
 
@@ -129,6 +147,11 @@ export function init_channel_routes(): express.Router {
   router.post(`${BASE_PATH}`, asyncHandler(create_channel));
   router.delete(`${BASE_PATH}/:channel_id`, asyncHandler(delete_channel));
   router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
+
+  // Francesco so che non ti piacerà un end point con questa path buttato qui, ma sono un fan dell' extreme programming (colpa di Manuela) 
+  // lallo 
+
+  router.get(`users/me/president`, asyncHandler(get_pres_channels));
 
   return router;
 }
