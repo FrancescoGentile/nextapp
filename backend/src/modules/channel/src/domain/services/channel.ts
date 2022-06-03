@@ -53,11 +53,11 @@ export class NextChannelInfoService implements ChannelInfoService {
     return this.channel_repo.get_channel_list(options);
   }
 
-  private async delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void> {
+  public async delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void> {
     if (!(await this.is_admin(user_id))) {
       throw new ChannelCreationNotAuthorized();
     }
-    const deleted = await this.channel_repo.delete_booking(user_id, channel_id);
+    const deleted = await this.channel_repo.delete_channel(channel_id);
     if (!deleted) {
       throw new ChannelNotFound(channel_id.to_string());
     }

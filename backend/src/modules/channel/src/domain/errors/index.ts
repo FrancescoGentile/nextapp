@@ -18,7 +18,8 @@ enum ChannelErrorTypes {
     CHANNEL_NOT_FOUND,
     CHANNEL_CREATION_NOT_AUTHORIZED,
     NAME_ALREADY_USED,
-    INVALID_PRESIDENT_NUMBERS
+    INVALID_PRESIDENT_NUMBERS,
+    CHANNEL_DELETION_NOT_AUTHORIZED
 }
 
 
@@ -114,5 +115,17 @@ export class InvalidPresidentsNumber extends NextError {
       `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
     options
       );
+  }
+}
+
+export class ChannelDeletionNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.CHANNEL_DELETION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to delete a channel',
+      'You have to be a system administator to delete a channel.',
+      options
+    );
   }
 }

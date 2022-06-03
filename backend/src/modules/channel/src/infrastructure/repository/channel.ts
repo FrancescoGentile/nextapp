@@ -183,6 +183,25 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
+  public async delete_channel(channel_id: ChannelID): Promise<boolean>{
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (c:CHANNEL_Channel {id: $channel_id})
+           DETACH DELETE c`,
+          { channel_id: channel_id.to_string() }
+        )
+      );
+
+      return res.summary.counters.updates().relationshipsDeleted > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public async get_channel_presidents(channel_id: ChannelID): Promise<UserID[]>{
     const session = this.driver.session();
     try {
@@ -207,5 +226,4 @@ export class Neo4jChannelRepository implements ChannelRepository {
       await session.close();
     }
   }
-
 }
