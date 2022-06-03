@@ -5,6 +5,7 @@
 import { UserID } from '@nextapp/common/user';
 import { DateTime } from 'luxon';
 import { Channel, ChannelID } from '../models/channel';
+import { SearchOptions } from '../models/search';
 import { Sub, SubID } from '../models/sub';
 
 export interface SubService {
@@ -19,5 +20,10 @@ export interface SubService {
     user_id: UserID,
     channel_id: ChannelID
   ): Promise<SubID>;
+
+  get_user_subscriptions(
+    user_id: UserID,
+    options: SearchOptions
+  ): Promise<Channel[] | null>
 
 }

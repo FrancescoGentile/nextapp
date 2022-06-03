@@ -20,6 +20,7 @@ import { SubService } from '../ports/sub.service';
 import { SearchOptions } from '../models/search';
 import { Sub, SubID } from '../models/sub';
 import { SubRepository } from '../ports/sub.repository';
+import { User } from '../models/user';
 
 export class NextSubService implements SubService {
   public constructor(
@@ -42,6 +43,10 @@ export class NextSubService implements SubService {
 
     return sub_id;
   
+  }
+  
+  public async get_user_subscriptions(user_id: UserID, options: SearchOptions): Promise<Channel[] | null> {
+    return await this.sub_repo.get_user_subscriptions(options);
   }
 
 }

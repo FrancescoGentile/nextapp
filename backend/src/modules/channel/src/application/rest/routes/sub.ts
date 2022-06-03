@@ -15,49 +15,43 @@ import {
 import{
     InvalidSubscribeChannel
 } from '../../../domain/errors'
+import { SearchOptions } from '../../../domain/models/search';
 
-const BASE_PATH = '/channels';
+const BASE_PATH = '/user/me/subscriptions';
 
+function channel_to_json(channel: Channel): any {
+  return {
+    self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
+    name: channel.name,
+    description: channel.description,
+    array: Joi.array().items(Joi.string())
+  };
+}
 
-async function create_subscriber(request: Request, response: Response){
+async function get_user_subscriptions(request: Request, response: Response){
+  const schema = Joi.object({
+    offset: Joi.number(),
+    limit: Joi.number(),
+  });
 
-    const schema = Joi.object({
-      channel: Joi.object({
-        self: Joi.string().required(),
-      }).required(),
-    });
+  const value = validate(schema, {
+    offset: request.query.offset,
+    limit: request.query.limit,
+  });
+
+  const sub_channels = await request.sub_service!.get_user_subscriptions(
+    request.user_id!,
+    SearchOptions.build(value.offset, value.limit)
+  );
+
+  response.status(StatusCodes.OK).json(sub_channels!.map(channel_to_json));
+
+}
+
+export function init_sub_routes(): express.Router {
+  const router = express.Router();
   
-    const value = validate(schema, request.body);
-    const path = value.channel.self;
-    const regex = /^\/api\/v1\/${BASE_PATH}\/(.*)$/;
-    const match = path.match(regex);
-  
-    if (match === null) {
-      throw new InvalidSubscribeChannel();
-    }
-  
-    let channel_id;
-    try {
-      channel_id = ChannelID.from_string(match[1]);
-    } catch {
-      throw new InvalidSubscribeChannel();
-    }
+  router.get(`${BASE_PATH}`, asyncHandler(get_user_subscriptions));
 
-    const id = await request.sub_service!.create_sub(
-      request.user_id!,
-      channel_id
-    );
-  
-    response
-      .status(StatusCodes.CREATED)
-      .location(`${API_VERSION}${BASE_PATH}/${channel_id.to_string()}/subscribers/}`)
-      .end();
-  }
-
-  export function init_sub_routes(): express.Router {
-    const router = express.Router();
-  
-    router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
-
-    return router;
-  }
+  return router;
+}
