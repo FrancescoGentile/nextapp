@@ -90,7 +90,7 @@ export class Neo4jBookingRepository implements BookingRepository {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:ROOM_User)-[b:ROOM_BOOKING]->(r:ROOM_Room { id: $id })
-           WHERE ($start <= b.start < b.end) OR ($start < b.end <= $end)
+           WHERE b.start < $end AND b.end > $start
            RETURN u.id as uid, b.id as bid, b.start as start, b.end as end`,
           {
             id: room_id.to_string(),
@@ -125,7 +125,7 @@ export class Neo4jBookingRepository implements BookingRepository {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:ROOM_User { id: $id })-[b:ROOM_BOOKING]->(r:ROOM_Room)
-           WHERE ($start <= b.start < b.end) OR ($start < b.end <= $end)
+           WHERE b.start < $end AND b.end > $start
            RETURN u.id as uid, r.id as rid, b.id as bid, b.start as start, b.end as end
            ORDER BY b.id
            SKIP $skip
@@ -147,36 +147,6 @@ export class Neo4jBookingRepository implements BookingRepository {
         interval: neo4j_to_interval(record.get('start'), record.get('end')),
       }));
 
-      return bookings;
-    } catch {
-      throw new InternalServerError();
-    } finally {
-      await session.close();
-    }
-  }
-
-  public async search_bookings_by_user_interval(
-    user_id: UserID,
-    interval: NextInterval
-  ): Promise<BookingID[]> {
-    const session = this.driver.session();
-    try {
-      const res = await session.readTransaction((tx) =>
-        tx.run(
-          `MATCH (u:ROOM_User { id: $id })-[b:ROOM_BOOKING]->(r:ROOM_Room)
-           WHERE ($start <= b.start < b.end) OR ($start < b.end <= $end)
-           RETURN b.id as id`,
-          {
-            id: user_id.to_string(),
-            start: luxon_to_neo4j(interval.start),
-            end: luxon_to_neo4j(interval.end),
-          }
-        )
-      );
-
-      const bookings = res.records.map((record) =>
-        BookingID.from_string(record.get('id'))
-      );
       return bookings;
     } catch {
       throw new InternalServerError();

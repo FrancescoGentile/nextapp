@@ -50,7 +50,6 @@ export class NextRoomInfoService implements RoomInfoService {
       room_id,
       interval
     );
-
     const slots: { interval: NextInterval; seats: number }[] = [];
 
     const available_seats = get_availability(room, bookings, interval);
@@ -58,6 +57,7 @@ export class NextRoomInfoService implements RoomInfoService {
 
     for (let i = 0; i < length; ) {
       if (available_seats[i] <= 0) {
+        i += 1;
         // eslint-disable-next-line no-continue
         continue;
       }
