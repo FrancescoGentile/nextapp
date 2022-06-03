@@ -20,15 +20,6 @@ import { Sub } from '../../../domain/models/sub';
 
 const BASE_PATH = '/users/me/subscriptions';
 
-function channel_to_json(channel: Channel): any {
-  return {
-    self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
-    name: channel.name,
-    description: channel.description,
-    array: Joi.array().items(Joi.string())
-  };
-}
-
 function subscription_to_json(subscription: Sub): any {
   return {
     self: `${API_VERSION}${BASE_PATH}/${subscription.id!.to_string()}`,

@@ -50,7 +50,7 @@ export class NextChannelInfoService implements ChannelInfoService {
   
   
   public async get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]> {
-    return this.channel_repo.get_channel_list(options);
+    return await this.channel_repo.get_channel_list(options);
   }
 
   public async delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void> {
@@ -63,6 +63,10 @@ export class NextChannelInfoService implements ChannelInfoService {
     }
   }
   
+  public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]> {
+    return await this.channel_repo.get_pres_channels(requester, options);
+  }
+  
   private async is_admin(user_id: UserID): Promise<boolean> {
     const role = await this.user_repo.get_user_role(user_id);
     if (role === null) {
@@ -71,5 +75,8 @@ export class NextChannelInfoService implements ChannelInfoService {
     }
     return role === UserRole.SYS_ADMIN;
   }
+  
+  
+  
 
 }
