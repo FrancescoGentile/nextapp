@@ -27,7 +27,7 @@ export interface ChannelInfoService {
    * Return the list of all channels.
    * @param requester the user who wants to get the list of all channels
    */
-   get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]>;
+  get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]>;
 
    /**
    * Removes the channel with the given id only if it was made by the passed user.

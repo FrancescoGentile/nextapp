@@ -129,3 +129,40 @@ export class ChannelDeletionNotAuthorized extends NextError {
     );
   }
 }
+
+// ---------------------------------------------------------------
+// ---------------------------- SUBS -----------------------------
+// ---------------------------------------------------------------
+
+enum SubErrorTypes {
+  INVALID_SUB_ID = 1,
+  INVALID_CHANNEL
+}
+
+function get_sub_type(type: SubErrorTypes): string {
+  return `subscription-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidSubID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_sub_type(SubErrorTypes.INVALID_SUB_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid subscription id',
+      `${id} is not a valid subscription id.`,
+      options
+    );
+  }
+}
+
+export class InvalidSubscribeChannel extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_sub_type(SubErrorTypes.INVALID_CHANNEL),
+      StatusCodes.BAD_REQUEST,
+      'Channel not found',
+      `Your subscription is for a channel that does not exist.`,
+      options
+    );
+  }
+}

@@ -8,6 +8,7 @@ import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { ChannelID, Channel } from '../../domain/models/channel';
 import { ChannelRepository } from '../../domain/ports/channel.repository';
 import { SearchOptions } from '../../domain/models/search';
+import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
