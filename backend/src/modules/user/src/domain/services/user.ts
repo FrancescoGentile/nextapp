@@ -95,7 +95,10 @@ export class NextUserInfoService implements UserInfoService {
     }
 
     const role = is_admin ? UserRole.SYS_ADMIN : UserRole.SIMPLE;
-    this.user_repo.change_role(user, role);
+    const changed = await this.user_repo.change_role(user, role);
+    if (!changed) {
+      throw new UserNotFound(user.to_string());
+    }
 
     this.broker.emit_user_role_changed({
       name: 'user_role_changed',
