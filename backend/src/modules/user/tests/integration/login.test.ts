@@ -16,7 +16,6 @@ let request: supertest.SuperTest<any>;
 
 let users: User[];
 
-// test for simple users
 describe('login', () => {
   beforeAll(async () => {
     driver = await init_driver();

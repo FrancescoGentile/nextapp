@@ -19,7 +19,6 @@ let users: User[];
 let admin_token: string;
 let simple_token: string;
 
-// test for simple users
 describe('registration', () => {
   beforeAll(async () => {
     driver = await init_driver();

@@ -27,7 +27,7 @@
     "build": "tsc --p tsconfig.build.json",
     "lint": "eslint --ignore-path .eslintignore --ext .ts",
     "format": "prettier --ignore-path .prettierignore --write \"**/*.+(js|ts|json)\"",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "keywords": [],
   "author": "",
