@@ -4,7 +4,7 @@
 
 import {
   InternalServerError,
-  InvalidRequestError,
+  InvalidAPIVersion,
   NextError,
 } from '@nextapp/common/error';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
@@ -55,8 +55,8 @@ function check_api_version(
   if (request.version === '2.0.0' || request.version === undefined) {
     next!();
   } else {
-    // TODO: change error returned
-    const error = new InvalidRequestError('Invalid API');
+    const error = new InvalidAPIVersion(['2.0.0']);
+    error.instance = request.url;
     response.status(error.code).send(error);
   }
 }
