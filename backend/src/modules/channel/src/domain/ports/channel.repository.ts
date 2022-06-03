@@ -5,6 +5,7 @@
 import { UserID } from '@nextapp/common/user';
 import { Channel, ChannelID } from '../models/channel';
 import { SearchOptions } from '../models/search';
+import { Sub, SubID } from '../models/sub';
 
 export interface ChannelRepository {
   /**
