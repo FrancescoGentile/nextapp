@@ -19,7 +19,7 @@ enum ChannelErrorTypes {
     CHANNEL_CREATION_NOT_AUTHORIZED,
     NAME_ALREADY_USED,
     INVALID_PRESIDENT_NUMBERS,
-    CHANNEL_DELETION_NOT_AUTHORIZED
+    CHANNEL_DELETION_NOT_AUTHORIZED,
 }
 
 
@@ -130,6 +130,18 @@ export class ChannelDeletionNotAuthorized extends NextError {
   }
 }
 
+export class NoChannelAvailable extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.NO_CHANNEL_AVAILABLE),
+      StatusCodes.NOT_FOUND,
+      'There is no channel available',
+      `Cannot find any channel.`,
+      options
+    );
+  }
+}
+
 // ---------------------------------------------------------------
 // ---------------------------- SUBS -----------------------------
 // ---------------------------------------------------------------
@@ -162,6 +174,30 @@ export class InvalidSubscribeChannel extends NextError {
       StatusCodes.BAD_REQUEST,
       'Channel not found',
       `Your subscription is for a channel that does not exist.`,
+      options
+    );
+  }
+}
+
+// ---------------------------------------------------------------
+// ---------------------------- PRES -----------------------------
+// ---------------------------------------------------------------
+
+enum PresErrorTypes {
+  NOT_A_PRESIDENT
+}
+
+function get_pres_type(type: PresErrorTypes): string {
+  return `president-${String(type).padStart(3, '0')}`;
+}
+
+export class UserNotAPresident extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_pres_type(PresErrorTypes.NOT_A_PRESIDENT),
+      StatusCodes.NOT_FOUND,
+      'You do not manage any channel',
+      `Cannot find a channel ypu do manage.`,
       options
     );
   }

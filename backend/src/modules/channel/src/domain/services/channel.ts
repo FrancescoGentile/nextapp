@@ -9,7 +9,9 @@ import {
   ChannelNotFound, 
   ChannelCreationNotAuthorized,
   ChannelNameAlreadyUsed,
-  InvalidPresidentsNumber
+  InvalidPresidentsNumber,
+  NoChannelAvailable,
+  UserNotAPresident
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -50,7 +52,11 @@ export class NextChannelInfoService implements ChannelInfoService {
   
   
   public async get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]> {
-    return await this.channel_repo.get_channel_list(options);
+    const channels = await this.channel_repo.get_channel_list(options);
+    if(channels == null){
+      throw new NoChannelAvailable();
+    }
+    return channels;
   }
 
   public async delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void> {
@@ -64,7 +70,11 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
   
   public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]> {
-    return await this.channel_repo.get_pres_channels(requester, options);
+    const channels = await this.channel_repo.get_channel_list(options);
+    if(channels == null){
+      throw new UserNotAPresident(requester.to_string());
+    }
+    return channels;
   }
   
   private async is_admin(user_id: UserID): Promise<boolean> {
