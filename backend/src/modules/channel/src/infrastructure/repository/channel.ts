@@ -203,28 +203,4 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async get_channel_presidents(channel_id: ChannelID): Promise<UserID[]>{
-    const session = this.driver.session();
-    try {
-      const res_pres = await session.readTransaction((tx) =>
-        tx.run(
-          `MATCH (c:CHANNEL_Channel { id: $id })-[p:CHANNEL_PRESIDENT]-(u:CHANNEL_User)
-           RETURN u.id as uid
-           ORDER BY u.id`,
-           
-          { id: channel_id }
-        )
-      );
-
-      const presidents: UserID[] = res_pres.records.map((record) => {
-        return new UserID(record.get('uid'))
-      });
-
-      return presidents;
-    } catch (e) {
-      throw new InternalServerError();
-    } finally {
-      await session.close();
-    }
-  }
 }

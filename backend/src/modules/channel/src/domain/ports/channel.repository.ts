@@ -30,12 +30,6 @@ export interface ChannelRepository {
   get_channel_list(options: SearchOptions): Promise<Channel[]>;
 
   /**
-   * Gets the presidents of a channel
-   * @param channel_id
-   */
-  get_channel_presidents(channel_id: ChannelID): Promise<UserID[]>
-
-  /**
    * Deletes from the repository the channel with the given id.
    * This method returns false if no channel with the given id is found.
    * @param channel_id

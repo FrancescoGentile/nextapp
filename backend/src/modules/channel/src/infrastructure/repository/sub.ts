@@ -17,10 +17,6 @@ export class Neo4jSubRepository implements SubRepository {
   public static async create(driver: Driver): Promise<Neo4jSubRepository> {
     return new Neo4jSubRepository(driver);
   }
-  
-  public static asyncget_user_subscriptions(options: SearchOptions): Promise<Channel[] | null> {
-    
-  }
 
   public async create_sub(sub: Sub): Promise<SubID | undefined> {
     const session = this.driver.session();
@@ -30,7 +26,7 @@ export class Neo4jSubRepository implements SubRepository {
         tx.run(
           `MATCH (u:CHANNEL_User), (r:CHANNEL_Channel)
             WHERE u.id = $user_id AND c.id = $channel_id
-            CREATE (u)-[b:ROOM_BOOKING { id: $sub_id }]-(c)`,
+            CREATE (u)-[s:CHANNEL_SUB { id: $sub_id }]-(c)`,
           {
             user_id: sub.user.to_string(),
             channel_id: sub.channel.to_string(),
@@ -48,5 +44,46 @@ export class Neo4jSubRepository implements SubRepository {
       await session.close();
     }
   }
-        
+
+  public async get_user_subscriptions(user_id : UserID, options: SearchOptions): Promise<Channel[] | null> {
+    const session = this.driver.session();
+    try {
+      const res_chan = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (user:CHANNEL_User{id: $id})-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel)-[p:CHANNEL_PRESIDENT]-(pres:CHANNEL_User)
+           RETURN chan, pres
+           ORDER BY chan.id
+           SKIP $skip
+           LIMIT $limit`,
+          { 
+            id: user_id.to_string(),
+            skip: int(options.offset),
+            limit: int(options.limit) 
+          }
+        )
+      );
+
+      const channels: Channel[] = res_chan.records.map((record) => {
+        const info = record.get('chan').properties;
+        const channel_id = ChannelID.from_string(info.id);
+        const presidents: string[] = res_chan.records.map((record) => {
+          const id = record.get('pres').properties;
+          return id
+      });
+        return new Channel(
+          info.name,
+          info.description,
+          presidents,
+          channel_id
+        )
+      });
+
+      return channels;
+    } catch (e) {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
 }
