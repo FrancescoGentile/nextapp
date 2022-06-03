@@ -99,13 +99,13 @@ async function populate_bookings(
       id: BookingID.from_string('1111111111'),
       user: users[0].id,
       room: rooms[0].id!,
-      interval: NextInterval.from_dates(base, base.plus({ hours: 3 })),
+      interval: NextInterval.from_dates(base, base.plus({ hours: 5 })),
     },
     {
       id: BookingID.from_string('2222222222'),
       user: users[1].id,
       room: rooms[0].id!,
-      interval: NextInterval.from_dates(base, base.plus({ hours: 2 })),
+      interval: NextInterval.from_dates(base, base.plus({ hours: 3 })),
     },
     {
       id: BookingID.from_string('3333333333'),
