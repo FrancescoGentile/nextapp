@@ -117,7 +117,7 @@ export default defineComponent({
     </div>
     
     <CustomEvents v-if="showEvents" :channelId="this.id" :isSubscribed="this.isSubscribed" :channelName="this.channel.name"></CustomEvents>
-    <CustomNews v-if="showNews" :channelId="this.id" :isSubscribed="this.isSubscribed" :channelName="this.channel.name"></CustomNews>
+    <CustomNews v-if="showNews" :channelId="this.id" :channelName="this.channel.name"></CustomNews>
     <div class="text-center mt-2">
         <button class="btn btn-primary" @click="this.$router.push({ path: '/clubs' })"> Go back to clubs list</button>
     </div>
