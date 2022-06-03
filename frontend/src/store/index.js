@@ -27,7 +27,8 @@ export default createStore({
     userChannels: [],
     channelDetails: [],
     channelNews: [],
-    channelEvents: []
+    channelEvents: [],
+    userEvents: []
   },
   getters: {
     isLoggedIn(state) {
@@ -63,14 +64,17 @@ export default createStore({
     getUserChannels(state) {
       return state.userChannels
     },
-    getChannelDetails(state){
+    getChannelDetails(state) {
       return state.channelDetails
     },
-    getChannelEvents(state){
+    getChannelEvents(state) {
       return state.channelEvents
     },
-    getChannelNews(state){
+    getChannelNews(state) {
       return state.channelNews
+    },
+    getUserEvents(state) {
+      return state.userEvents
     }
   },
   mutations: {
@@ -121,6 +125,9 @@ export default createStore({
     },
     setChannelNews(state, news) {
       state.channelNews = news
+    },
+    setUserEvents(state, events) {
+      state.userEvents = events
     }
   },
   actions: {
@@ -641,8 +648,8 @@ export default createStore({
 
     deleteChannel({ commit }, channelId) {
       return new Promise((resolve, reject) => {
-        instance.delete("channels/"+channelId,
-        { withCredentials: true }
+        instance.delete("channels/" + channelId,
+          { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -660,21 +667,21 @@ export default createStore({
       })
     },
 
-    subscribeUserToChannel({commit}, channel){
-      return new Promise((resolve, reject)=>{
+    subscribeUserToChannel({ commit }, channel) {
+      return new Promise((resolve, reject) => {
         instance.post("users/me/channels",
-        {
-          name: channel.name,
-          description: channel.description,
-          array: channel.array
-        }, { withCredentials: true }
-        ).then(response=>{
+          {
+            name: channel.name,
+            description: channel.description,
+            array: channel.array
+          }, { withCredentials: true }
+        ).then(response => {
           notify({
             title: "Success",
             text: response.data
           })
           resolve(response)
-        }).catch(err=>{
+        }).catch(err => {
           notify({
             title: "Error",
             text: err.response.details
@@ -685,17 +692,17 @@ export default createStore({
       })
     },
 
-    unsubscribeUserFromChannel({commit}, channelId){
-      return new Promise((resolve, reject)=>{
-        instance.delete("users/me/channels/"+channelId,
+    unsubscribeUserFromChannel({ commit }, channelId) {
+      return new Promise((resolve, reject) => {
+        instance.delete("users/me/channels/" + channelId,
           { withCredentials: true }
-        ).then(response=>{
+        ).then(response => {
           notify({
             title: "Success",
             text: response.data
           })
           resolve(response)
-        }).catch(err=>{
+        }).catch(err => {
           notify({
             title: "Error",
             text: err.response.details
@@ -751,6 +758,63 @@ export default createStore({
           notify({
             title: "Error",
             text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    userEvents({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/events", { withCredentials: true }
+        ).then((response) => {
+          commit("setUserEvents", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    attendEvent({commit}, event){
+      return new Promise((resolve, reject)=>{
+        instance.post("users/me/events", event, {withCredentials: true}
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    desertEvent({commit}, eventId){
+      return new Promise((resolve, reject)=>{
+        instance.delete("users/me/events/" + eventId, {withCredentials: true}
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.details
           })
           commit("setError")
           reject(err)
