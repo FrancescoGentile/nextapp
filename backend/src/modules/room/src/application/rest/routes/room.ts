@@ -52,7 +52,9 @@ async function search_rooms(request: Request, response: Response) {
     floor: Joi.number(),
     start: Joi.date(),
     end: Joi.date(),
-  }).with('start', 'end');
+  })
+    .with('start', 'end')
+    .with('end', 'start');
 
   const value = validate(schema, {
     offset: request.query.offset,
