@@ -28,7 +28,9 @@ export default createStore({
     channelDetails: [],
     channelNews: [],
     channelEvents: [],
-    userEvents: []
+    userEvents: [],
+    administratedChannels: [],
+    channelSubscribers: []
   },
   getters: {
     isLoggedIn(state) {
@@ -75,6 +77,12 @@ export default createStore({
     },
     getUserEvents(state) {
       return state.userEvents
+    },
+    getAdministratedChannels(state){
+      return state.administratedChannels
+    },
+    getChannelSubscribers(state){
+      return state.channelSubscribers
     }
   },
   mutations: {
@@ -128,6 +136,12 @@ export default createStore({
     },
     setUserEvents(state, events) {
       state.userEvents = events
+    },
+    setAdministratedChannels(state, channels){
+      state.administratedChannels= channels
+    },
+    setChannelSubscribers(state, subscribers){
+      state.channelSubscribers = subscribers
     }
   },
   actions: {
@@ -604,9 +618,10 @@ export default createStore({
       })
     },
 
+    //TODO: api returns channelId not entire channel -> change method accordingly
     userChannels({ commit }) {
       return new Promise((resolve, reject) => {
-        instance.get("users/me/channels", { withCredentials: true }
+        instance.get("users/me/subscriptions", { withCredentials: true }
         ).then(response => {
           commit("setUserChannels", response)
           resolve(response)
@@ -815,6 +830,65 @@ export default createStore({
           notify({
             title: "Error",
             text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    administratedChannels({commit}){
+      return new Promise((resolve, reject)=>{
+        instance.get("users/me/president", {withCredentials: true}
+        ).then(response=>{
+          commit("setAdministratedChannels", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    modifyChannel({ commit }, { channel, channelId }) {
+      //console.log(room)
+      return new Promise((resolve, reject) => {
+        instance.patch("channels/" + channelId, {
+          name: channel.name,
+          description: channel.description,
+        }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    //TODO: subscribers are only ids -> return entire user object instead
+    channelSubscribers({ commit }, channelId) {
+      return new Promise((resolve, reject) => {
+        instance.get("channels/" + channelId +"/subscribers", { withCredentials: true }
+        ).then(response => {
+          commit("setChannelSubscribers", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)

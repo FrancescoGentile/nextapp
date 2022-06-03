@@ -46,6 +46,8 @@ export default defineComponent({
         }
     }
 
+    
+
 })
 </script>
 
@@ -66,7 +68,7 @@ export default defineComponent({
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="news in this.printableNews">
+                                        <tr v-for="news in this.printableNews" :key="news.self">
                                             <th scope="row">
                                                 <div class="event-date">
                                                     <span> {{ news.date }} </span>

@@ -104,7 +104,12 @@ export default defineComponent({
                                 <div class="col"></div>
                             </div>
                             <div class="row mt-3">
-                                <div class="col text-center">
+                                <div class="col">
+                                    <span class="badge bg-secondary me-1 mb-1">Administrators</span>
+                                    <span class="badge bg-secondary me-1 mb-1">Administrators</span>
+                                </div>
+                                <div class="col"></div>
+                                <div class="col text-end">
                                     <button class="btn btn-primary me-2" @click="toggleEvents()"> Show Events </button>
                                     <button class="btn btn-primary me-2" @click="toggleNews()"> Show News </button>
                                 </div>
