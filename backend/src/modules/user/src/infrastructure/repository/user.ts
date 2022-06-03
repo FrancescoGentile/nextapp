@@ -133,6 +133,7 @@ export class Neo4jUserRepository implements UserRepository {
             tx.run(
               `CREATE (u:USER_User {
                 id: $id,
+                admin: $admin,
                 username: $username,
                 password: $password,
                 first_name: $first_name,
@@ -141,8 +142,9 @@ export class Neo4jUserRepository implements UserRepository {
               })`,
               {
                 id: id.to_string(),
+                admin: user.role === UserRole.SYS_ADMIN,
                 username: user.credentials.username.to_string(),
-                password: user.credentials.username.to_string(),
+                password: user.credentials.password.to_string(),
                 first_name: user.identity.first_name,
                 middle_name: user.identity.middle_name || null,
                 surname: user.identity.surname,
