@@ -14,6 +14,7 @@ specifiers:
   '@typescript-eslint/eslint-plugin': ^5.23.0
   '@typescript-eslint/parser': ^5.23.0
   argon2: ^0.28.5
+  cookie-parser: ^1.4.6
   email-validator: ^2.0.4
   eslint: ^8.15.0
   eslint-config-airbnb-base: ^15.0.0
@@ -55,6 +56,7 @@ dependencies:
   '@typescript-eslint/eslint-plugin': 5.25.0_83b4734ba99fefa06dfff9f51a4c4301
   '@typescript-eslint/parser': 5.25.0_eslint@8.15.0+typescript@4.6.4
   argon2: 0.28.5
+  cookie-parser: 1.4.6
   email-validator: 2.0.4
   eslint: 8.15.0
   eslint-config-airbnb-base: 15.0.0_3587bf9a15dd535ddd6f5fd34d80da85
@@ -867,6 +869,12 @@ packages:
       '@types/node': 17.0.35
     dev: false
 
+  /@types/cookie-parser/1.4.3:
+    resolution: {integrity: sha512-CqSKwFwefj4PzZ5n/iwad/bow2hTCh0FlNAeWLtQM3JA/NX/iYagIpWG2cf1bQKQ2c9gU2log5VUCrn7LDOs0w==}
+    dependencies:
+      '@types/express': 4.17.13
+    dev: false
+
   /@types/cookiejar/2.1.2:
     resolution: {integrity: sha512-t73xJJrvdTjXrn4jLS9VSGRbz0nUY3cl2DMGDU48lKl+HR9dbbjW2A9r3g40VA++mQpy6uuHg33gy7du2BKpog==}
     dev: false
@@ -1597,8 +1605,21 @@ packages:
       safe-buffer: 5.1.2
     dev: false
 
+  /cookie-parser/1.4.6:
+    resolution: {integrity: sha512-z3IzaNjdwUC2olLIB5/ITd0/setiaFMLYiZJle7xg5Fe9KWAceil7xszYfHHBtDFYLSgJduS2Ty0P1uJdPDJeA==}
+    engines: {node: '>= 0.8.0'}
+    dependencies:
+      cookie: 0.4.1
+      cookie-signature: 1.0.6
+    dev: false
+
   /cookie-signature/1.0.6:
-    resolution: {integrity: sha1-4wOogrNCzD7oylE6eZmXNNqzriw=}
+    resolution: {integrity: sha512-QADzlaHc8icV8I7vbaJXJwod9HWYp8uCqf1xa4OfNu1T7JVxQIrUgOWtHdNDtPiywmFbiS12VjotIXLrKM3orQ==}
+    dev: false
+
+  /cookie/0.4.1:
+    resolution: {integrity: sha512-ZwrFkGJxUR3EIoXtO+yVE69Eb7KlixbaeAWfBQB9vVsNn/o+Yw69gBWSSDK825hQNdN+wF8zELf3dFNl/kxkUA==}
+    engines: {node: '>= 0.6'}
     dev: false
 
   /cookie/0.5.0:
@@ -4584,11 +4605,12 @@ packages:
     dev: false
 
   file:projects/user.tgz:
-    resolution: {integrity: sha512-OEJoGsAMbGVoipp0fG+wmnjSPxNxFqXM250WAC7O9kJp0rd7+ZOlLot3ztWtA+//TQIkhwzSu9YO/BuhJ41XqQ==, tarball: file:projects/user.tgz}
+    resolution: {integrity: sha512-1fBG2wnziJ2cYtev8NKpp+Lkk3VoZwv/EUW7+Yr4vFvZriEjOaT43McX1E35S0Ac1LwEN5vPIlLXsifuvn48pw==, tarball: file:projects/user.tgz}
     name: '@rush-temp/user'
     version: 0.0.0
     dependencies:
       '@jest/types': 28.1.0
+      '@types/cookie-parser': 1.4.3
       '@types/express': 4.17.13
       '@types/express-version-request': 1.7.1
       '@types/jest': 28.1.0
@@ -4599,6 +4621,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.25.0_83b4734ba99fefa06dfff9f51a4c4301
       '@typescript-eslint/parser': 5.25.0_eslint@8.15.0+typescript@4.6.4
       argon2: 0.28.5
+      cookie-parser: 1.4.6
       email-validator: 2.0.4
       eslint: 8.15.0
       eslint-config-airbnb-base: 15.0.0_3587bf9a15dd535ddd6f5fd34d80da85
