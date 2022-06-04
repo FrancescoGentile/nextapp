@@ -16,6 +16,7 @@ import{
   ChannelNotFound, InvalidSubscribeChannel
 } from '../../../domain/errors'
 import { SearchOptions } from '../../../domain/models/search';
+import { UserID } from '@nextapp/common/user';
 
 const BASE_PATH = '/channels';
 
@@ -139,17 +140,42 @@ async function get_pres_channels(request: Request, response: Response){
   response.status(StatusCodes.OK).json(users.map(channel_to_json));
 }
 
+async function update_channel(request: Request, response: Response){
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    description: Joi.string().required()
+  });
+
+  const value = validate(schema, request.body);
+
+  let channel_id;
+  try {
+    channel_id = ChannelID.from_string(request.params.channel_id);
+  } catch {
+    throw new ChannelNotFound(request.params.channel_id);
+  }
+
+  const empty : UserID[] = [];
+
+  await request.channel_service!.update_channel(
+    request.user_id!,
+    new Channel( value.name, value.description, empty, channel_id)
+  );
+
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 export function init_channel_routes(): express.Router {
   const router = express.Router();
 
   router.get(BASE_PATH, asyncHandler(get_channel_list));
-  router.get(`${BASE_PATH}/:channel_id`, asyncHandler(get_channel));
   router.post(`${BASE_PATH}`, asyncHandler(create_channel));
-  router.delete(`${BASE_PATH}/:channel_id`, asyncHandler(delete_channel));
-  router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
 
-  // Francesco so che non ti piacerà un end point con questa path buttato qui, ma sono un fan dell' extreme programming (colpa di Manuela) 
-  // lallo 
+  router.get(`${BASE_PATH}/:channel_id`, asyncHandler(get_channel));
+  router.delete(`${BASE_PATH}/:channel_id`, asyncHandler(delete_channel));
+  router.patch(`${BASE_PATH}/:channel_id`, asyncHandler(update_channel));
+
+  router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
 
   router.get(`users/me/president`, asyncHandler(get_pres_channels));
 

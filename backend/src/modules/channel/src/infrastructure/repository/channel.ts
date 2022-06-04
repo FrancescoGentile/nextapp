@@ -2,16 +2,45 @@
 //
 //
 
-import { UserID, UserRole } from '@nextapp/common/user';
+import { UserID } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { ChannelID, Channel } from '../../domain/models/channel';
 import { ChannelRepository } from '../../domain/ports/channel.repository';
 import { SearchOptions } from '../../domain/models/search';
-import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
+
+  public async update_channel(channel: Channel): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const description =
+        channel.description === undefined || channel.description === null
+          ? null
+          : JSON.stringify(channel.description);
+      await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (c: CHANNEL_Channel { id: $id })
+           SET c.name = $name, c.description = $description`,
+          {
+            id: channel.id!.to_string(),
+            name: channel.name,
+            description
+          }
+        )
+      );
+      return true;
+    } catch (e) {
+      const error = e as Neo4jError;
+      if (error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+        throw new InternalServerError();
+      }
+      return false;
+    } finally {
+      await session.close();
+    }
+  }
 
   public static async create(driver: Driver): Promise<Neo4jChannelRepository> {
     let session = driver.session();

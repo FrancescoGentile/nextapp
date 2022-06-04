@@ -65,4 +65,13 @@ export interface ChannelRepository {
     channel_id: ChannelID
     ): Promise<boolean | null>;
 
+    /**
+   * Updates an already existing channel.
+   * Returns true if channel has been updated.
+   * @param channel
+   */
+  update_channel(
+    channel: Channel
+  ): Promise<boolean>;
+
 }
