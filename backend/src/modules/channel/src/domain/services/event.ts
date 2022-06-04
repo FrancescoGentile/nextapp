@@ -17,7 +17,7 @@ import {
     EventNameAlreadyUsed,
     EventDeletionNotAuthorized,
     EventNotFound
-} from "../errors/event";
+} from "../errors/";
 
 export class NextEventInfoService implements EventInfoService {
     public constructor(

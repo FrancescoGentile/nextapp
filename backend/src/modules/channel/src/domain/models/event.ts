@@ -5,7 +5,7 @@ import {
     InvalidEventName,
     InvalidEventDate,
     InvalidRoomID
-} from '../errors/event';
+} from '../errors/';
 
 import { ChannelID } from './channel';
 import { RoomID} from '@nextapp/common/room';

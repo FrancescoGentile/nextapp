@@ -6,7 +6,7 @@ import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import express from 'express';
 import { EventID } from '../../../domain/models/event';
-import { EventNotFound } from '../../../domain/errors/event';
+import { EventNotFound } from '../../../domain/errors/';
 
 const BASE_PATH = '/event';
 

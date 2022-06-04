@@ -13,7 +13,7 @@ import {
 } from '../../../domain/models/channel'
 import{
   ChannelNotFound
-} from '../../../domain/errors/channel'
+} from '../../../domain/errors/'
 
 const BASE_PATH = '/channels';
 

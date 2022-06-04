@@ -8,7 +8,7 @@ import {
     InvalidChannelID,
     InvalidChannelName,
     InvalidChannelDescription
-} from '../errors/channel';
+} from '../errors/';
 
 export class ChannelID {
     public static readonly LENGTH = 10;
