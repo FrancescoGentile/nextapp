@@ -4,14 +4,14 @@
 
 import { UserID, UserRole } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
-import { DateTime } from 'luxon';
 import {
   ChannelNotFound, 
   ChannelCreationNotAuthorized,
   ChannelNameAlreadyUsed,
   InvalidPresidentsNumber,
   NoChannelAvailable,
-  UserNotAPresident
+  UserNotAPresident,
+  ChannelNameNotFound
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -26,6 +26,15 @@ export class NextChannelInfoService implements ChannelInfoService {
     private readonly user_repo: UserRepository,
     private readonly sub_repo: SubRepository
   ) {}
+
+  public async get_channel_by_name(channel_name: string): Promise<Channel> {
+    const channel = await this.channel_repo.get_channel_by_name(channel_name);
+    if (channel === null) {
+      throw new ChannelNameNotFound(channel_name);
+    }
+    return channel;
+  }
+
   public async update_channel(requester: UserID, channel: Channel): Promise<boolean> {
     
     const is_pres = this.channel_repo.is_president(requester, channel.id!);
