@@ -15,7 +15,7 @@ export default {
             chosenEvent: {},
 
             rooms: [],
-            roomsList,
+            roomsList: "",
 
             minDate: "",
             maxDate: "",
@@ -70,7 +70,7 @@ export default {
                 }
             })
             const event = {
-                name, channel, description, start, end, room
+                name, channel, description, start, end, roomId
             }
             let id = this.channelId
             this.$store.dispatch("addEvent", { event, id }
@@ -112,7 +112,7 @@ export default {
             event.start = event.start.toISOString()
             event.end = event.end.toISOString()
             console.log(event)
-            let eventId = events.self.replace("/api/v2/channels/" + this.channelId + "/events/", "")
+            let eventId = event.self.replace("/api/v2/channels/" + this.channelId + "/events/", "")
             let channelId = this.channelId
             this.$store.dispatch("modifyEvent", { event, eventId, channelId }
             ).then(() => {

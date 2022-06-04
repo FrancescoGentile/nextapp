@@ -618,11 +618,25 @@ export default createStore({
       })
     },
 
-    //TODO: api returns channelId not entire channel -> change method accordingly
+    //TODO: fix method
     userChannels({ commit }) {
       return new Promise((resolve, reject) => {
         instance.get("users/me/subscriptions", { withCredentials: true }
         ).then(response => {
+          let channelsId = response.data
+          let userChannels = []
+          this.dispatch("channels"
+          ).then(() => {
+            this.state.channels.forEach(channel => {
+              channelsId.forEach(ch => {
+                if (channel.self === ch.self) {
+                  userChannels.push(channel)
+                }
+              })
+            })
+          }).catch(err => {
+            console.log(err)
+          })
           commit("setUserChannels", response)
           resolve(response)
         }).catch(err => {
@@ -883,12 +897,13 @@ export default createStore({
       return new Promise((resolve, reject) => {
         instance.get("channels/" + channelId + "/subscribers", { withCredentials: true }
         ).then(response => {
-          let subscribers = response.data
+          let subscribersId = response.data
+          let subscribers= []
           this.dispatch("users"
           ).then(() => {
             this.state.users.forEach(user => {
-              subscribers.forEach(sub => {
-                if (sub.user.self === user.self) {
+              subscribersId.forEach(sub => {
+                if (sub.self === user.self) {
                   subscribers.push(user)
                 }
               })
