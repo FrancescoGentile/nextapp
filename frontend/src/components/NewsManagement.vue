@@ -1,7 +1,12 @@
 <script>
 import { Modal } from "bootstrap"
+import Datepicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 export default {
+    components: {
+        Datepicker
+    },
     props: ["channelId"],
     data() {
         return {
@@ -70,41 +75,40 @@ export default {
                     body: item.body,
                     date: date
                 }
-                this.printableEvents.push(res)
+                this.printableNews.push(res)
             })
         },
 
         addNews() {
             let title = this.chosenNews.title
-            let date = this.date.toISOString()
+            let date = this.chosenNews.date.toISOString()
             let author = this.user.self
-            let body = this.chosenNew.body
+            let body = this.chosenNews.body
             let channel = "/api/v2/channels/" + this.channelId
 
             const news = {
                 title, author, date, body, channel
             }
-           let id = this.channelId
-            this.$store.dispatch("addNews", {news, id}
+            let id = this.channelId
+            this.$store.dispatch("addNews", { news, id }
             ).then(() => {
                 this.$store.dispatch("channelNews", this.channelId
                 ).then(() => {
                     this.news = this.loadedNews
-                    //console.log(this.rooms)
                 }).catch(err => {
                     console.log(err)
                 })
             }).catch(err => {
                 console.log(err)
             })
-            this.registeredRoom = {}
+            this.chosenNews = {}
             this.hideModal('addNews')
         },
 
         deleteNews(news) {
-            let newsId = news.self.replace("/api/v2/channels/" + this.channelId + "/", "")
+            let newsId = news.self.replace("/api/v2/channels/news" + this.channelId + "/", "")
             let channelId = this.channelId
-            this.$store.dispatch("deleteNews", {newsId, channelId}
+            this.$store.dispatch("deleteNews", { newsId, channelId }
             ).then(() => {
                 this.$store.dispatch("channelNews", this.channelId
                 ).then(response => {
@@ -122,7 +126,9 @@ export default {
 
         modifyNews(printableNews) {
             let news = this.news.filter(el => el.self === printableNews.self)
-            let newsId = news.self.replace("/api/v2/channels/" + this.channelId + "/", "")
+            news.date = news.date.toISOString()
+            console.log(news)
+            let newsId = news.self.replace("/api/v2/channels/" + this.channelId + "/events", "")
             let channelId = this.channelId
             this.$store.dispatch("modifyNews", { news, newsId, channelId }
             ).then(() => {
@@ -147,7 +153,7 @@ export default {
             }).catch(err => {
                 console.log(err)
             })
-            this.hideModal("modifyRoom")
+            this.hideModal("modifyNews")
         },
 
         hideModal(modalId) {
@@ -239,7 +245,7 @@ export default {
                             <label for="floatingInput">Total Seats</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <textarea v-model="registeredRoom.body" class="form-control" placeholder="details"
+                            <textarea v-model="chosenNews.body" class="form-control" placeholder="details"
                                 rows="5"></textarea>
                             <label for="floatingInput">Description</label>
                         </div>
@@ -248,72 +254,61 @@ export default {
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
                         @click="this.revertForm()">Close</button>
-                    <button type="button" class="btn btn-primary" @click="addRoom()">Confirm</button>
+                    <button type="button" class="btn btn-primary" @click="addNews()">Confirm</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="deleteRoom" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteNews" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Delete profile</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Delete news</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this room? This action will be permanent.
+                    Are you sure you want to delete this news? This action will be permanent.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" @click="deleteRoom(this.id)">Confirm</button>
+                    <button type="button" class="btn btn-primary" @click="deleteNews(this.chosenNews)">Confirm</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modifyRoom" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modifyNews" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Change user's information</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Change news information</h5>
 
                 </div>
                 <div class="modal-body">
                     <form>
                         <div class="mb-3">
-                            <label class="col-form-label">Name</label>
-                            <input type="text" class="form-control" v-model="selectedRoom.name">
+                            <label class="col-form-label">Title</label>
+                            <input type="text" class="form-control" v-model="chosenNews.title">
                         </div>
                         <div class="mb-3">
                             <div class="form-floating mb-3">
-                                <div class="form-check form-check-inline">
-                                    Floor:
-                                    <div v-for="(floor, i) in floors" :key="i">
-                                        <input v-model="selectedRoom.floor" class="form-check-input" type="radio"
-                                            name="inlineRadioOptions" id="inlineRadio1" :value=floor>
-                                        <label class="form-check-label" for="inlineRadio1">{{ floor }}</label>
-                                    </div>
-                                </div>
-
+                                <Datepicker v-model="this.chosenNews.date" placeholder="Select date" :cleareble="true"
+                                    :enableTimePicker="false" @update:modelValue="this.chosenNews.date = modelValue"
+                                    :minDate="minDate" :maxDate="maxDate" />
+                                <label for="floatingInput">Total Seats</label>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="col-form-label">Total Seats</label>
-                            <input type="text" class="form-control" v-model="selectedRoom.seats" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label class="col-form-label">Details</label>
-                            <textarea type="text" class="form-control" v-model="selectedRoom.details"
+                            <label class="col-form-label">Description</label>
+                            <textarea type="text" class="form-control" v-model="chosenNews.body"
                                 rows="5"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                        @click="revertChanges(this.selectedRoom)">Close</button>
-                    <button type="submit" class="btn btn-primary" @click="modifyRoom(this.selectedRoom)">Confirm
-                        changes</button>
+                    <button type="button" class="btn btn-secondary" @click="revertChanges(this.chosenNews)">Close</button>
+                    <button type="submit" class="btn btn-primary" @click="modifyNews(this.chosenNews)">Confirm changes</button>
                 </div>
 
             </div>

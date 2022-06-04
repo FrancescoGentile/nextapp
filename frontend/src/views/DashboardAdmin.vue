@@ -77,7 +77,7 @@ export default defineComponent({
                 <div class="card-body h-100">
                     <h5 class="card-text">From here you'll be able to add, delete and modify news and events from the general channel</h5>
                     <div class="text-center">
-                       <button class="btn btn-primary" @click="toggleGeneral()"> Manage general channel </button> 
+                       <button class="btn btn-primary" @click="this.$router.push({path: '/clubsAdministration'})"> Manage general channel </button> 
                     </div>
                 </div>
             </div>

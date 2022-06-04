@@ -975,6 +975,72 @@ export default createStore({
       })
     }
   },
+
+  addEvent({ commit }, { event, channelId }) {
+    return new Promise((resolve, reject) => {
+      instance.post("channels/" + channelId + "/events/", event, { withCredentials: true }
+      ).then(response => {
+        notify({
+          title: "Success",
+          text: response.data
+        })
+        resolve(response)
+      }).catch(err => {
+        notify({
+          title: "Error",
+          text: err.response.data.details
+        })
+        commit("setError")
+        reject(err)
+      })
+    })
+  },
+
+  deleteEvent({ commit }, { eventId, channelId }) {
+    return new Promise((resolve, reject) => {
+      instance.delete("channels/" + channelId + "/events/" + eventId, { withCredentials: true }
+      ).then(response => {
+        notify({
+          title: "Success",
+          text: response.data
+        })
+        resolve(response)
+      }).catch(err => {
+        notify({
+          title: "Error",
+          text: err.response.data.details
+        })
+        commit("setError")
+        reject(err)
+      })
+    })
+  },
+
+  modifyEvent({ commit }, { event, eventId, channelId }) {
+    return new Promise((resolve, reject) => {
+      instance.patch("channels/"+channelId+"/events/"+eventId, {
+        name: event.name,
+        description: event.description,
+        start: event.start,
+        end: event.end,
+        room: event.room
+      }, { withCredentials: true }
+      ).then(response => {
+        notify({
+          title: "Success",
+          text: response.data
+        })
+        resolve(response)
+      }).catch(err => {
+        notify({
+          title: "Error",
+          text: err.response.data.details
+        })
+        commit("setError")
+        reject(err)
+      })
+    })
+  },
   modules: {
   }
 })
