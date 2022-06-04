@@ -54,6 +54,11 @@ const routes = [
     path: "/clubsAdministration",
     name: "clubsAdministration",
     component: () => import("../views/ClubsAdministration.vue")
+  },
+  {
+    path: "/recovery",
+    name: "passwordRecovery",
+    component: () => import("../views/PasswordRecoveryPage.vue")
   }
 ]
 
@@ -79,7 +84,7 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    if(to.name === "home" || to.name === "login" || to.name === "noAuth" || to.name === "register"){
+    if(to.name === "home" || to.name === "login" || to.name === "noAuth" || to.name === "register" || to.name === "passwordRecovery"){
       next();
     }else{
       next({name: "noAuth"})
