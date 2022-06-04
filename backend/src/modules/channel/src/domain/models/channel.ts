@@ -50,20 +50,20 @@ export class Channel {
 
     public readonly name: string;
 
-    public readonly description: string;
+    public readonly description: string | undefined;
     
     public readonly presID_array: UserID[] = [];
 
     public constructor(
         name: string,
-        description: string,
+        description: string | undefined,
         presID_array: string[] | UserID[],
         id?: ChannelID
     ){
         if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
             throw new InvalidChannelName(name);
         }
-        if (!/^[a-zA-Z0-9_-]{5,300}$/.test(description)) {
+        if (description !== undefined && !/^[a-zA-Z0-9_-]{5,300}$/.test(description)) {
             throw new InvalidChannelDescription(description);
         }
         this.name = name;

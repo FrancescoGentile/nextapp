@@ -153,7 +153,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const id = ChannelID.generate();
-        const { name } = channel;
+        const name = channel.name;
         const description =
           channel.description === undefined || channel.description === null
             ? null
@@ -167,7 +167,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
                name: $name,
                description: $description,
             })`,
-              { id: id.to_string(), name, description }
+              { id: id.to_string(), name: name, description: description }
             )
           );
           
