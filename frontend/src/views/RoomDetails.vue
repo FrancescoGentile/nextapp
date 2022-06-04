@@ -1,6 +1,7 @@
 <script>
 import {defineComponent} from "vue";
 import {Modal} from "bootstrap";
+
 export default defineComponent({
   name: "RoomDetails",
   props:["id"],
