@@ -23,22 +23,21 @@ export class Neo4jSubRepository implements SubRepository {
   public async create_sub(sub: Sub): Promise<SubID | undefined> {
     const session = this.driver.session();
     try {
-      const sub_id = SubID.generate();
       const res = await session.writeTransaction((tx) =>
         tx.run(
-          `MATCH (u:CHANNEL_User), (r:CHANNEL_Channel)
+          `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
             WHERE u.id = $user_id AND c.id = $channel_id
             CREATE (u)-[s:CHANNEL_SUB { id: $sub_id }]-(c)`,
           {
             user_id: sub.user.to_string(),
             channel_id: sub.channel.to_string(),
-            sub_id: sub_id.to_string()
+            sub_id: sub.id!.to_string()
           }
         )
       );
       
       return res.summary.counters.updates().relationshipsCreated > 0
-        ? sub_id
+        ? sub.id!
         : undefined;
     } catch {
       throw new InternalServerError();

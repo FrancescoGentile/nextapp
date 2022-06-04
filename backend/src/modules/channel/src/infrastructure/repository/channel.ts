@@ -8,6 +8,7 @@ import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { ChannelID, Channel } from '../../domain/models/channel';
 import { ChannelRepository } from '../../domain/ports/channel.repository';
 import { SearchOptions } from '../../domain/models/search';
+import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
@@ -190,6 +191,17 @@ export class Neo4jChannelRepository implements ChannelRepository {
                 }
               )
             );
+            // check if president is subscribed. If not, subscribe
+            if (!this.is_sub( channel.presID_array[i], channel.id!)) {
+              const subscription: Sub = 
+              {
+                id: SubID.generate(),
+                user: channel.presID_array[i],
+                channel: channel.id!
+              };
+              this.create_sub(subscription);
+            }
+            
           }
 
           return id;
@@ -315,9 +327,9 @@ export class Neo4jChannelRepository implements ChannelRepository {
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (u:CHANNEL_User { id: $id }-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel))
+          `MATCH (u:CHANNEL_User { id: $id })-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel{ cid: $cid }))
            RETURN u.id as pres_id`,
-          { id: user_id.to_string() }
+          { id: user_id.to_string(), cid: channel_id.to_string() }
         )
       );
 
@@ -326,6 +338,55 @@ export class Neo4jChannelRepository implements ChannelRepository {
       } else {
         return true;
       }
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  private async is_sub(user: UserID, channel: ChannelID): Promise<boolean>{
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:CHANNEL_User{u.id: $user_id})-[s:CHANNEL_SUB]-(c:CHANNEL_Channel{c.id: $channel_id})
+            RETURN s.id as sid`,
+          {
+            user_id: user.to_string(),
+            channel_id: channel.to_string(),
+          }
+        )
+      );
+      
+      return res.records.length > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  private async create_sub(sub: Sub): Promise<SubID | undefined> {
+    const session = this.driver.session();
+    try {
+      const sub_id = SubID.generate();
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
+            WHERE u.id = $user_id AND c.id = $channel_id
+            CREATE (u)-[s:CHANNEL_SUB { id: $sub_id }]-(c)`,
+          {
+            user_id: sub.user.to_string(),
+            channel_id: sub.channel.to_string(),
+            sub_id: sub_id.to_string()
+          }
+        )
+      );
+      
+      return res.summary.counters.updates().relationshipsCreated > 0
+        ? sub_id
+        : undefined;
     } catch {
       throw new InternalServerError();
     } finally {

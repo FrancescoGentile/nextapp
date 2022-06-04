@@ -28,7 +28,12 @@ export class NextSubService implements SubService {
       throw new InvalidSubscribeChannel();
     }
     
-    const subscription: Sub = { user: user_id, channel: channel_id };
+    const subscription: Sub = 
+      {
+        id: SubID.generate(),
+        user: user_id, 
+        channel: channel_id 
+      };
     const sub_id = await this.sub_repo.create_sub(subscription);
     if (sub_id === undefined) {
       throw new InternalServerError();
