@@ -18,11 +18,13 @@ import { ChannelRepository } from '../ports/channel.repository';
 import { ChannelInfoService } from '../ports/channel.service';
 import { UserRepository } from '../ports/user.repository';
 import { SearchOptions } from '../models/search';
+import { SubRepository } from '../ports/sub.repository';
 
 export class NextChannelInfoService implements ChannelInfoService {
   public constructor(
     private readonly channel_repo: ChannelRepository,
-    private readonly user_repo: UserRepository
+    private readonly user_repo: UserRepository,
+    private readonly sub_repo: SubRepository
   ) {}
   
   public async get_channel(id: ChannelID): Promise<Channel> {
