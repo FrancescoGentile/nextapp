@@ -13,6 +13,7 @@ specifiers:
   eventemitter3: ^4.0.7
   express: ^4.18.1
   express-serve-static-core: ^0.1.1
+  express-version-request: ^1.7.0
   firebase-admin: ^10.2.0
   form-data: ^4.0.0
   http-status-codes: ^2.2.0
@@ -37,6 +38,7 @@ dependencies:
   eventemitter3: 4.0.7
   express: 4.18.1
   express-serve-static-core: 0.1.1
+  express-version-request: 1.7.0
   firebase-admin: 10.2.0
   form-data: 4.0.0
   http-status-codes: 2.2.0
@@ -387,6 +389,12 @@ packages:
       '@types/node': 17.0.35
       '@types/qs': 6.9.7
       '@types/range-parser': 1.2.4
+    dev: false
+
+  /@types/express-version-request/1.7.1:
+    resolution: {integrity: sha512-PtcUl+R6IjcZxYV/esmBKtyQO15zl06eBAdOaz9I6zFClp7aitDm/dlcbWaRkwtnwK6oZPapmahWw3z8KkxoBA==}
+    dependencies:
+      '@types/express': 4.17.13
     dev: false
 
   /@types/express/4.17.13:
@@ -1329,6 +1337,10 @@ packages:
 
   /express-serve-static-core/0.1.1:
     resolution: {integrity: sha1-IiNYESp5vJ++AIOCMujNLjEy7zc=}
+    dev: false
+
+  /express-version-request/1.7.0:
+    resolution: {integrity: sha512-arhavpFgjpfIOvpUt/U5h7azHq3y8atJYQOY2XaOUx1+pvZ+kU6qumkICPBdtzlt9lxnHme9tN55kgIugUHgdw==}
     dev: false
 
   /express/4.18.1:
@@ -3159,11 +3171,12 @@ packages:
     dev: false
 
   file:projects/messenger.tgz:
-    resolution: {integrity: sha512-zQH6ylDwvLN53ZGKxOJoC48spInul3VIEAQBU3+ewewFgQjOmjTdGYJou7p1yJ5ooeXWNg75ScwV+HPdRUcF7Q==, tarball: file:projects/messenger.tgz}
+    resolution: {integrity: sha512-sLUsk+70ZBDnO0IMJc1PJspgrlnkeTKmt1SBUIJgFr/RdcdYBB/cC7iSI92gEkNoMaE0bBHAg8w5k2PN4AC1+g==, tarball: file:projects/messenger.tgz}
     name: '@rush-temp/messenger'
     version: 0.0.0
     dependencies:
       '@types/express': 4.17.13
+      '@types/express-version-request': 1.7.1
       '@types/luxon': 2.3.2
       '@typescript-eslint/eslint-plugin': 5.26.0_3e687f93547efbf7d61b629ca4d69a5c
       '@typescript-eslint/parser': 5.26.0_eslint@8.16.0+typescript@4.7.2
@@ -3176,6 +3189,7 @@ packages:
       eventemitter3: 4.0.7
       express: 4.18.1
       express-serve-static-core: 0.1.1
+      express-version-request: 1.7.0
       firebase-admin: 10.2.0
       form-data: 4.0.0
       joi: 17.6.0
