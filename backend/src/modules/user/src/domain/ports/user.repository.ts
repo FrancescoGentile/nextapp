@@ -49,6 +49,32 @@ export interface UserRepository {
   change_password(user_id: UserID, password: Password): Promise<boolean>;
 
   /**
+   * Gets the name of the user's picture if it exists.
+   * @param user_id
+   */
+  get_user_picture(user_id: UserID): Promise<string | null>;
+
+  /**
+   * Associates the given name of the picture to the user if they exist.
+   * @param user_id
+   * @param name
+   */
+  add_user_picture(user_id: UserID, name: string): Promise<boolean>;
+
+  /**
+   * Removes the picture.
+   * @param user_id
+   */
+  remove_user_picture(user_id: UserID): Promise<boolean>;
+
+  /**
+   * Associates the given name of the picture to the user if they exist.
+   * @param user_id
+   * @param name
+   */
+  add_user_picture(user_id: UserID, name: string): Promise<boolean>;
+
+  /**
    * Return the id and password of the user with the given username if they exist.
    * This method may throw an error.
    * @param username
