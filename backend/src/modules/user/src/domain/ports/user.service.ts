@@ -3,6 +3,7 @@
 //
 
 import { UserID } from '@nextapp/common/user';
+import { Username } from '../models/credentials';
 import { Email } from '../models/email';
 import { SearchOptions } from '../models/search';
 import { IdentityInfo, User } from '../models/user';
@@ -48,6 +49,13 @@ export interface UserInfoService {
     old_password: string,
     new_password: string
   ): Promise<void>;
+
+  /**
+   * Resets the password of the user and sends an email to them
+   * with the new password.
+   * @param username
+   */
+  forgot_password(username: Username): Promise<void>;
 
   /**
    * Changes the role of the user.
