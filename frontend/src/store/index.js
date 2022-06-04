@@ -78,10 +78,10 @@ export default createStore({
     getUserEvents(state) {
       return state.userEvents
     },
-    getAdministratedChannels(state){
+    getAdministratedChannels(state) {
       return state.administratedChannels
     },
-    getChannelSubscribers(state){
+    getChannelSubscribers(state) {
       return state.channelSubscribers
     }
   },
@@ -137,10 +137,10 @@ export default createStore({
     setUserEvents(state, events) {
       state.userEvents = events
     },
-    setAdministratedChannels(state, channels){
-      state.administratedChannels= channels
+    setAdministratedChannels(state, channels) {
+      state.administratedChannels = channels
     },
-    setChannelSubscribers(state, subscribers){
+    setChannelSubscribers(state, subscribers) {
       state.channelSubscribers = subscribers
     }
   },
@@ -797,9 +797,9 @@ export default createStore({
       })
     },
 
-    attendEvent({commit}, event){
-      return new Promise((resolve, reject)=>{
-        instance.post("users/me/events", event, {withCredentials: true}
+    attendEvent({ commit }, event) {
+      return new Promise((resolve, reject) => {
+        instance.post("users/me/events", event, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -817,9 +817,9 @@ export default createStore({
       })
     },
 
-    desertEvent({commit}, eventId){
-      return new Promise((resolve, reject)=>{
-        instance.delete("users/me/events/" + eventId, {withCredentials: true}
+    desertEvent({ commit }, eventId) {
+      return new Promise((resolve, reject) => {
+        instance.delete("users/me/events/" + eventId, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -837,10 +837,10 @@ export default createStore({
       })
     },
 
-    administratedChannels({commit}){
-      return new Promise((resolve, reject)=>{
-        instance.get("users/me/president", {withCredentials: true}
-        ).then(response=>{
+    administratedChannels({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/president", { withCredentials: true }
+        ).then(response => {
           commit("setAdministratedChannels", response.data)
           resolve(response)
         }).catch(err => {
@@ -881,9 +881,88 @@ export default createStore({
     //TODO: subscribers are only ids -> return entire user object instead
     channelSubscribers({ commit }, channelId) {
       return new Promise((resolve, reject) => {
-        instance.get("channels/" + channelId +"/subscribers", { withCredentials: true }
+        instance.get("channels/" + channelId + "/subscribers", { withCredentials: true }
         ).then(response => {
-          commit("setChannelSubscribers", response.data)
+          let subscribers = response.data
+          this.dispatch("users"
+          ).then(() => {
+            this.state.users.forEach(user => {
+              subscribers.forEach(sub => {
+                if (sub.user.self === user.self) {
+                  subscribers.push(user)
+                }
+              })
+            })
+          }).catch(err => {
+            console.log(err)
+          })
+          commit("setChannelSubscribers", subscribers)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+
+    addNews({ commit }, { news, channelId }) {
+      return new Promise((resolve, reject) => {
+        instance.post("channels/" + channelId + "/news/", news, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteNews({ commit }, { newsId, channelId }) {
+      return new Promise((resolve, reject) => {
+        instance.delete("channels/" + channelId + "/news/" + newsId, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    modifyNews({ commit }, { news, newsId, channelId }) {
+      //console.log(room)
+      return new Promise((resolve, reject) => {
+        instance.patch("channels/"+channelId+"/news/"+newsId, {
+          title: news.title,
+          date: news.date,
+          body: news.body
+        }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
           resolve(response)
         }).catch(err => {
           notify({
@@ -895,7 +974,6 @@ export default createStore({
         })
       })
     }
-
   },
   modules: {
   }

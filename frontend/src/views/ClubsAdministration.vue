@@ -6,7 +6,8 @@
 */
 import { defineComponent } from "vue"
 import { Modal } from "bootstrap";
-
+import EventsManagement from "@/components/EventsManagement.vue";
+import NewsManagement from "@/components/NewsManagement.vue";
 
 export default defineComponent({
     data() {
@@ -15,107 +16,91 @@ export default defineComponent({
             chosenChannel: {},
             insertedChannel: {},
             selectedChannel: {},
-
             subscribers: [],
             chosenUser: {},
             showDetails: false,
-
             showEvents: false,
             showNews: false
-        }
+        };
     },
-
     computed: {
         loadedAdministratedChannels() {
-            return this.$store.getters.getAdministratedChannels
+            return this.$store.getters.getAdministratedChannels;
         },
         loadedChannel() {
-            return this.$store.getters.getChannelDetails
+            return this.$store.getters.getChannelDetails;
         },
         loadedSubscribers() {
-            return this.$store.getters.getChanneSubscribers
+            return this.$store.getters.getChanneSubscribers;
         }
     },
-
     mounted() {
-        this.$store.dispatch("administratedChannels"
-        ).then(() => {
-            this.channels = this.loadedAdministratedChannels
+        this.$store.dispatch("administratedChannels").then(() => {
+            this.channels = this.loadedAdministratedChannels;
         }).catch(err => {
-            console.log(err)
-        })
+            console.log(err);
+        });
     },
-
     methods: {
         chooseChannel(channel) {
-            this.chooseChannel = channel
-            this.showDetails = true
-            this.$store.dispatch("channelSubscribers", channel.self
-            ).then(() => {
-                this.subscribers = this.loadedSubscribers
-            }).catch(err => {
-                console.log(err)
-            })
-        },
-
-        modifyRoom(channel) {
-            let channelId = channel.self.replace("/api/v2/channels/", "")
-            this.$store.dispatch("modifyChannel", { channel, channelId }
-            ).then(() => {
-                this.choosenChannel = channel
-                this.$store.commit("setChanneletails", this.room)
-            }).catch(err => {
-                console.log(err)
-            })
-            this.hideModal("modifyChannel")
-        },
-
-        removeUser(user) {
-            this.$store.dispatch("banUser", user
-            ).then(() => {
-                this.subscribers = this.subscribers.filter(res => res.self !== user.self)
-                this.$store.commit("setChannelSubscribers", this.subscribers)
+            this.chooseChannel = channel;
+            this.showDetails = true;
+            this.$store.dispatch("channelSubscribers", channel.self).then(() => {
+                this.subscribers = this.loadedSubscribers;
             }).catch(err => {
                 console.log(err);
             });
-            this.hideModal("confirm")
         },
-        
+        modifyRoom(channel) {
+            let channelId = channel.self.replace("/api/v2/channels/", "");
+            this.$store.dispatch("modifyChannel", { channel, channelId }).then(() => {
+                this.choosenChannel = channel;
+                this.$store.commit("setChanneletails", this.room);
+            }).catch(err => {
+                console.log(err);
+            });
+            this.hideModal("modifyChannel");
+        },
+        removeUser(user) {
+            this.$store.dispatch("banUser", user).then(() => {
+                this.subscribers = this.subscribers.filter(res => res.self !== user.self);
+                this.$store.commit("setChannelSubscribers", this.subscribers);
+            }).catch(err => {
+                console.log(err);
+            });
+            this.hideModal("confirm");
+        },
         revertChanges(channel) {
-            let channelId = channel.self.replace("/api/v2/channels/", "")
-            this.$store.dispatch("channelDetails", channelId
-            ).then(() => {
+            let channelId = channel.self.replace("/api/v2/channels/", "");
+            this.$store.dispatch("channelDetails", channelId).then(() => {
                 this.chosenChannel = this.loadedChannel;
             }).catch(err => {
-                console.log(err)
-            })
-            this.hideModal("modifyChannel")
-        },
-
-        toggleNews() {
-            this.showNews = !this.showNews
-            this.showEvents = false
-        },
-
-        toggleEvents() {
-            this.showEvents = !this.showEvents
-            this.showNews = false
-        },
-
-        getAvatar(name) {
-            let avatarText = ""
-            name.split(" ").forEach(word => {
-                avatarText = avatarText + word[0]
+                console.log(err);
             });
-            return avatarText
+            this.hideModal("modifyChannel");
         },
-
+        toggleNews() {
+            this.showNews = !this.showNews;
+            this.showEvents = false;
+        },
+        toggleEvents() {
+            this.showEvents = !this.showEvents;
+            this.showNews = false;
+        },
+        getAvatar(name) {
+            let avatarText = "";
+            name.split(" ").forEach(word => {
+                avatarText = avatarText + word[0];
+            });
+            return avatarText;
+        },
         hideModal(modalId) {
-            const myModalEl = document.getElementById(modalId)
-            const modal = Modal.getInstance(myModalEl)
-            modal.hide()
+            const myModalEl = document.getElementById(modalId);
+            const modal = Modal.getInstance(myModalEl);
+            modal.hide();
         }
-    }
+    },
+    components: { NewsManagement, EventsManagement }
 })
 
 
@@ -150,11 +135,11 @@ export default defineComponent({
             </div>
         </div>
     </div>
-
+    <!--list of subscribers-->
     <div v-if="showDetails" class="container">
         <div class="row">
             <div class="col">
-                <h3 class="text-center">My reservations</h3>
+                <h3 class="text-center">Subscribers</h3>
                 <table class="table table-striped table-responsive text-center">
                     <thead>
                         <tr>
@@ -179,7 +164,14 @@ export default defineComponent({
                 </table>
             </div>
         </div>
+        <div class="text-center">
+            <button @click="toggleEvents()" class="btn btn-primary"> Show Events</button>
+            <button @click="toggleNews()" class="btn btn-primary"> Show Events</button>
+        </div>
     </div>
+    <NewsManagement v-if="showNews" :channelId="chosenChannel.self"></NewsManagement>
+    <EventsManagement v-if="showEvents" :channelId="chosenChannel.self"></EventsManagement>
+
 
     <!-- modals -->
     <div class="modal fade" id="modifyChannel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

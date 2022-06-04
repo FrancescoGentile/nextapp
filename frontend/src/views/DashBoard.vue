@@ -196,7 +196,7 @@ export default defineComponent({
         console.log(err)
       })
     },
-    
+
     getAvatar(name) {
       let avatarText = ""
       name.split(" ").forEach(word => {
