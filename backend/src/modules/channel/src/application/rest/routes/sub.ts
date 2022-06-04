@@ -17,8 +17,15 @@ import{
 } from '../../../domain/errors'
 import { SearchOptions } from '../../../domain/models/search';
 import { Sub, SubID } from '../../../domain/models/sub';
+import { UserID } from '@nextapp/common/user';
 
 const BASE_PATH = '/users/me/subscriptions';
+
+function user_to_json(user: UserID) {
+  return {
+    self: `${API_VERSION}/channels/:channel_id/subscribers/${user.to_string()}`
+  }
+}
 
 function subscription_to_json(subscription: Sub): any {
   return {
@@ -62,11 +69,11 @@ async function delete_subscriber(request: Request, response: Response){
 }
 
 async function get_club_subscribers(request: Request, response: Response){
-  await request.sub_service!.get_club_subscribers(
+  const users_id = await request.sub_service!.get_club_subscribers(
     request.user_id!,
     ChannelID.from_string(request.params.channel_id)
-  )
-  response.sendStatus(StatusCodes.NO_CONTENT);
+  );
+  response.status(StatusCodes.OK).json(users_id.map(user_to_json));
 }
 
 export function init_sub_routes(): express.Router {
