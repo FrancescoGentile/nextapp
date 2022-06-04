@@ -8,6 +8,7 @@ export { InternalServerError } from '@nextapp/common/error';
 
 enum UserErrorTypes {
   INVALID_FIRST_NAME = 1,
+  INVALID_MIDDLE_NAME,
   INVALID_SURNAME,
   INVALID_USERNAME,
   INVALID_PASSWORD,
@@ -29,6 +30,18 @@ export class InvalidFirstName extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid first name',
       'Your first name cannot be empty.',
+      options
+    );
+  }
+}
+
+export class InvalidMiddleName extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_user_type(UserErrorTypes.INVALID_FIRST_NAME),
+      StatusCodes.BAD_REQUEST,
+      'Invalid middle name',
+      'Your middle name cannot be empty.',
       options
     );
   }

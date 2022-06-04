@@ -4,7 +4,7 @@
 
 import { UserID, UserRole } from '@nextapp/common/user';
 import { Credentials } from './credentials';
-import { InvalidFirstName, InvalidSurname } from '../errors';
+import { InvalidFirstName, InvalidMiddleName, InvalidSurname } from '../errors';
 
 export class IdentityInfo {
   public constructor(
@@ -14,6 +14,9 @@ export class IdentityInfo {
   ) {
     if (first_name.trim() === '') {
       throw new InvalidFirstName();
+    }
+    if (middle_name !== undefined && middle_name.trim() === '') {
+      throw new InvalidMiddleName();
     }
     if (surname.trim() === '') {
       throw new InvalidSurname();

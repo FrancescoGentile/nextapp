@@ -57,7 +57,7 @@ async function register_user(request: Request, response: Response) {
     email
   );
 
-  response.status(StatusCodes.NO_CONTENT).location(id_to_self(id)).end();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function get_users_list(request: Request, response: Response) {
