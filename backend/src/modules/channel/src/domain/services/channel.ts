@@ -26,6 +26,22 @@ export class NextChannelInfoService implements ChannelInfoService {
     private readonly user_repo: UserRepository,
     private readonly sub_repo: SubRepository
   ) {}
+  public async update_channel(requester: UserID, channel: Channel): Promise<boolean> {
+    
+    const is_pres = this.channel_repo.is_president(requester, channel.id!);
+
+    if(!is_pres){
+      throw new UserNotAPresident(requester.to_string());
+    }
+
+    const updated = await this.channel_repo.update_channel(channel);
+    if (!updated) {
+      throw new ChannelNameAlreadyUsed(channel.name);
+    }
+    
+    return updated;
+    
+  }
   
   public async get_channel(id: ChannelID): Promise<Channel> {
     const channel = await this.channel_repo.get_channel(id);
