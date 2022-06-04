@@ -11,7 +11,8 @@ import {
   ChannelNameAlreadyUsed,
   InvalidPresidentsNumber,
   InvalidSubscribeChannel,
-  UserNotAPresident
+  UserNotAPresident,
+  SubNotFound
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -49,13 +50,21 @@ export class NextSubService implements SubService {
     return await this.sub_repo.get_user_subscriptions(user_id, options);
   }
   
-  public async delete_subscriber(user_id: UserID, sub_id: SubID): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  private async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean | null>{
-    const is_pres = await this.sub_repo.is_president(user_id, channel_id);
-    return is_pres;
+  public async delete_subscriber(requester: UserID, sub_id: SubID): Promise<void> {
+    const sub = await this.sub_repo.get_subscription_info(sub_id);
+    if(sub === null){
+      throw new SubNotFound(sub_id.to_string());
+    }
+    const channel_id = sub!.channel;
+    const subscriber_id = sub!.user;
+    const is_pres = this.channel_repo.is_president(requester, channel_id);
+    // is the requester the user to be unsubscribed ?
+    // OR
+    // is the requester a president of the interested channel ?
+    if(requester !== subscriber_id && !is_pres){
+        throw new UserNotAPresident(requester.to_string());
+      }
+    this.sub_repo.delete_subscriber(subscriber_id, sub_id);
   }
 
 }

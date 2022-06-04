@@ -149,7 +149,8 @@ export class NoChannelAvailable extends NextError {
 
 enum SubErrorTypes {
   INVALID_SUB_ID = 1,
-  INVALID_CHANNEL
+  INVALID_SUB_CHANNEL,
+  SUBSCRIPTION_NOT_FOUND
 }
 
 function get_sub_type(type: SubErrorTypes): string {
@@ -171,10 +172,22 @@ export class InvalidSubID extends NextError {
 export class InvalidSubscribeChannel extends NextError {
   public constructor(options?: ErrorOptions) {
     super(
-      get_sub_type(SubErrorTypes.INVALID_CHANNEL),
+      get_sub_type(SubErrorTypes.INVALID_SUB_CHANNEL),
       StatusCodes.BAD_REQUEST,
       'Channel not found',
       `Your subscription is for a channel that does not exist.`,
+      options
+    );
+  }
+}
+
+export class SubNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_sub_type(SubErrorTypes.SUBSCRIPTION_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Subscription not found',
+      `There is no subscription with id ${id}.`,
       options
     );
   }

@@ -36,9 +36,9 @@ export interface SubService {
    * @param user_id
    * @param sub_id
    */
-   delete_subscriber(
+  delete_subscriber(
      user_id: UserID, 
-     sub_id: SubID): 
-     Promise<void>;
+     sub_id: SubID
+  ): Promise<void>;
 
 }
