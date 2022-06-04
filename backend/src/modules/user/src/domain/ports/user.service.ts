@@ -62,6 +62,25 @@ export interface UserInfoService {
   ): Promise<void>;
 
   /**
+   * Get user's picture if it exists.
+   * @param user
+   */
+  get_picture(user: UserID): Promise<{ buffer: Buffer; mimetype: string }>;
+
+  /**
+   * Adds a profile picture to the user.
+   * @param user
+   * @param path
+   */
+  add_picture(user: UserID, path: string, mimetype: string): Promise<void>;
+
+  /**
+   * Deletes the user picture if previously added.
+   * @param user
+   */
+  delete_picture(user: UserID): Promise<void>;
+
+  /**
    * Deletes the account associated to the user.
    * This method can be invoked only by the user or by an admin.
    * @param requester

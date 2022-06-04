@@ -258,6 +258,70 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
+  public async add_user_picture(
+    user_id: UserID,
+    name: string
+  ): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:USER_User { id: $id })
+           SET u.picture = $picture`,
+          { id: user_id.to_string(), picture: name }
+        )
+      );
+
+      return res.summary.counters.updates().propertiesSet > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_user_picture(user_id: UserID): Promise<string | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:USER_User { id: $id })
+           RETURN u.picture AS picture`,
+          { id: user_id.to_string() }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      return res.records[0].get('picture') || null;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async remove_user_picture(user_id: UserID): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:USER_User { id: $id })
+           SET u.picture = $picture`,
+          { id: user_id.to_string(), picture: null }
+        )
+      );
+
+      return res.summary.counters.updates().propertiesSet > 0;
+    } catch (e) {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public async delete_user(user_id: UserID): Promise<boolean> {
     const session = this.driver.session();
     try {
