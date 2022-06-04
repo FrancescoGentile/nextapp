@@ -13,6 +13,7 @@ import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jSubRepository implements SubRepository {
     private constructor(private readonly driver: Driver) {}
+  
     
   public static async create(driver: Driver): Promise<Neo4jSubRepository> {
     return new Neo4jSubRepository(driver);
@@ -71,6 +72,55 @@ export class Neo4jSubRepository implements SubRepository {
 
       return subs;
     } catch (e) {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_subscription_info(sub_id : SubID): Promise<Sub | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (user:CHANNEL_User)-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel)
+           WHERE s.id = $sub_id
+           RETURN u.id as uid, chan.id as cid, s.id as sub_id`,
+          { sub_id: sub_id.to_string() }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      const record = res.records[0];
+      return {
+        id: SubID.from_string(record.get('sub_id')),
+        channel: ChannelID.from_string(record.get('cid')),
+        user: new UserID(record.get('uid'))
+      };
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async delete_subscriber(user_id: UserID, sub_id: SubID): Promise<boolean>{
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (user:CHANNEL_User)-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel)
+           WHERE s.id = $sub_id
+           DELETE s`,
+          { user_id: user_id.to_string(), sub_id: sub_id.to_string() }
+        )
+      );
+
+      return res.summary.counters.updates().relationshipsDeleted > 0;
+    } catch {
       throw new InternalServerError();
     } finally {
       await session.close();

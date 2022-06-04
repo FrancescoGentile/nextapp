@@ -86,7 +86,10 @@ export class NextChannelInfoService implements ChannelInfoService {
     return role === UserRole.SYS_ADMIN;
   }
   
-  
+  public async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean | null>{
+    const is_pres = await this.channel_repo.is_president(user_id, channel_id);
+    return is_pres;
+  }
   
 
 }

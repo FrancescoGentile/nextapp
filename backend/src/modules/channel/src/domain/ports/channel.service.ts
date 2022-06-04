@@ -12,7 +12,9 @@ export interface ChannelInfoService {
    * Returns the channel with the given id if it exists.
    * @param id
    */
-  get_channel(id: ChannelID): Promise<Channel>;
+  get_channel(
+    id: ChannelID
+    ): Promise<Channel>;
 
   /**
    * Creates a new channel with the given information.
@@ -21,13 +23,19 @@ export interface ChannelInfoService {
    * @param admin
    * @param channel
    */
-  create_channel(admin: UserID, channel: Channel): Promise<ChannelID>;
+  create_channel(
+    admin: UserID, 
+    channel: Channel
+    ): Promise<ChannelID>;
 
   /**
    * Return the list of all channels.
    * @param requester the user who wants to get the list of all channels
    */
-  get_channel_list(requester: UserID, options: SearchOptions): Promise<Channel[]>;
+  get_channel_list(
+    requester: UserID, 
+    options: SearchOptions
+    ): Promise<Channel[]>;
 
    /**
    * Removes the channel with the given id only if it was made by the passed user.
@@ -35,13 +43,29 @@ export interface ChannelInfoService {
    * @param user_id
    * @param channel_id
    */
-  delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void>;
+  delete_channel(
+    user_id: UserID, 
+    channel_id: ChannelID
+    ): Promise<void>;
 
 
   /**
    * Return the list of the channels that are managed by the requester.
    * @param requester the user who wants to get the list of all channels
    */
-  get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]>;
+  get_pres_channels(
+    requester: UserID, 
+    options: SearchOptions
+    ): Promise<Channel[]>;
+
+  /**
+   * Returns true if the user is a president of a given channel; otherwise false.
+   * @param user_id
+   * @param channel_id
+   */
+  is_president(
+    user_id: UserID, 
+    channel_id: ChannelID
+    ): Promise<boolean | null>;
 
 }

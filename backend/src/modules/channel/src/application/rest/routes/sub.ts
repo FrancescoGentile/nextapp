@@ -16,7 +16,7 @@ import{
     InvalidSubscribeChannel
 } from '../../../domain/errors'
 import { SearchOptions } from '../../../domain/models/search';
-import { Sub } from '../../../domain/models/sub';
+import { Sub, SubID } from '../../../domain/models/sub';
 
 const BASE_PATH = '/users/me/subscriptions';
 
@@ -53,10 +53,19 @@ async function get_user_subscriptions(request: Request, response: Response){
 
 }
 
+async function delete_subscriber(request: Request, response: Response){
+  await request.sub_service!.delete_subscriber(
+    request.user_id!,
+    SubID.from_string(request.params.sub_id)
+  );
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 export function init_sub_routes(): express.Router {
   const router = express.Router();
   
   router.get(`${BASE_PATH}`, asyncHandler(get_user_subscriptions));
-
+  router.delete(`${BASE_PATH}/:channel_id/subscribers/:subscriber_id`, asyncHandler(delete_subscriber));
+  
   return router;
 }
