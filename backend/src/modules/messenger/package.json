@@ -71,6 +71,7 @@
     "json-joi-converter": "^17.2.1-f",
     "luxon": "^2.4.0",
     "firebase-admin": "^10.2.0",
-    "express-version-request": "^1.7.0"
+    "express-version-request": "^1.7.0",
+    "neo4j-driver-core": "^4.4.5"
   }
 }

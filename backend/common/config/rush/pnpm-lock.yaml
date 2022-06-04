@@ -5338,7 +5338,7 @@ packages:
     dev: false
 
   file:projects/messenger.tgz:
-    resolution: {integrity: sha512-gbBBb0eGn7qzla+apCAhOxM+gg1lG/YyUBklAVVDJVi3dFLDxa1Qn2oTdeibX/xz8vU4Dx5qkifRUYXVuIqZJw==, tarball: file:projects/messenger.tgz}
+    resolution: {integrity: sha512-9rQZphiggEKFHPxIVfEwZPHNcJ5dPfKb/CBda3AM2VQbhasPl7hMgtrOA/52k40qqgA6nDoVepyAaOOqlsbGXw==, tarball: file:projects/messenger.tgz}
     name: '@rush-temp/messenger'
     version: 0.0.0
     dependencies:
@@ -5373,6 +5373,7 @@ packages:
       mailgun.js: 7.0.0
       nanoid: 3.3.4
       neo4j-driver: 4.4.5
+      neo4j-driver-core: 4.4.5
       prettier: 2.6.2
       supertest: 6.2.3
       ts-jest: 28.0.4_jest@28.1.0+typescript@4.7.3
