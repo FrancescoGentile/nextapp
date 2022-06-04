@@ -135,16 +135,41 @@ export class Neo4jInfoRepository implements InfoRepository {
     }
   }
 
-  public async change_email_main(user_id: UserID): Promise<void> {
+  public async unset_email_main(user_id: UserID): Promise<boolean> {
     const session = this.driver.session();
     try {
-      await session.readTransaction((tx) =>
+      const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:MESSENGER_User { id: $id })-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { main: true })
            SET e.main = false`,
           { id: user_id.to_string() }
         )
       );
+
+      return res.summary.counters.updates().propertiesSet > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async set_email_main(
+    user_id: UserID,
+    email_id: EmailID
+  ): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
+           WHERE u.id = $user_id AND e.id = $email_id
+           SET e.main = true`,
+          { user_id: user_id.to_string(), email_id: email_id.to_string() }
+        )
+      );
+
+      return res.summary.counters.updates().propertiesSet > 0;
     } catch {
       throw new InternalServerError();
     } finally {

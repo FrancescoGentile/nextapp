@@ -57,6 +57,24 @@ async function get_emails(request: Request, response: Response) {
   response.status(StatusCodes.OK).json(emails.map(email_to_json));
 }
 
+async function set_main(request: Request, response: Response) {
+  const schema = Joi.object({
+    main: Joi.boolean().required().valid([true]),
+  });
+
+  const _ = validate(schema, request.body);
+
+  let id: EmailID;
+  try {
+    id = EmailID.from_string(request.params.email_id);
+  } catch {
+    throw new EmailNotFound(request.params.email_id);
+  }
+
+  await request.info_service.set_main_email(request.user_id, id);
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 async function add_email(request: Request, response: Response) {
   const schema = Joi.object({
     email: Joi.string().required(),
@@ -90,6 +108,7 @@ export function init_email_routes(): express.Router {
   router.get(`${BASE_PATH}/:email_id`, asyncHandler(get_email));
   router.get(BASE_PATH, asyncHandler(get_emails));
   router.post(BASE_PATH, asyncHandler(add_email));
+  router.patch(`${BASE_PATH}/:email_id`, asyncHandler(set_main));
   router.delete(`${BASE_PATH}/:email_id`, asyncHandler(delete_email));
 
   return router;

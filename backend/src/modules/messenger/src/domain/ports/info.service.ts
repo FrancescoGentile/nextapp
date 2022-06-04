@@ -24,6 +24,14 @@ export interface UserInfoService {
   get_emails(user_id: UserID, options: SearchOptions): Promise<EmailAddress[]>;
 
   /**
+   * Sets as new main email the one with the given id if it exists.
+   * If this email was alread the main one, nothing changes.
+   * @param user_id
+   * @param email_id
+   */
+  set_main_email(user_id: UserID, email_id: EmailID): Promise<void>;
+
+  /**
    * Adds the given emails to the user.
    * This method throws an error if the user already added the given email.
    * @param user_id

@@ -40,6 +40,29 @@ export class NextUserInfoService implements UserInfoService {
     return this.repo.get_emails(user_id, options);
   }
 
+  public async set_main_email(
+    user_id: UserID,
+    email_id: EmailID
+  ): Promise<void> {
+    const email = await this.repo.get_email(user_id, email_id);
+    if (email === null) {
+      throw new EmailNotFound(email_id.to_string());
+    }
+
+    if (email.main) {
+      return;
+    }
+
+    const [unset, set] = await Promise.all([
+      this.repo.unset_email_main(user_id),
+      this.repo.set_email_main(user_id, email_id),
+    ]);
+
+    if (!set || !unset) {
+      throw new InternalServerError();
+    }
+  }
+
   public async add_email(
     user_id: UserID,
     email: EmailAddress
@@ -51,8 +74,10 @@ export class NextUserInfoService implements UserInfoService {
 
     let id: EmailID | undefined;
     if (email.main) {
-      await this.repo.change_email_main(user_id);
-      id = await this.repo.add_email(user_id, email);
+      [, id] = await Promise.all([
+        this.repo.unset_email_main(user_id),
+        this.repo.add_email(user_id, email),
+      ]);
     } else {
       id = await this.add_email(user_id, email);
     }
