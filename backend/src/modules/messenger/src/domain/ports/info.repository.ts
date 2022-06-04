@@ -53,12 +53,17 @@ export interface InfoRepository {
   check_email_by_name(user_id: UserID, email: EmailAddress): Promise<boolean>;
 
   /**
-   * Sets the current main mail as not main.
+   * Sets the current main email as not main.
+   * @param user_id
+   */
+  unset_email_main(user_id: UserID): Promise<boolean>;
+
+  /**
+   * Sets the passed email as main.
    * @param user_id
    * @param email_id
-   * @param main
    */
-  change_email_main(user_id: UserID): Promise<void>;
+  set_email_main(user_id: UserID, email_id: EmailID): Promise<boolean>;
 
   /**
    * Adds the new email to the emails of the user.
