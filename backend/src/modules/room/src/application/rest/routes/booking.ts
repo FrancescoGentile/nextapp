@@ -23,6 +23,9 @@ function id_to_self(id: BookingID): string {
 function booking_to_json(booking: Booking): any {
   return {
     self: id_to_self(booking.id!),
+    user: {
+      self: '/users/me',
+    },
     room: {
       self: `/rooms/${booking.room.to_string()}`,
     },
