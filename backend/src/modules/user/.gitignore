@@ -2,13 +2,17 @@
 .rush
 room.build.log
 
-# env
+# secrets
 .env
+firebase.json
 
 # dependencies
 node_modules
 
 # output files
 dist
+
+# picture
+files
 
 src/coverage-summary.json
