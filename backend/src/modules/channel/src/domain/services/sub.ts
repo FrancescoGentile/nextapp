@@ -10,7 +10,8 @@ import {
   ChannelCreationNotAuthorized,
   ChannelNameAlreadyUsed,
   InvalidPresidentsNumber,
-  InvalidSubscribeChannel
+  InvalidSubscribeChannel,
+  UserNotAPresident
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -32,7 +33,6 @@ export class NextSubService implements SubService {
     const channel = await this.channel_repo.get_channel(channel_id);
     if (channel === null) {
       throw new InvalidSubscribeChannel();
-    
     }
     
     const subscription: Sub = { user: user_id, channel: channel_id };
@@ -47,6 +47,15 @@ export class NextSubService implements SubService {
   
   public async get_user_subscriptions(user_id: UserID, options: SearchOptions): Promise<Sub[] | null> {
     return await this.sub_repo.get_user_subscriptions(user_id, options);
+  }
+  
+  public async delete_subscriber(user_id: UserID, sub_id: SubID): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  private async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean | null>{
+    const is_pres = await this.sub_repo.is_president(user_id, channel_id);
+    return is_pres;
   }
 
 }

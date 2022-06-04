@@ -14,8 +14,18 @@ export interface SubRepository {
    * This method returns undefined if the user or the channel do not exist in the repo.
    * @param sub
    */
-  create_sub(sub: Sub): Promise<SubID | undefined>;
+  create_sub(
+    sub: Sub
+    ): Promise<SubID | undefined>;
 
-  get_user_subscriptions(user_id: UserID, options: SearchOptions): Promise<Sub[] | null>
+  /**
+   * Returns the subscriptions of a given user
+   * @param user_id
+   * @param options
+   */
+  get_user_subscriptions(
+    user_id: UserID,
+    options: SearchOptions
+    ): Promise<Sub[] | null>;
 
 }

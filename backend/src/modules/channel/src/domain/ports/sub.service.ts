@@ -21,9 +21,24 @@ export interface SubService {
     channel_id: ChannelID
   ): Promise<SubID>;
 
+  /**
+   * Returns the subscriptions of a given user
+   * @param user_id
+   * @param options
+   */
   get_user_subscriptions(
     user_id: UserID,
     options: SearchOptions
   ): Promise<Sub[] | null>
+
+  /**
+   * Removes the subscriptions with the given id only if was made by the passed user or by a channel president.
+   * @param user_id
+   * @param sub_id
+   */
+   delete_subscriber(
+     user_id: UserID, 
+     sub_id: SubID): 
+     Promise<void>;
 
 }

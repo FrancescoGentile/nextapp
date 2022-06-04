@@ -13,6 +13,7 @@ import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jSubRepository implements SubRepository {
     private constructor(private readonly driver: Driver) {}
+  
     
   public static async create(driver: Driver): Promise<Neo4jSubRepository> {
     return new Neo4jSubRepository(driver);

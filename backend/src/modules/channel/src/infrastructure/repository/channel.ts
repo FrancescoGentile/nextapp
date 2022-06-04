@@ -244,4 +244,27 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
+  public async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:CHANNEL_User { id: $id }-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel))
+           RETURN u.id as pres_id`,
+          { id: user_id.to_string() }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return false;
+      } else {
+        return true;
+      }
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
 }
