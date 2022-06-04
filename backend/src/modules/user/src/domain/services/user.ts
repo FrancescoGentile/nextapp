@@ -5,12 +5,15 @@
 import { UserID, UserRole } from '@nextapp/common/user';
 import { ModuleID } from '@nextapp/common/event';
 import { DateTime } from 'luxon';
+import path from 'path';
+import fs from 'fs';
 import {
   InternalServerError,
   NotAnAdmin,
   UsernameAlreadyUsed,
   UserNotFound,
   OldPasswordWrong,
+  PictureNotFound,
 } from '../errors';
 import { IdentityInfo, User } from '../models/user';
 import { Password, Username } from '../models/credentials';
@@ -19,10 +22,14 @@ import { UserRepository } from '../ports/user.repository';
 import { EventBroker } from '../ports/event.broker';
 import { SearchOptions } from '../models/search';
 import { Email } from '../models/email';
+import { FileStorage } from '../ports/file.storage';
+
+const fsp = fs.promises;
 
 export class NextUserInfoService implements UserInfoService {
   public constructor(
     private readonly user_repo: UserRepository,
+    private readonly storage: FileStorage,
     private readonly broker: EventBroker
   ) {}
 
@@ -114,6 +121,11 @@ export class NextUserInfoService implements UserInfoService {
       throw new NotAnAdmin();
     }
 
+    const picture = await this.user_repo.get_user_picture(user);
+    if (picture !== null) {
+      await this.storage.delete_picture(picture);
+    }
+
     const deleted = await this.user_repo.delete_user(user);
     if (!deleted) {
       throw new UserNotFound(user.to_string());
@@ -150,6 +162,49 @@ export class NextUserInfoService implements UserInfoService {
     if (!changed) {
       throw new InternalServerError();
     }
+  }
+
+  public async get_picture(
+    user: UserID
+  ): Promise<{ buffer: Buffer; mimetype: string }> {
+    const name = await this.user_repo.get_user_picture(user);
+    if (name === null) {
+      throw new PictureNotFound();
+    }
+    return this.storage.get_picture(name);
+  }
+
+  public async add_picture(
+    user: UserID,
+    fullpath: string,
+    mimetype: string
+  ): Promise<void> {
+    try {
+      const added = await this.user_repo.add_user_picture(
+        user,
+        path.basename(fullpath)
+      );
+
+      if (!added) {
+        throw new InternalServerError();
+      }
+
+      await this.storage.upload_picture(fullpath, mimetype);
+    } finally {
+      await fsp.unlink(fullpath);
+    }
+  }
+
+  public async delete_picture(user: UserID): Promise<void> {
+    const name = await this.user_repo.get_user_picture(user);
+    if (name === null) {
+      throw new PictureNotFound();
+    }
+
+    await Promise.all([
+      this.storage.delete_picture(name),
+      this.user_repo.remove_user_picture(user),
+    ]);
   }
 
   private async is_admin(user_id: UserID): Promise<boolean> {
