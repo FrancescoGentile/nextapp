@@ -165,6 +165,14 @@ async function update_channel(request: Request, response: Response){
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
+async function get_channel_by_name(request: Request, response: Response){
+  
+  const channel_name = request.params.channel_name;
+
+  const channel = await request.channel_service!.get_channel_by_name(channel_name);
+  response.status(StatusCodes.OK).json(channel_to_json(channel));
+}
+
 export function init_channel_routes(): express.Router {
   const router = express.Router();
 
@@ -174,6 +182,8 @@ export function init_channel_routes(): express.Router {
   router.get(`${BASE_PATH}/:channel_id`, asyncHandler(get_channel));
   router.delete(`${BASE_PATH}/:channel_id`, asyncHandler(delete_channel));
   router.patch(`${BASE_PATH}/:channel_id`, asyncHandler(update_channel));
+
+  router.get(`${BASE_PATH}/:channel_name`, asyncHandler(get_channel_by_name));
 
   router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
 

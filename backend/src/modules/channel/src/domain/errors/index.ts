@@ -20,7 +20,8 @@ enum ChannelErrorTypes {
     NAME_ALREADY_USED,
     INVALID_PRESIDENT_NUMBERS,
     CHANNEL_DELETION_NOT_AUTHORIZED,
-    NO_CHANNEL_AVAILABLE
+    NO_CHANNEL_AVAILABLE,
+    CHANNEL_NAME_NOT_FOUND
 }
 
 
@@ -138,6 +139,18 @@ export class NoChannelAvailable extends NextError {
       StatusCodes.NOT_FOUND,
       'There is no channel available',
       `Cannot find any channel.`,
+      options
+    );
+  }
+}
+
+export class ChannelNameNotFound extends NextError {
+  public constructor(channel_name: string, options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.CHANNEL_NAME_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Channel not found',
+      `Channel with name ${channel_name} was not found.`,
       options
     );
   }

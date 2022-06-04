@@ -74,4 +74,12 @@ export interface ChannelRepository {
     channel: Channel
   ): Promise<boolean>;
 
+  /**
+   * Returns the channel with the given channel_name if it exists; null otherwise.
+   * @param channel_name
+   */
+   get_channel_by_name(
+    channel_name : string
+  ): Promise<Channel | null>
+
 }

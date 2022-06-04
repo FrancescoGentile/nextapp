@@ -82,4 +82,13 @@ export interface ChannelInfoService {
     channel: Channel
   ): Promise<boolean>;
 
+  /**
+   * Returns the channel with the given channel_name if it exists.
+   * Can throw an error if the channel name deos not exist.
+   * @param channel_name
+   */
+  get_channel_by_name(
+    channel_name : string
+  ): Promise<Channel>
+
 }
