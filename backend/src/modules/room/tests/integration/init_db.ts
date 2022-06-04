@@ -58,6 +58,7 @@ async function populate_rooms(driver: Driver): Promise<Room[]> {
   const rooms: Room[] = [
     new Room('Room1', undefined, 2, 1, RoomID.from_string('1111111111')),
     new Room('Room2', undefined, 10, 2, RoomID.from_string('2222222222')),
+    new Room('Room3', undefined, 1, 2, RoomID.from_string('3333333333')),
   ];
 
   for (const room of rooms) {
@@ -115,6 +116,12 @@ async function populate_bookings(
         base.minus({ hours: 4 }),
         base.minus({ hours: 1 })
       ),
+    },
+    {
+      id: BookingID.from_string('3333333333'),
+      user: users[3].id,
+      room: rooms[2].id!,
+      interval: NextInterval.from_dates(base, base.plus({ hours: 10 })),
     },
   ];
 
