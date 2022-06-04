@@ -16,7 +16,7 @@ import {
   PictureNotFound,
 } from '../errors';
 import { IdentityInfo, User } from '../models/user';
-import { Password, Username } from '../models/credentials';
+import { generate_password, Password, Username } from '../models/credentials';
 import { UserInfoService } from '../ports/user.service';
 import { UserRepository } from '../ports/user.repository';
 import { EventBroker } from '../ports/event.broker';
@@ -161,6 +161,33 @@ export class NextUserInfoService implements UserInfoService {
     const changed = this.user_repo.change_password(user_id, new_pwd);
     if (!changed) {
       throw new InternalServerError();
+    }
+  }
+
+  public async forgot_password(username: Username): Promise<void> {
+    const value = await this.user_repo.get_id_password(username);
+    if (value !== null) {
+      const { id } = value;
+      const new_password = generate_password();
+      await this.user_repo.change_password(
+        id,
+        await Password.from_clear(new_password, username)
+      );
+
+      this.broker.emit_send_message({
+        name: 'send_message',
+        timestamp: DateTime.utc(),
+        module: ModuleID.USER,
+        users: [id],
+        type: 'email',
+        title: 'Reset password',
+        body:
+          `Hi ${username}, your new password is ${new_password}.\n` +
+          `You can use this password to enter in your personal area where you can change it.\n`,
+        html:
+          `<p>Hi ${username}, your new password is ${new_password}.</p>` +
+          `<p>You can use this password to enter in your personal area where you can change it.</p>`,
+      });
     }
   }
 

@@ -22,3 +22,11 @@ export interface UserRoleChangedEvent extends NextEvent {
 export interface UserDeletedEvent extends NextEvent {
   user_id: UserID;
 }
+
+export interface SendMessageEvent extends NextEvent {
+  users: UserID[];
+  type: string;
+  title: string;
+  body: string;
+  html?: string;
+}

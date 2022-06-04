@@ -4,6 +4,7 @@
 
 import EventEmitter from 'eventemitter3';
 import {
+  SendMessageEvent,
   UserCreatedEvent,
   UserDeletedEvent,
   UserRoleChangedEvent,
@@ -22,6 +23,10 @@ export class EventEmitterBroker implements EventBroker {
   }
 
   public emit_user_role_changed(event: UserRoleChangedEvent): void {
+    this.emitter.emit(event.name, event);
+  }
+
+  public emit_send_message(event: SendMessageEvent): void {
     this.emitter.emit(event.name, event);
   }
 }
