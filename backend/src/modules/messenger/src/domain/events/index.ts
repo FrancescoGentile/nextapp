@@ -16,7 +16,6 @@ export interface UserCreatedEvent extends NextEvent {
 
 export interface UserDeletedEvent extends NextEvent {
   user_id: UserID;
-  fullname: string;
 }
 
 export interface SendMessageEvent extends NextEvent {
