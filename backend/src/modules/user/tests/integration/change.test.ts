@@ -187,3 +187,58 @@ describe('change password', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('reset password', () => {
+  beforeAll(async () => {
+    driver = await init_driver();
+    clear_db(driver);
+    users = await populate_db(driver);
+
+    const emitter = new EventEmitter();
+    const app = await init_app(driver, emitter);
+    request = supertest(app);
+  });
+
+  afterAll(async () => {
+    await clear_db(driver);
+    await close_driver(driver);
+  });
+
+  // ------------------------ RP-1 ------------------------
+
+  it('(rp-1) missing username', async () => {
+    const res = await request.post('/forgot-password').send({});
+
+    expect(res.status).toBe(400);
+  });
+
+  // ------------------------ RP-2 ------------------------
+
+  it('(rp-2) invalid username', async () => {
+    const res = await request.post('/forgot-password').send({
+      username: 'ciao',
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  // ------------------------ RP-3 ------------------------
+
+  it('(rp-3) non existing username', async () => {
+    const res = await request.post('/forgot-password').send({
+      username: 'nonexistingusername',
+    });
+
+    expect(res.status).toBe(202);
+  });
+
+  // ------------------------ RP-4 ------------------------
+
+  it('(rp-4) non username', async () => {
+    const res = await request.post('/forgot-password').send({
+      username: users[1].credentials.username.to_string(),
+    });
+
+    expect(res.status).toBe(202);
+  });
+});
