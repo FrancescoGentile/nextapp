@@ -166,3 +166,125 @@ export class InvalidSubscribeChannel extends NextError {
     );
   }
 }
+
+
+
+enum NewsErrorTypes {
+  INVALID_ID = 1,
+  INVALID_NAME,
+  INVALID_DESCRIPTION,
+  NEWS_NOT_FOUND,
+  NEWS_CREATION_NOT_AUTHORIZED,
+  NAME_ALREADY_USED,
+  INVALID_PRESIDENT_NUMBERS,
+  CHANNEL_DELETION_NOT_AUTHORIZED,
+  NEWS_UPDATE_NOT_AUTHORIZED,
+  INVALID_BODY
+}
+
+function get_news_type(type: NewsErrorTypes): string {
+  return `news-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidNewsID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+      super(
+      get_news_type(NewsErrorTypes.INVALID_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid news id',
+      `${id} is not a valid id for a news`,
+      options
+      );
+  }
+}
+
+
+export class InvalidNewsName extends NextError {
+  public constructor(name: string, options?: ErrorOptions) {
+      super(
+      get_news_type(NewsErrorTypes.INVALID_NAME),
+      StatusCodes.BAD_REQUEST,
+      'Invalid news name',
+      `${name} does not meet on or both of the following conditions: ` +
+      `length between 5 and 100 characters, ` +
+      `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
+    options
+      );
+  }
+}
+
+export class InvalidNewsBody extends NextError {
+  public constructor(name: string, options?: ErrorOptions) {
+    super(
+    get_news_type(NewsErrorTypes.INVALID_BODY),
+    StatusCodes.BAD_REQUEST,
+    'Invalid news body',
+    `${name} does not meet on or both of the following conditions: ` +
+    `length between 5 and 5000 characters, ` +
+    `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
+  options
+    );
+}
+
+}
+
+export class NewsCreationNotAuthorized extends NextError {
+  public constructor() {
+    super(
+      get_news_type(NewsErrorTypes.NEWS_CREATION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to create a news'+
+      'You have to be a channel administator to create a news.'
+    );
+    }
+
+}
+
+
+
+export class NewsDeletionNotAuthorized extends NextError {
+  public constructor() {
+    super(
+      get_news_type(NewsErrorTypes.NEWS_CREATION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to create a news'+
+      'You have to be a channel administator to create a news.'
+    );
+    }
+
+}
+
+export class NewsUpdateNotAuthorized extends NextError {
+  public constructor() {
+    super(
+      get_news_type(NewsErrorTypes.NEWS_UPDATE_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to update a news'+
+      'You have to be a channel administator to create a news.'
+    );
+    }
+
+}
+export class   NewsNameAlreadyUsed extends NextError {
+  public constructor(name: string, options?: ErrorOptions) {
+    super(
+      get_news_type(NewsErrorTypes.NAME_ALREADY_USED),
+      StatusCodes.CONFLICT,
+      'Name already used',
+      `${name} is already assigned to another news. Try another name.`,
+      options
+    );
+  }
+}
+
+export class NewsNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_news_type(NewsErrorTypes.NEWS_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'News not found',
+      `${id} is not a valid id for a news`,
+      options
+    );
+  }
+}
