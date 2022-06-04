@@ -117,7 +117,7 @@ async function create_subscriber(request: Request, response: Response){
 
   response
     .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}${BASE_PATH}/${channel_id.to_string()}/subscribers/}`)
+    .location(`${API_VERSION}${BASE_PATH}/${channel_id.to_string()}/subscribers/${id.to_string()}`)
     .end();
 }
 

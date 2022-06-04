@@ -2,10 +2,10 @@
 //
 //
 
-import { UserID, UserRole } from '@nextapp/common/user';
+import { UserID } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
-import { ChannelID, Channel } from '../../domain/models/channel';
+import { ChannelID } from '../../domain/models/channel';
 import { SubRepository } from '../../domain/ports/sub.repository';
 import { SearchOptions } from '../../domain/models/search';
 import { Sub, SubID } from '../../domain/models/sub';
@@ -13,6 +13,7 @@ import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jSubRepository implements SubRepository {
     private constructor(private readonly driver: Driver) {}
+  
   
     
   public static async create(driver: Driver): Promise<Neo4jSubRepository> {
@@ -120,6 +121,30 @@ export class Neo4jSubRepository implements SubRepository {
       );
 
       return res.summary.counters.updates().relationshipsDeleted > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+  
+  public async get_club_subscribers(channel_id: ChannelID): Promise<UserID[]> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (user:CHANNEL_User)-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel {id: $id})
+           RETURN u.id as uid`,
+          { id: channel_id.to_string() }
+        )
+      );
+
+      const users: UserID[] = res.records.map((record) => {
+        const user_id = new UserID(record.get('uid'));
+        return user_id
+      });
+
+      return users;
     } catch {
       throw new InternalServerError();
     } finally {

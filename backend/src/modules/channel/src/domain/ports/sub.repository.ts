@@ -47,4 +47,15 @@ export interface SubRepository {
     sub_id: SubID
  ): Promise<boolean>;
 
+ /**
+   * Get users subscribed to the given Channel.
+   * Returns an error if the requester is not a president of the given channel
+   * @param user_id
+   * @param channel_id
+   */
+  get_club_subscribers(
+    channel_id: ChannelID
+  ): Promise<UserID[]>;
+
+
 }
