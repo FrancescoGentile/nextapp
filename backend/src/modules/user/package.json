@@ -55,7 +55,8 @@
     "@types/supertest": "^2.0.12",
     "supertest": "^6.2.3",
     "cookie-parser": "^1.4.6",
-    "@types/cookie-parser": "^1.4.3"
+    "@types/cookie-parser": "^1.4.3",
+    "dotenv": "^16.0.1"
   },
   "dependencies": {
     "@nextapp/common": "^1.0.0",
