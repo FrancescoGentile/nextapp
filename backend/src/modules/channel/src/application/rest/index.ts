@@ -42,7 +42,7 @@ function handle_error(
 export function init_rest_api(
   channel_service: ChannelInfoService,
   sub_service: SubService
-): { router: express.Router } {
+): express.Router  {
   const router = express.Router();
 
   router.use(express.urlencoded() as any);
@@ -52,5 +52,5 @@ export function init_rest_api(
   router.use(API_VERSION, init_channel_routes(), handle_error);
   router.use(API_VERSION, init_sub_routes(), handle_error);
 
-  return { router };
+  return  router ;
 }
