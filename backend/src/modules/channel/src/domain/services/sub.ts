@@ -2,27 +2,19 @@
 //
 //
 
-import { UserID, UserRole } from '@nextapp/common/user';
+import { UserID } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
-import { DateTime } from 'luxon';
 import {
-  ChannelNotFound, 
-  ChannelCreationNotAuthorized,
-  ChannelNameAlreadyUsed,
-  InvalidPresidentsNumber,
   InvalidSubscribeChannel,
   UserNotAPresident,
   SubNotFound
 } from '../errors';
-import { ChannelID, Channel } from '../models/channel';
+import { ChannelID } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
-import { ChannelInfoService } from '../ports/channel.service';
-import { UserRepository } from '../ports/user.repository';
 import { SubService } from '../ports/sub.service';
 import { SearchOptions } from '../models/search';
 import { Sub, SubID } from '../models/sub';
 import { SubRepository } from '../ports/sub.repository';
-import { User } from '../models/user';
 
 export class NextSubService implements SubService {
   public constructor(
@@ -62,9 +54,17 @@ export class NextSubService implements SubService {
     // OR
     // is the requester a president of the interested channel ?
     if(requester !== subscriber_id && !is_pres){
-        throw new UserNotAPresident(requester.to_string());
-      }
+      throw new UserNotAPresident(requester.to_string());
+    }
     this.sub_repo.delete_subscriber(subscriber_id, sub_id);
+  }
+
+  public async get_club_subscribers(requester: UserID, channel_id: ChannelID): Promise<UserID[]> {
+    const is_pres = this.channel_repo.is_president(requester, channel_id);
+    if(!is_pres){
+      throw new UserNotAPresident(requester.to_string());
+    }
+    return await this.sub_repo.get_club_subscribers(channel_id);
   }
 
 }

@@ -61,11 +61,20 @@ async function delete_subscriber(request: Request, response: Response){
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
+async function get_club_subscribers(request: Request, response: Response){
+  await request.sub_service!.get_club_subscribers(
+    request.user_id!,
+    ChannelID.from_string(request.params.channel_id)
+  )
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 export function init_sub_routes(): express.Router {
   const router = express.Router();
   
   router.get(`${BASE_PATH}`, asyncHandler(get_user_subscriptions));
-  router.delete(`${BASE_PATH}/:channel_id/subscribers/:subscriber_id`, asyncHandler(delete_subscriber));
+  router.delete(`/channels/:channel_id/subscribers/:subscriber_id`, asyncHandler(delete_subscriber));
+  router.get(`/channels/:channel_id/subscribers`, asyncHandler(get_club_subscribers));
   
   return router;
 }

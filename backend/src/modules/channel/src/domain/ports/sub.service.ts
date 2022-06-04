@@ -37,8 +37,20 @@ export interface SubService {
    * @param sub_id
    */
   delete_subscriber(
-     user_id: UserID, 
-     sub_id: SubID
+    user_id: UserID, 
+    sub_id: SubID
   ): Promise<void>;
+
+  
+  /**
+   * Get users subscribed to the given Channel.
+   * Returns an error if the requester is not a president of the given channel
+   * @param user_id
+   * @param channel_id
+   */
+  get_club_subscribers(
+    user_id: UserID,
+    channel_id: ChannelID
+  ): Promise<UserID[]>;
 
 }
