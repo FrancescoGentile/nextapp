@@ -7,10 +7,13 @@ import Joi from 'joi';
 import { Request, Response } from 'express-serve-static-core';
 import express from 'express';
 import { UserID, UserRole } from '@nextapp/common/user';
+import multer from 'multer';
+import fs from 'fs';
 import { asyncHandler, validate, AuthMiddleware } from '../utils';
 import { IdentityInfo, User } from '../../../domain/models/user';
 import { SearchOptions } from '../../../domain/models/search';
 import { Email } from '../../../domain/models/email';
+import { InvalidPicture } from '../../../domain/errors';
 
 const BASE_PATH = '/users';
 
@@ -132,6 +135,63 @@ async function change_password(request: Request, response: Response) {
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
+// ---------------------------------------------
+
+const storage = multer.diskStorage({
+  destination(_req, _file, cb) {
+    const path = './files/pictures';
+    fs.mkdirSync(path, { recursive: true });
+    cb(null, path);
+  },
+  filename(req, file, cb) {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${file.fieldname}-${uniqueSuffix}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (_req, file, cb) => {
+    if (file.size >= 10e6) {
+      cb(null, false);
+    }
+    if (
+      file.mimetype === 'image/jpg' ||
+      file.mimetype === 'image/jpeg' ||
+      file.mimetype === 'image/png'
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  },
+});
+
+async function load_picture(request: Request, response: Response) {
+  if (request.file === undefined) {
+    throw new InvalidPicture();
+  }
+
+  await request.user_service.add_picture(
+    request.user_id,
+    request.file.path,
+    request.file.mimetype
+  );
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
+async function get_picture(request: Request, response: Response) {
+  const { buffer, mimetype } = await request.user_service.get_picture(
+    request.user_id
+  );
+  response.status(StatusCodes.OK).contentType(mimetype).send(buffer);
+}
+
+async function delete_picture(request: Request, response: Response) {
+  await request.user_service.delete_picture(request.user_id);
+  response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 export function init_user_routes(
   auth_middleware: AuthMiddleware
 ): express.Router {
@@ -170,6 +230,23 @@ export function init_user_routes(
     `${BASE_PATH}/:user_id`,
     auth_middleware,
     asyncHandler(remove_user)
+  );
+
+  // picture
+
+  router.get('/users/me/picture', auth_middleware, asyncHandler(get_picture));
+
+  router.put(
+    '/users/me/picture',
+    auth_middleware,
+    upload.single('picture') as any,
+    asyncHandler(load_picture)
+  );
+
+  router.delete(
+    '/users/me/picture',
+    auth_middleware,
+    asyncHandler(delete_picture)
   );
 
   return router;
