@@ -12,6 +12,43 @@ import { SearchOptions } from '../../domain/models/search';
 export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
 
+  public async get_channel_by_name(channel_name: string): Promise<Channel | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.readTransaction((tx) =>
+        tx.run(
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel)
+           WHERE c.name = name
+           RETURN u, c`,
+          { name: channel_name }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      const { id, name, description } =
+        res.records[0].get('c').properties;
+
+      const presidents: string[] = res.records.map((record) => {
+          const id = record.get('u').properties;
+          return id
+      });
+
+      return new Channel(
+        name,
+        description,
+        presidents,
+        ChannelID.from_string(id)
+      );
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public async update_channel(channel: Channel): Promise<boolean> {
     const session = this.driver.session();
     try {
