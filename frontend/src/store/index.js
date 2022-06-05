@@ -13,6 +13,7 @@ const instance = axios.create({
 
 export default createStore({
   state: {
+    messagingToken: "",
     logStatus: JSON.parse(localStorage.getItem("logStatus")) || "",
     user: {},
     userEmails: [],
@@ -34,6 +35,9 @@ export default createStore({
     channelSubscribers: []
   },
   getters: {
+    getMessagingToken(state){
+      return state.messagingToken
+    },
     isLoggedIn(state) {
       return !!state.logStatus
     },
@@ -90,6 +94,9 @@ export default createStore({
     }
   },
   mutations: {
+    setMessagingToken(state, token){
+      state.messagingToken = token
+    },
     setLogin(state) {
       state.logStatus = "logged"
     },

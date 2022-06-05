@@ -137,7 +137,7 @@ export default defineComponent({
 
                   <div class="row pt-1">
                     <div class="col mb-3">
-                      <button type="button" class="btn btn-primary h-100" @click="console.log('Push notification')">
+                      <button type="button" class="btn btn-primary h-100" @click="this.$router.push({path: '/notifications'})">
                         Receive push notifications </button>
                     </div>
                     <div class="col mb-3">
@@ -195,7 +195,7 @@ export default defineComponent({
           <form>
             <div class="mb-3">
               <label class="col-form-label">Old password:</label>
-              <input v-model="oldPassword" type="password" class="form-control" id="recipient-name">
+              <input v-model="oldPassword" type="password" class="form-control" id="password">
             </div>
             <div class="mb-3">
               <label for="message-text" class="col-form-label">New Password:</label>
@@ -247,7 +247,7 @@ export default defineComponent({
                     <th scope="row">{{ i + 1 }}</th>
                     <td> {{ email }} </td>
                     <td>
-                      <button class="btn btn-primary align-end" @click="deleteEmail(email)"> Delete reservation
+                      <button class="btn btn-primary align-end" @click="deleteEmail(email)"> Delete email
                       </button>
                     </td>
                   </tr>
