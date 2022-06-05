@@ -65,6 +65,19 @@ describe('create room', () => {
     await close_driver(driver);
   });
 
+  // ------------------------ RC-2 ------------------------
+
+  it('(rc-2) successful creation of a room', async () => {
+    const res = await request.post('/rooms').send({
+      name: 'NewRoomName',
+      seats: 2,
+      floor: 3,
+      details: 'study room',
+    });
+
+    expect(res.status).toBe(201);
+  });
+
   // ------------------------ RC-3 ------------------------
 
   it('(rc-3) non unique name', async () => {
@@ -90,7 +103,7 @@ describe('create room', () => {
 
   // ------------------------ RC-5 ------------------------
 
-  it('(rc-5) invalid name: shorter than 5 characters', async () => {
+  it('(rc-5.1) invalid name: shorter than 5 characters', async () => {
     const res = await request.post('/rooms').send({
       name: 'name',
       seats: 2,
@@ -100,7 +113,7 @@ describe('create room', () => {
     expect(res.status).toBe(400);
   });
 
-  it('(rc-5) invalid name: longer than 100 characters', async () => {
+  it('(rc-5.2) invalid name: longer than 100 characters', async () => {
     const res = await request.post('/rooms').send({
       name: 'a'.repeat(101),
       seats: 2,
@@ -110,7 +123,7 @@ describe('create room', () => {
     expect(res.status).toBe(400);
   });
 
-  it('(rc-5) invalid name: invalid characters', async () => {
+  it('(rc-5.3) invalid name: invalid characters', async () => {
     const res = await request.post('/rooms').send({
       name: 'Is This Valid?',
       seats: 2,
@@ -133,7 +146,7 @@ describe('create room', () => {
 
   // ------------------------ RC-7 ------------------------
 
-  it('(rc-7) invalid number of seats: not a number', async () => {
+  it('(rc-7.1) invalid number of seats: not a number', async () => {
     const res = await request.post('/rooms').send({
       name: 'RoomHello',
       seats: 'abc',
@@ -143,7 +156,7 @@ describe('create room', () => {
     expect(res.status).toBe(400);
   });
 
-  it('(rc-7) invalid number of seats: not an integer', async () => {
+  it('(rc-7.2) invalid number of seats: not an integer', async () => {
     const res = await request.post('/rooms').send({
       name: 'RoomHello',
       seats: 3.5,
@@ -153,7 +166,7 @@ describe('create room', () => {
     expect(res.status).toBe(400);
   });
 
-  it('(rc-7) invalid number of seats: less than 1', async () => {
+  it('(rc-7.3) invalid number of seats: less than 1', async () => {
     const res = await request.post('/rooms').send({
       name: 'RoomHello',
       seats: 0,
@@ -176,7 +189,7 @@ describe('create room', () => {
 
   // ------------------------ RC-9 ------------------------
 
-  it('(rc-9) invalid floor number: not a number', async () => {
+  it('(rc-9.1) invalid floor number: not a number', async () => {
     const res = await request.post('/rooms').send({
       name: 'RoomHello',
       seats: 2,
@@ -186,7 +199,7 @@ describe('create room', () => {
     expect(res.status).toBe(400);
   });
 
-  it('(rc-9) invalid floor number: not an integer', async () => {
+  it('(rc-9.2) invalid floor number: not an integer', async () => {
     const res = await request.post('/rooms').send({
       name: 'RoomHello',
       seats: 2,
@@ -196,7 +209,7 @@ describe('create room', () => {
     expect(res.status).toBe(400);
   });
 
-  it('(rc-9) invalid floor number: not in the bounds', async () => {
+  it('(rc-9.3) invalid floor number: not in the bounds', async () => {
     const res = await request.post('/rooms').send({
       name: 'RoomHello',
       seats: 2,

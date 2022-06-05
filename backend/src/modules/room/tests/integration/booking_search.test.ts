@@ -37,54 +37,52 @@ describe('search booking', () => {
 
   // ------------------------ BS-1 ------------------------
 
-  it('(bs-1) partial time interval: missing start extreme', async () => {
+  it('(bs-1.1) partial time interval: missing start extreme', async () => {
     const end = DateTime.utc();
-    const res = await request.delete(`/users/me/bookings?end=${end.toISO()}`);
+    const res = await request.get(`/users/me/bookings?end=${end.toISO()}`);
     expect(res.status).toBe(400);
   });
 
-  it('(bs-1) partial time interval: missing end extreme', async () => {
+  it('(bs-1.2) partial time interval: missing end extreme', async () => {
     const start = DateTime.utc();
-    const res = await request.delete(
-      `/users/me/bookings?start=${start.toISO()}`
-    );
+    const res = await request.get(`/users/me/bookings?start=${start.toISO()}`);
     expect(res.status).toBe(400);
   });
 
-  it('(bs-1) partial time interval: missing both extremes', async () => {
-    const res = await request.delete(`/users/me/bookings`);
+  it('(bs-1.3) partial time interval: missing both extremes', async () => {
+    const res = await request.get(`/users/me/bookings`);
     expect(res.status).toBe(400);
   });
 
   // ------------------------ BS-2 ------------------------
 
-  it('(bs-1) invalid time interval: extremes are not dates', async () => {
-    const res = await request.delete(`/users/me/bookings?start=123&end=hello`);
+  it('(bs-2.1) invalid time interval: extremes are not dates', async () => {
+    const res = await request.get(`/users/me/bookings?start=123&end=hello`);
     expect(res.status).toBe(400);
   });
 
-  it('(bs-2) invalid time interval: extremes not multiple of 15 minutes', async () => {
+  it('(bs-2.2) invalid time interval: extremes not multiple of 15 minutes', async () => {
     const start = DateTime.utc();
     const end = start.plus({ minutes: 35 });
-    const res = await request.delete(
+    const res = await request.get(
       `/users/me/bookings?start=${start.toISO()}&end=${end.toISO()}`
     );
     expect(res.status).toBe(400);
   });
 
-  it('(bs-2) invalid time interval: shorter than 15 minutes', async () => {
+  it('(bs-2.3) invalid time interval: shorter than 15 minutes', async () => {
     const start = DateTime.utc().startOf('day');
     const end = start.plus({ minutes: 10 });
-    const res = await request.delete(
+    const res = await request.get(
       `/users/me/bookings?start=${start.toISO()}&end=${end.toISO()}`
     );
     expect(res.status).toBe(400);
   });
 
-  it('(bs-2) invalid time interval: longer than 1440 minutes', async () => {
+  it('(bs-2.4) invalid time interval: longer than 1440 minutes', async () => {
     const start = DateTime.utc().startOf('day');
     const end = start.plus({ hours: 25 });
-    const res = await request.delete(
+    const res = await request.get(
       `/users/me/bookings?start=${start.toISO()}&end=${end.toISO()}`
     );
     expect(res.status).toBe(400);
@@ -92,31 +90,32 @@ describe('search booking', () => {
 
   // ------------------------ BS-3 ------------------------
 
-  it('(bs-3) successful search 1', async () => {
+  it('(bs-3.1) successful search', async () => {
     const start = DateTime.utc().startOf('day');
     const end = start.plus({ hours: 24 });
-    const res = await request.delete(
+    const res = await request.get(
       `/users/me/bookings?start=${start.toISO()}&end=${end.toISO()}`
     );
     expect(res.status).toBe(200);
     expect(res.body).toStrictEqual([
       {
-        self: `/users/me/bookings/${bookings[0].id!.to_string()}`,
+        self: `/users/me/bookings/${bookings[1].id!.to_string()}`,
         user: {
           self: '/users/me',
         },
         room: {
-          self: `/rooms/${bookings[0].room.to_string()}`,
+          self: `/rooms/${bookings[1].room.to_string()}`,
         },
-        interval: bookings[0].interval.interval.toISO(),
+        start: bookings[1].interval.interval.start.toISO(),
+        end: bookings[1].interval.interval.end.toISO(),
       },
     ]);
   });
 
-  it('(bs-3) successful search 2', async () => {
+  it('(bs-3.2) successful search', async () => {
     const start = DateTime.utc().plus({ hours: 24 }).startOf('day');
     const end = start.plus({ hours: 24 });
-    const res = await request.delete(
+    const res = await request.get(
       `/users/me/bookings?start=${start.toISO()}&end=${end.toISO()}`
     );
     expect(res.status).toBe(200);
@@ -125,34 +124,35 @@ describe('search booking', () => {
 
   // ------------------------ BS-4 ------------------------
 
-  it('(bs-4) non existing booking', async () => {
+  it('(bs-4.1) non existing booking', async () => {
     const res = await request.get(
-      `/users/me/bookings/${bookings[1].id!.to_string()}`
+      `/users/me/bookings/${bookings[2].id!.to_string()}`
     );
     expect(res.status).toBe(404);
   });
 
-  it('(bs-4) invalid booking id', async () => {
+  it('(bs-4.2) invalid booking id', async () => {
     const res = await request.get('/users/me/bookings/abcd');
     expect(res.status).toBe(404);
   });
 
   // ------------------------ BS-5 ------------------------
 
-  it('(bs-4) successful retrieval of booking', async () => {
+  it('(bs-5) successful retrieval of booking', async () => {
     const res = await request.get(
-      `/users/me/bookings/${bookings[0].id!.to_string()}`
+      `/users/me/bookings/${bookings[1].id!.to_string()}`
     );
     expect(res.status).toBe(200);
     expect(res.body).toStrictEqual({
-      self: `/users/me/bookings/${bookings[0].id!.to_string()}`,
+      self: `/users/me/bookings/${bookings[1].id!.to_string()}`,
       user: {
         self: '/users/me',
       },
       room: {
-        self: `/rooms/${bookings[0].room.to_string()}`,
+        self: `/rooms/${bookings[1].room.to_string()}`,
       },
-      interval: bookings[0].interval.interval.toISO(),
+      start: bookings[1].interval.interval.start.toISO(),
+      end: bookings[1].interval.interval.end.toISO(),
     });
   });
 });

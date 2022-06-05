@@ -140,6 +140,123 @@ describe('search rooms', () => {
     expect(res.status).toBe(400);
   });
 
+  // ------------------------ RS-6 ------------------------
+
+  it('(rs-6.1) successful search: no constraints', async () => {
+    const res = await request.get('/rooms');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        self: `/rooms/${rooms[0].id!.to_string()}`,
+        name: rooms[0].name,
+        seats: rooms[0].seats,
+        floor: rooms[0].floor,
+        details: rooms[0].details,
+      },
+      {
+        self: `/rooms/${rooms[1].id!.to_string()}`,
+        name: rooms[1].name,
+        seats: rooms[1].seats,
+        floor: rooms[1].floor,
+        details: rooms[1].details,
+      },
+      {
+        self: `/rooms/${rooms[2].id!.to_string()}`,
+        name: rooms[2].name,
+        seats: rooms[2].seats,
+        floor: rooms[2].floor,
+        details: rooms[2].details,
+      },
+    ]);
+  });
+
+  it('(rs-6.2) successful search: limit constraint', async () => {
+    const res = await request.get('/rooms?limit=1');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        self: `/rooms/${rooms[0].id!.to_string()}`,
+        name: rooms[0].name,
+        seats: rooms[0].seats,
+        floor: rooms[0].floor,
+        details: rooms[0].details,
+      },
+    ]);
+  });
+
+  it('(rs-6.3) successful search: offset constraints', async () => {
+    const res = await request.get('/rooms?offset=1');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        self: `/rooms/${rooms[1].id!.to_string()}`,
+        name: rooms[1].name,
+        seats: rooms[1].seats,
+        floor: rooms[1].floor,
+        details: rooms[1].details,
+      },
+      {
+        self: `/rooms/${rooms[2].id!.to_string()}`,
+        name: rooms[2].name,
+        seats: rooms[2].seats,
+        floor: rooms[2].floor,
+        details: rooms[2].details,
+      },
+    ]);
+  });
+
+  it('(rs-6.4) successful search: offset and limit constraints', async () => {
+    const res = await request.get('/rooms?offset=1&limit=1');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        self: `/rooms/${rooms[1].id!.to_string()}`,
+        name: rooms[1].name,
+        seats: rooms[1].seats,
+        floor: rooms[1].floor,
+        details: rooms[1].details,
+      },
+    ]);
+  });
+
+  it('(rs-6.5) successful search: floor constraint', async () => {
+    const res = await request.get('/rooms?floor=1');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        self: `/rooms/${rooms[0].id!.to_string()}`,
+        name: rooms[0].name,
+        seats: rooms[0].seats,
+        floor: rooms[0].floor,
+        details: rooms[0].details,
+      },
+    ]);
+  });
+
+  it('(rs-6.6) successful search: availability constraint', async () => {
+    const start = DateTime.utc().plus({ hours: 1 }).startOf('hour');
+    const end = start.plus({ minutes: 30 });
+    const res = await request.get(
+      `/rooms?start=${start.toISO()}&end=${end.toISO()}`
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      {
+        self: `/rooms/${rooms[1].id!.to_string()}`,
+        name: rooms[1].name,
+        seats: rooms[1].seats,
+        floor: rooms[1].floor,
+        details: rooms[1].details,
+      },
+    ]);
+  });
+
   // ------------------------ RS-7 ------------------------
 
   it('(rs-7) room info: non existing room', async () => {
@@ -238,7 +355,7 @@ describe('search rooms', () => {
 
   // ------------------------ RS-14 ------------------------
 
-  it('(rs-14) available slots: room1', async () => {
+  it('(rs-14.1) available slots: room', async () => {
     const start = DateTime.utc().plus({ hours: 1 }).startOf('hour');
     const end = start.plus({ minutes: 30 });
     const res = await request.get(
@@ -247,7 +364,7 @@ describe('search rooms', () => {
     expect(res.body.length).toBe(0);
   });
 
-  it('(rs-14) available slots: room2', async () => {
+  it('(rs-14.2) available slots: room', async () => {
     const start = DateTime.utc().plus({ hours: 1 }).startOf('hour');
     const end = start.plus({ hours: 15 });
     const res = await request.get(
