@@ -5,11 +5,17 @@
 import { InternalServerError } from '@nextapp/common/error';
 import { UserID, UserRole } from '@nextapp/common/user';
 import { Driver, Neo4jError } from 'neo4j-driver';
+import { ChannelID } from '../../domain/models/channel';
 import { User } from '../../domain/models/user';
 import { UserRepository } from '../../domain/ports/user.repository';
 
 export class Neo4jUserRepository implements UserRepository {
+
   private constructor(private driver: Driver) {}
+
+  public async is_channel_admin(id: UserID, channel_id: ChannelID): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
 
   public static async create(driver: Driver): Promise<Neo4jUserRepository> {
     const session = driver.session();

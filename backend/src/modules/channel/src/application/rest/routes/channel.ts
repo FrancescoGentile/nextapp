@@ -5,18 +5,15 @@
 import { StatusCodes } from '@nextapp/common/error';
 import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
-import express, { Router } from 'express';
-import { DateTime } from 'luxon';
-import { API_VERSION, asyncHandler, validate } from '../utils';
-import {
-  Channel,
-  ChannelID
-} from '../../../domain/models/channel'
-import{
-  ChannelNotFound, InvalidSubscribeChannel
-} from '../../../domain/errors'
-import { SearchOptions } from '../../../domain/models/search';
+import express from 'express';
 import { UserID } from '@nextapp/common/user';
+import { API_VERSION, asyncHandler, validate } from '../utils';
+import { Channel, ChannelID } from '../../../domain/models/channel';
+import {
+  ChannelNotFound,
+  InvalidSubscribeChannel,
+} from '../../../domain/errors';
+import { SearchOptions } from '../../../domain/models/search';
 
 const BASE_PATH = '/channels';
 
@@ -25,11 +22,11 @@ function channel_to_json(channel: Channel): any {
     self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
     name: channel.name,
     description: channel.description,
-    array: Joi.array().items(Joi.string())
+    array: Joi.array().items(Joi.string()),
   };
 }
 
-async function get_channel(request: Request, response: Response){
+async function get_channel(request: Request, response: Response) {
   let id;
   try {
     id = ChannelID.from_string(request.params.room_id);
@@ -41,11 +38,11 @@ async function get_channel(request: Request, response: Response){
   response.status(StatusCodes.OK).json(channel_to_json(channel));
 }
 
-async function create_channel(request: Request, response: Response){
+async function create_channel(request: Request, response: Response) {
   const schema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().required(),
-    presID_array: Joi.array().items(Joi.string())
+    presID_array: Joi.array().items(Joi.string()),
   });
 
   const value = validate(schema, request.body);
@@ -87,8 +84,7 @@ async function delete_channel(request: Request, response: Response) {
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
-async function create_subscriber(request: Request, response: Response){
-
+async function create_subscriber(request: Request, response: Response) {
   const schema = Joi.object({
     channel: Joi.object({
       self: Joi.string().required(),
@@ -118,11 +114,13 @@ async function create_subscriber(request: Request, response: Response){
 
   response
     .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}${BASE_PATH}/${channel_id.to_string()}/subscribers/${id.to_string()}`)
+    .location(
+      `${API_VERSION}${BASE_PATH}/${channel_id.to_string()}/subscribers/${id.to_string()}`
+    )
     .end();
 }
 
-async function get_pres_channels(request: Request, response: Response){
+async function get_pres_channels(request: Request, response: Response) {
   const schema = Joi.object({
     offset: Joi.number(),
     limit: Joi.number(),
@@ -140,10 +138,10 @@ async function get_pres_channels(request: Request, response: Response){
   response.status(StatusCodes.OK).json(users.map(channel_to_json));
 }
 
-async function update_channel(request: Request, response: Response){
+async function update_channel(request: Request, response: Response) {
   const schema = Joi.object({
     name: Joi.string().required(),
-    description: Joi.string().required()
+    description: Joi.string().required(),
   });
 
   const value = validate(schema, request.body);
@@ -155,21 +153,22 @@ async function update_channel(request: Request, response: Response){
     throw new ChannelNotFound(request.params.channel_id);
   }
 
-  const empty : UserID[] = [];
+  const empty: UserID[] = [];
 
   await request.channel_service!.update_channel(
     request.user_id!,
-    new Channel( value.name, value.description, empty, channel_id)
+    new Channel(value.name, value.description, empty, channel_id)
   );
 
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
-async function get_channel_by_name(request: Request, response: Response){
-  
-  const channel_name = request.params.channel_name;
+async function get_channel_by_name(request: Request, response: Response) {
+  const { channel_name } = request.params;
 
-  const channel = await request.channel_service!.get_channel_by_name(channel_name);
+  const channel = await request.channel_service!.get_channel_by_name(
+    channel_name
+  );
   response.status(StatusCodes.OK).json(channel_to_json(channel));
 }
 
@@ -185,7 +184,10 @@ export function init_channel_routes(): express.Router {
 
   router.get(`${BASE_PATH}/:channel_name`, asyncHandler(get_channel_by_name));
 
-  router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
+  router.post(
+    `${BASE_PATH}/:channel_id/subscribers`,
+    asyncHandler(create_subscriber)
+  );
 
   router.get(`users/me/president`, asyncHandler(get_pres_channels));
 
