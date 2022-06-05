@@ -6,6 +6,7 @@ import { NextError, StatusCodes } from '@nextapp/common/error';
 import { Channel } from '../models/channel';
 import { DateTime } from 'luxon';
 import { RoomID } from '@nextapp/common/room';
+import { EventID } from '../models/event';
 export { InternalServerError } from '@nextapp/common/error';
 
 // ---------------------------------------------------------------
@@ -231,6 +232,42 @@ export class EventNotFound extends NextError {
       StatusCodes.NOT_FOUND,
       'Event not found',
       `${id} is not a valid id for an event`,
+      options
+      );
+  }
+}
+
+export class InvalidEventSubID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+      super(
+      get_event_type(EventErrorTypes.INVALID_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid event sub id',
+      `${id} is not a valid id for an event `,
+      options
+      );
+  }
+}
+
+export class SubEventNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+      super(
+      get_event_type(EventErrorTypes.EVENT_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Subscription for Event not found',
+      `${id} is not a valid id for an subscription`,
+      options
+      );
+  }
+}
+
+export class InvalidSubscribeEvent extends NextError {
+  public constructor(id: EventID, options?: ErrorOptions) {
+      super(
+      get_event_type(EventErrorTypes.INVALID_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid event subscription',
+      `${id.to_string} is not a valid id for an event`,
       options
       );
   }

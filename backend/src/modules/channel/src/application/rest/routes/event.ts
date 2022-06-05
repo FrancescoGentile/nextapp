@@ -6,9 +6,10 @@ import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import express from 'express';
 import { EventID } from '../../../domain/models/event';
+import { EventSubID } from '../../../domain/models/subevent';
 import { EventNotFound } from '../../../domain/errors/';
 
-const BASE_PATH = '/event';
+const BASE_PATH = '/events';
 
 function event_to_json(event: Event): any {
     return {
@@ -106,6 +107,40 @@ async function delete_event(request: Request, response: Response) {
 }
 
 
+async function get_sub_event_list(request: Request, response: Response) {
+    const events = await request.sub_event_service!.get_sub_event_list(request.user_id!);
+    //TODO
+    response.status(StatusCodes.OK).json(events);
+}
+
+
+async function create_event_sub(request: Request, response: Response) {
+    const schema = Joi.object({
+        event_id: Joi.string().required(),
+        user_id: Joi.string().required()
+    });
+
+    const value = validate(schema, request.body);
+
+    const id = await request.sub_event_service!.create_event_sub(
+        request.user_id!,
+        EventID.from_string(value.event_id),
+    );
+
+    response
+        .status(StatusCodes.CREATED)
+        .end();
+}
+
+
+async function delete_event_sub(request: Request, response: Response) {
+    await request.sub_event_service!.delete_event_sub(
+        request.user_id!,
+        EventSubID.from_string(request.params.event_id)
+      );
+      response.sendStatus(StatusCodes.NO_CONTENT);
+}
+
 
 export function init_event_routes(): express.Router{
     const router = express.Router();
@@ -116,6 +151,11 @@ export function init_event_routes(): express.Router{
     router.post(`${BASE_PATH}`, asyncHandler(create_event));
     router.put(`${BASE_PATH}/:event_id`, asyncHandler(update_event));
     router.delete(`${BASE_PATH}/:event_id`, asyncHandler(delete_event));
+    router.get(`/user/me${BASE_PATH}/subscription`,asyncHandler(get_sub_event_list));
+    router.post(`${BASE_PATH}/:event_id/subscription`,asyncHandler(create_event_sub));
+    router.delete(`${BASE_PATH}/:event_id/subscription`,asyncHandler(delete_event_sub));
 
     return router;
 }
+
+
