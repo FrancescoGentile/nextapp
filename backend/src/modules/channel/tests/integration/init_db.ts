@@ -11,7 +11,7 @@ import { User } from '../../src/domain/models/user';
 import { Channel, ChannelID } from '../../src/domain/models/channel';
 import { Sub, SubID } from '../../src/domain/models/sub';
 
-async function populate_users(driver: Driver): Promise<User[]> {
+export async function populate_users(driver: Driver): Promise<User[]> {
   const users: User[] = [
     { id: new UserID('1111111111'), role: UserRole.SYS_ADMIN },
     { id: new UserID('2222222222'), role: UserRole.SIMPLE },

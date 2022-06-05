@@ -25,7 +25,7 @@ function channel_to_json(channel: Channel): any {
     self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
     name: channel.name,
     description: channel.description,
-    array: Joi.array().items(Joi.string())
+    presID_array: Joi.array().items(Joi.string())
   };
 }
 
