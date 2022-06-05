@@ -8,7 +8,7 @@ import EventEmitter from 'eventemitter3';
 import { Driver } from 'neo4j-driver';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import supertest from 'supertest';
-import { Room } from '../domain/models/room';
+import { Room } from '../../src/domain/models/room';
 import { init_app } from './init_app';
 import { init_driver, clear_db, close_driver, populate_db } from './init_db';
 
