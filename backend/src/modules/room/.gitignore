@@ -2,8 +2,8 @@
 .rush
 room.build.log
 
-# jest
-.jest
+# secrets
+.env
 
 # dependencies
 node_modules

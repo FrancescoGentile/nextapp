@@ -27,7 +27,7 @@
     "build": "tsc --p tsconfig.build.json",
     "lint": "eslint --ignore-path .eslintignore --ext .ts",
     "format": "prettier --ignore-path .prettierignore --write \"**/*.+(js|ts|json)\"",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -52,7 +52,8 @@
     "@jest/types": "^28.1.0",
     "@types/jest": "^28.1.0",
     "@types/supertest": "^2.0.12",
-    "supertest": "^6.2.3"
+    "supertest": "^6.2.3",
+    "dotenv": "^16.0.1"
   },
   "dependencies": {
     "@nextapp/common": "^1.0.0",

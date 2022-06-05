@@ -4,7 +4,7 @@ import type { Config } from '@jest/types';
 export default async (): Promise<Config.InitialOptions> => ({
   preset: 'ts-jest',
   roots: ['./tests'],
-  setupFiles: ['./.jest/setenv.ts'],
+  setupFiles: ['./.jest/set_env.ts'],
   testEnvironment: 'node',
   collectCoverage: true,
   coverageDirectory: 'src',
