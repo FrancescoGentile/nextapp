@@ -71,10 +71,8 @@ export function init_rest_api(
 
   router.use(init_request(room_service, booking_service));
 
-  router.use(init_room_routes());
-  router.use(init_booking_routes());
-
-  router.use(handle_error);
+  router.use(init_room_routes(), handle_error);
+  router.use(init_booking_routes(), handle_error);
 
   return router;
 }
