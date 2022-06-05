@@ -43,4 +43,13 @@ describe('create subscription', () => {
     expect(res.status).toBe(400);
   });
 
+  // ------------------------ SC-2 ------------------------
+
+  it('(sc-2) successful subscription', async () => {
+    
+    const res = await request.post(`/channels/${channels[1].id!.to_string()}/subscribers`);
+
+    expect(res.status).toBe(201);
+  });
+
 });

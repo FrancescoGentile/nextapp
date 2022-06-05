@@ -77,8 +77,8 @@ async function populate_channels(driver: Driver, users: User[]): Promise<Channel
       );
       await session.close();
       session = driver.session();
-
       for (const pres of channel.presID_array) {
+        //console.log('POPULATING: u ' +pres.to_string() + ' --> c ' + channel.id!.to_string())
         await session.writeTransaction((tx) =>
           tx.run(
             `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)

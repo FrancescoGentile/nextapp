@@ -235,9 +235,9 @@ export class UserNotAPresident extends NextError {
   public constructor(id: string, options?: ErrorOptions) {
     super(
       get_pres_type(PresErrorTypes.NOT_A_PRESIDENT),
-      StatusCodes.NOT_FOUND,
+      StatusCodes.FORBIDDEN,
       'You do not manage any channel',
-      `Cannot find a channel ypu do manage.`,
+      `Cannot find a channel you do manage.`,
       options
     );
   }

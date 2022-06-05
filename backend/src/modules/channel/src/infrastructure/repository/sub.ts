@@ -61,7 +61,7 @@ export class Neo4jSubRepository implements SubRepository {
         ? sub.id!
         : undefined;
     } catch(e) {
-      console.log(e);
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

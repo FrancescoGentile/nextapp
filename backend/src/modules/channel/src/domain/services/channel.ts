@@ -38,9 +38,14 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
 
   public async update_channel(requester: UserID, channel: Channel): Promise<boolean> {
-    
-    const is_pres = this.channel_repo.is_president(requester, channel.id!);
-
+    const channel_exists: boolean = 
+      await this.channel_repo.get_channel(channel.id!) == null
+        ? false
+        : true;
+    if(!channel_exists){
+      throw new ChannelNotFound(channel.id!.to_string());
+    }
+    const is_pres = await this.channel_repo.is_president(requester, channel.id!);
     if(!is_pres){
       throw new UserNotAPresident(requester.to_string());
     }

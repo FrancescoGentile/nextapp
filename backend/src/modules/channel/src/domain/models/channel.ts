@@ -59,7 +59,8 @@ export class Channel {
         name: string,
         description: string | undefined,
         presID_array: string[] | UserID[],
-        id?: ChannelID
+        id?: ChannelID,
+        modifying?: boolean
     ){
         if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
             throw new InvalidChannelName(name);
@@ -71,8 +72,9 @@ export class Channel {
             throw new InvalidChannelDescription(description!);
         }
         if (
-          presID_array.length < Channel.MIN_PRESIDENTS
-          || presID_array.length > Channel.MAX_PRESIDENTS
+          !modifying &&
+          (presID_array.length < Channel.MIN_PRESIDENTS
+          || presID_array.length > Channel.MAX_PRESIDENTS)
         ) {
           throw new InvalidPresidentsNumber(presID_array.length);
         }

@@ -126,19 +126,17 @@ async function update_channel(request: Request, response: Response){
   });
 
   const value = validate(schema, request.body);
-
   let channel_id;
   try {
     channel_id = ChannelID.from_string(request.params.channel_id);
   } catch {
     throw new ChannelNotFound(request.params.channel_id);
   }
-
-  const empty : UserID[] = [];
+  const empty: UserID[] = [];
 
   await request.channel_service!.update_channel(
     request.user_id!,
-    new Channel( value.name, value.description, empty, channel_id)
+    new Channel( value.name, value.description, empty, channel_id, true)
   );
 
   response.sendStatus(StatusCodes.NO_CONTENT);

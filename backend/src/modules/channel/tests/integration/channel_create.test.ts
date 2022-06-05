@@ -164,7 +164,7 @@ describe('create channel', () => {
 
   // ------------------------ CC-6 ------------------------
 
-  it('(cc-4) invalid channel description: shorter than 5 characters', async () => {
+  it('(cc-6) invalid channel description: shorter than 5 characters', async () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
       users[1].id!.to_string(),
@@ -178,7 +178,7 @@ describe('create channel', () => {
     expect(res.status).toBe(400);
   });
 
-  it('(cc-4) invalid channel description: longer than 300 characters', async () => {
+  it('(cc-6) invalid channel description: longer than 300 characters', async () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
       users[1].id!.to_string(),
