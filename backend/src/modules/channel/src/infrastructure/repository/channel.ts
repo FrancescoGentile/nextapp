@@ -273,7 +273,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
         )
       );
 
-      return res.summary.counters.updates().relationshipsDeleted > 0;
+      const update = res.summary.counters.updates();
+      return update.nodesDeleted > 0;
     } catch {
       throw new InternalServerError();
     } finally {

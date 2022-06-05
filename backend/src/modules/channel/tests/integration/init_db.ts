@@ -8,8 +8,8 @@ import neo4j, { Driver } from 'neo4j-driver';
 import { UserID, UserRole } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
 import { User } from '../../src/domain/models/user';
-import { Channel, ChannelID } from '../domain/models/channel';
-import { Sub, SubID } from '../domain/models/sub';
+import { Channel, ChannelID } from '../../src/domain/models/channel';
+import { Sub, SubID } from '../../src/domain/models/sub';
 
 async function populate_users(driver: Driver): Promise<User[]> {
   const users: User[] = [
@@ -56,42 +56,43 @@ async function populate_channels(driver: Driver, users: User[]): Promise<Channel
 
   for (const channel of channels) {
     let session = driver.session();
-    const description =
+    const descr =
       channel.description === undefined || channel.description === null
         ? null
-        : JSON.stringify(channel.description);
+        : channel.description
     try {
+      // console.log(channel.id!.to_string() + ', ' + channel.name + ', ' + descr);
       await session.writeTransaction((tx) =>
-        tx.run(
-          `CREATE (c:CHANNEL_Channel {
-            id: $id, 
-            name: $name,
-            description: $description,
-        })`,
-          { id: channel.id!.to_string(), name: channel.name, description: description }
-        )
+      tx.run(
+        `CREATE (c:CHANNEL_Channel {
+          id: $id, 
+          name: $name,
+          description: $description })`,
+        {
+          id: channel.id!.to_string(),
+          name: channel.name,
+          description: descr,
+        }
+      )
       );
       await session.close();
       session = driver.session();
 
-      for (
-        let i = 0; 
-        i < Channel.MAX_PRESIDENTS;
-        i++
-      ) {
+      for (const pres of channel.presID_array) {
         await session.writeTransaction((tx) =>
           tx.run(
-            `MATCH (u:CHANNEL_User), (r:CHANNEL_Channel)
+            `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
             WHERE u.id = $user_id AND c.id = $channel_id
             CREATE (u)-[p:CHANNEL_PRESIDENT]->(c)`,
             { 
-              user_id: channel.presID_array[i],
+              user_id: pres.to_string(),
               channel_id: channel.id!.to_string()
             }
           )
         );
       }
-    } catch {
+    } catch(e){
+      // console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -107,54 +108,44 @@ async function populate_subscriptions(
   channels: Channel[]
 ): Promise<Sub[]> {
   const subscriptions: Sub[] = [
+    //subscribe users
     {
-      id: SubID.from_string('sub2to0'),
+      id: SubID.from_string('2222200000'),
       user: users[2].id,
       channel: channels[0].id!,
     },
     {
-      id: SubID.from_string('sub4to0'),
+      id: SubID.from_string('4444400000'),
       user: users[4].id,
       channel: channels[0].id!,
     },
     {
-      id: SubID.from_string('sub3to1'),
+      id: SubID.from_string('3333311111'),
       user: users[3].id,
+      channel: channels[1].id!,
+    },
+    // subscribe presidents
+    {
+      id: SubID.from_string('0000000000'),
+      user: users[0].id,
+      channel: channels[0].id!,
+    },
+    {
+      id: SubID.from_string('1111100000'),
+      user: users[1].id,
+      channel: channels[0].id!,
+    },
+    {
+      id: SubID.from_string('5555511111'),
+      user: users[5].id,
+      channel: channels[1].id!,
+    },{
+      id: SubID.from_string('4444411111'),
+      user: users[4].id,
       channel: channels[1].id!,
     },
   ];
   // Subscribe every president
-  for (const channel of channels) {
-    for(const pres of channel.presID_array){
-      const session = driver.session();
-      const sub_id = `sub${pres.to_string()}to${channel.id!.to_string()}`
-      const subscription: Sub = 
-      {
-        id: SubID.from_string(sub_id),
-        user: pres, 
-        channel: channel.id!
-      };
-      try {
-        await session.writeTransaction((tx) =>
-          tx.run(
-            `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
-              WHERE u.id = $user_id AND c.id = $channel_id
-              CREATE (u)-[s:CHANNEL_SUB { id: $subscription_id }]-(c)`,
-            {
-              user_id: subscription.user.to_string(),
-              channel_id: subscription.channel.to_string(),
-              subscription_id: subscription.id!.to_string(),
-            }
-          )
-        );
-      } catch {
-        throw new InternalServerError();
-      } finally {
-        await session.close();
-      }
-    }
-  }
-  //subscribe other users
   for (const subscription of subscriptions) {
     const session = driver.session();
     try {
@@ -162,7 +153,7 @@ async function populate_subscriptions(
         tx.run(
           `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
             WHERE u.id = $user_id AND c.id = $channel_id
-            CREATE (u)-[s:CHANNEL_SUB { id: $subscription_id }]-(c)`,
+            CREATE (u)-[s:CHANNEL_SUB { id: $subscription_id }]->(c)`,
           {
             user_id: subscription.user.to_string(),
             channel_id: subscription.channel.to_string(),
@@ -170,7 +161,8 @@ async function populate_subscriptions(
           }
         )
       );
-    } catch {
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

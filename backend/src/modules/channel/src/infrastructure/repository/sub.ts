@@ -27,7 +27,7 @@ export class Neo4jSubRepository implements SubRepository {
         tx.run(
           `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
             WHERE u.id = $user_id AND c.id = $channel_id
-            CREATE (u)-[s:CHANNEL_SUB { id: $sub_id }]-(c)`,
+            CREATE (u)-[s:CHANNEL_SUB { id: $sub_id }]->(c)`,
           {
             user_id: sub.user.to_string(),
             channel_id: sub.channel.to_string(),

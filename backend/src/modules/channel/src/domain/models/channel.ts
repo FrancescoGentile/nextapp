@@ -63,8 +63,8 @@ export class Channel {
         if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
             throw new InvalidChannelName(name);
         }
-        if (description !== undefined && !/^[a-zA-Z0-9_-]{5,300}$/.test(description)) {
-            throw new InvalidChannelDescription(description);
+        if (description !== undefined && !/^[a-zA-Z0-9- -_-]{5,300}$/.test(description!)) {
+            throw new InvalidChannelDescription(description!);
         }
         this.name = name;
         this.description = description;

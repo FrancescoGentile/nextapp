@@ -80,10 +80,12 @@ async function get_channel_list(request: Request, response: Response) {
 }
 
 async function delete_channel(request: Request, response: Response) {
+  console.log('DEBUG 0');
   await request.channel_service!.delete_channel(
     request.user_id!,
     ChannelID.from_string(request.params.channel_id)
   );
+  console.log('DEBUG 4');
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
@@ -174,6 +176,7 @@ async function get_channel_by_name(request: Request, response: Response){
 }
 
 export function init_channel_routes(): express.Router {
+  
   const router = express.Router();
 
   router.get(BASE_PATH, asyncHandler(get_channel_list));

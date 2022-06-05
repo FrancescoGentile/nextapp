@@ -11,7 +11,7 @@ import { init_infrastructure } from '../../src/infrastructure';
 import { init_services } from '../../src/domain/services';
 import { init_rest_api } from '../../src/application/rest';
 
-export async function init_room_module(
+export async function init_channel_module(
   driver: Driver,
   emitter: EventEmitter
 ): Promise<express.Router> {
@@ -42,7 +42,7 @@ export async function init_app(
 ) {
   const app = express();
   app.use(set_user(user_id));
-  app.use(await init_room_module(driver, emitter));
+  app.use(await init_channel_module(driver, emitter));
 
   return app;
 }

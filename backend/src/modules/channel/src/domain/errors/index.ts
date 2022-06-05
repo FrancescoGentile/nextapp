@@ -26,7 +26,7 @@ enum ChannelErrorTypes {
 
 
 function get_channel_type(type: ChannelErrorTypes): string {
-    return `room-${String(type).padStart(3, '0')}`;
+    return `channel-${String(type).padStart(3, '0')}`;
   }
   
 export class InvalidChannelID extends NextError {
@@ -60,7 +60,7 @@ export class InvalidChannelDescription extends NextError {
         super(
         get_channel_type(ChannelErrorTypes.INVALID_DESCRIPTION),
         StatusCodes.BAD_REQUEST,
-        'Invalid channel name',
+        'Invalid channel description',
         `${description} does not meet on or both of the following conditions: ` +
         `length between 5 and 300 characters, ` +
         `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,

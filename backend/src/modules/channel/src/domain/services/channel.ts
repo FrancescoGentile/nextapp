@@ -87,7 +87,9 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
 
   public async delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void> {
+    console.log('DEBUG 1');
     if (!(await this.is_admin(user_id))) {
+      console.log('DEBUG not admin');
       throw new ChannelCreationNotAuthorized();
     }
     const deleted = await this.channel_repo.delete_channel(channel_id);
@@ -105,11 +107,13 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
   
   private async is_admin(user_id: UserID): Promise<boolean> {
+    console.log('DEBUG 2');
     const role = await this.user_repo.get_user_role(user_id);
     if (role === null) {
       // the user with the given id has still not been created
       throw new InternalServerError();
     }
+    console.log(role.toString());
     return role === UserRole.SYS_ADMIN;
   }
   
