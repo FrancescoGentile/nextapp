@@ -89,7 +89,7 @@ async function create_booking(request: Request, response: Response) {
   const value = validate(schema, request.body);
 
   const path = value.room.self;
-  const regex = /^\/api\/v1\/rooms\/(.*)$/;
+  const regex = /^\/rooms\/(.*)$/;
   const match = path.match(regex);
 
   if (match === null) {

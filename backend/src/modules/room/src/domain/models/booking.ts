@@ -69,7 +69,8 @@ export function check_availability(
   current_bookings: Booking[],
   interval: NextInterval
 ): boolean {
-  const steps: number[] = [];
+  const slots = interval.interval.length('minutes') / NextInterval.SLOT_LENGTH;
+  const steps: number[] = Array.from({ length: slots }, () => room.seats);
 
   // eslint-disable-next-line no-restricted-syntax
   for (const booking of current_bookings) {
