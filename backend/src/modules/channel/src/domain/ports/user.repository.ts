@@ -4,12 +4,10 @@
 
 import { UserID, UserRole } from '@nextapp/common/user';
 import { ChannelID } from '../models/channel';
-import { User} from '../models/user';
+import { User } from '../models/user';
 
 export interface UserRepository {
-
-  
-  is_channel_admin(id: UserID, channel_id: ChannelID):Promise<boolean>;
+  is_channel_admin(id: UserID, channel_id: ChannelID): Promise<boolean>;
 
   /**
    * Returns the user role if they exist.
