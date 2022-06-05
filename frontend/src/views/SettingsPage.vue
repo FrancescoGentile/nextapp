@@ -7,27 +7,39 @@ export default defineComponent({
     return {
       user: {},
       oldPassword: "",
-      newPassword: ""
+      newPassword: "",
+      emails: [],
+      newEmail: ""
     }
   },
   computed: {
     privateUser() {
       return this.$store.getters.getUser
+    },
+    userEmails() {
+      return this.$store.getters.getUserEmails
     }
   },
-  mounted(){
+  mounted() {
     this.$store.dispatch("privateUser"
-    ).then(()=>{
+    ).then(() => {
       this.user = this.privateUser
-    }).catch(err=>{
+    }).catch(err => {
+      console.log(err)
+    })
+
+    this.$store.dispatch("userEmails"
+    ).then(() => {
+      this.emails = this.userEmails
+    }).catch(err => {
       console.log(err)
     })
   },
   methods: {
     changePassword(old_password, new_password) {
-        //console.log(oldPassword, newPassword)
-      this.$store.dispatch("changePassword", {old_password, new_password}
-      ).then(()=>{
+      //console.log(oldPassword, newPassword)
+      this.$store.dispatch("changePassword", { old_password, new_password }
+      ).then(() => {
         console.log("Password changed")
         this.oldPassword = ""
         this.newPassword = ""
@@ -36,7 +48,7 @@ export default defineComponent({
           this.$router.push("/")
         }).catch(err => {
           console.log(err)
-        }).catch(err=>{
+        }).catch(err => {
           this.oldPassword = ""
           this.newPassword = ""
           console.log(err)
@@ -48,23 +60,43 @@ export default defineComponent({
     deleteProfile() {
       this.$store.dispatch("deletePersonalProfile"
       ).then(() => {
-          this.$store.dispatch("logout"
-          ).then(() => {
-            this.$router.push("/")
-          }).catch(err => {
-            console.log(err)
-          })
+        this.$store.dispatch("logout"
+        ).then(() => {
+          this.$router.push("/")
+        }).catch(err => {
+          console.log(err)
+        })
       }).catch(err => {
         console.log(err);
       });
       this.hideModal('deleteProfile')
     },
 
-     hideModal(modalId){
-       const myModalEl = document.getElementById(modalId)
-       const modal = Modal.getInstance(myModalEl)
-       modal.hide()
-     }
+    addEmail() {
+      this.$store.dispatch("addEmail", this.newEmail
+      ).then((response) => {
+        this.$store.commit("setUserEmail", response.data)
+        this.emails = this.userEmails
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+
+    deleteEmail(email) {
+      this.$store.dispatch("deleteEmail", email.id
+      ).then(()=>{
+        this.emails.filter(item => item.id === email.id)
+        this.$store.commit("setUserEmails", this.emails)
+      }).catch(err=>{
+        console.log(err)
+      })
+    },
+
+    hideModal(modalId) {
+      const myModalEl = document.getElementById(modalId)
+      const modal = Modal.getInstance(myModalEl)
+      modal.hide()
+    }
   }
 })
 </script>
@@ -73,7 +105,7 @@ export default defineComponent({
   <section class="vh-50">
     <div class="container py-5 h-100">
       <div class="row d-flex justify-content-center align-items-center h-100">
-        <div class="col col-lg-6 mb-4 mb-lg-0">
+        <div class="col col-lg-8 mb-4 mb-lg-0">
           <div class="card mb-3" style="border-radius: .5rem;">
             <div class="row g-0">
               <div class="col-md-4 gradient-custom text-center text-white"
@@ -89,27 +121,37 @@ export default defineComponent({
                   <h6>Information</h6>
                   <hr class="mt-0 mb-4">
                   <div class="row pt-1">
-                    <div class="col-6 mb-3">
-                      <h6>Email</h6>
-                      <p class="text-muted">{{ user.email }}</p>
+                    <div class="col mb-3">
+                      <h6>Emails</h6>
+                      <p v-for="(email, i) in emails" :key="i" class="text-muted">{{ email }}</p>
                     </div>
                   </div>
-                    <div class="row pt-1">
-                    <div class="col-6 mb-3">
-                        <h6>Name</h6>
-                        <p class="text-muted">{{ user.first_name }} {{user.middle_name}} {{ user.surname }}</p>
+                  <div class="row pt-1">
+                    <div class="col mb-3">
+                      <h6>Name</h6>
+                      <p class="text-muted">{{ user.first_name }} {{ user.middle_name }} {{ user.surname }}</p>
                     </div>
-                    </div>
+                  </div>
                   <h6>Options</h6>
                   <hr class="mt-0 mb-4">
 
                   <div class="row pt-1">
-                    <div class="col-6 mb-3">
-                      <button type="button" class="btn btn-primary h-100" data-bs-toggle="modal"
+                    <div class="col mb-3">
+                      <button type="button" class="btn btn-primary h-100" @click="this.$router.push({path: '/notifications'})">
+                        Receive push notifications </button>
+                    </div>
+                    <div class="col mb-3">
+                      <button type="button" class="btn btn-primary h-100 w-100" data-bs-toggle="modal"
+                        data-bs-target="#manageEmails"> Manage your emails </button>
+                    </div>
+                  </div>
+                  <div class="row pt-1">
+                    <div class="col mb-3">
+                      <button type="button" class="btn btn-primary h-100 w-100" data-bs-toggle="modal"
                         data-bs-target="#changePassword"> Change your password</button>
                     </div>
-                    <div class="col-6 mb-3">
-                      <button type="button" class="btn btn-primary h-100" data-bs-toggle="modal"
+                    <div class="col mb-3">
+                      <button type="button" class="btn btn-primary h-100 w-100" data-bs-toggle="modal"
                         data-bs-target="#deleteProfile"> Delete your profile</button>
                     </div>
                   </div>
@@ -153,7 +195,7 @@ export default defineComponent({
           <form>
             <div class="mb-3">
               <label class="col-form-label">Old password:</label>
-              <input v-model="oldPassword" type="password" class="form-control" id="recipient-name">
+              <input v-model="oldPassword" type="password" class="form-control" id="password">
             </div>
             <div class="mb-3">
               <label for="message-text" class="col-form-label">New Password:</label>
@@ -163,7 +205,61 @@ export default defineComponent({
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" @click="changePassword(oldPassword, newPassword)">Confirm</button>
+          <button type="button" class="btn btn-primary"
+            @click="changePassword(oldPassword, newPassword)">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="manageEmails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Manage your emails</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label class="col-form-label">Add new Email:</label>
+              <input v-model="newEmail" type="email" class="form-control" id="recipient-name">
+            </div>
+            <div class="text-end">
+              <button type="button" class="btn btn-primary" @click="addEmail()">Confirm</button>
+            </div>
+          </form>
+        </div>
+        <div class="container">
+          <div class="row">
+            <div class="col-1"></div>
+            <div class="col">
+              <table class="table table-striped table-responsive text-center">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Email</th>
+                    <th> </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(email, i) in emails" :key="i">
+                    <th scope="row">{{ i + 1 }}</th>
+                    <td> {{ email }} </td>
+                    <td>
+                      <button class="btn btn-primary align-end" @click="deleteEmail(email)"> Delete email
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-1"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>

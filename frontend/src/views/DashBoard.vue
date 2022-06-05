@@ -22,7 +22,8 @@ export default defineComponent({
       date: new Date(),
 
       userChannels: [],
-      userEvents: []
+      userEvents: [],
+      printableEvents: []
     }
 
   },
