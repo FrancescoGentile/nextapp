@@ -10,7 +10,7 @@ import {
   DateTime as NeoDateTime,
   Integer,
   int,
-} from 'neo4j-driver';
+} from 'neo4j-driver-core';
 import { DateTime } from 'luxon';
 import {
   WebDevice,
@@ -30,19 +30,18 @@ function luxon_to_neo4j(dt: DateTime): NeoDateTime {
     int(dt.hour),
     int(dt.minute),
     int(dt.second),
-    int(0),
+    int(dt.millisecond),
     int(dt.offset)
   );
 }
 
 function neo4j_to_luxon(dt: NeoDateTime): DateTime {
-  return DateTime.fromISO(dt.toString());
+  return DateTime.fromISO(dt.toString()).toUTC();
 }
 
 export class Neo4jInfoRepository implements InfoRepository {
   private constructor(private readonly driver: Driver) {}
 
-  // TODO: decide which indexes create
   public static async create(driver: Driver): Promise<Neo4jInfoRepository> {
     const session = driver.session();
     try {
@@ -51,6 +50,22 @@ export class Neo4jInfoRepository implements InfoRepository {
           `CREATE CONSTRAINT MESSENGER_unique_user_id IF NOT EXISTS
            FOR (u:MESSENGER_User)
            REQUIRE u.id IS UNIQUE`
+        )
+      );
+
+      await session.writeTransaction((tx) =>
+        tx.run(
+          `CREATE CONSTRAINT MESSENGER_unique_email_id IF NOT EXISTS
+           FOR (e:MESSENGER_Email)
+           REQUIRE e.id IS UNIQUE`
+        )
+      );
+
+      await session.writeTransaction((tx) =>
+        tx.run(
+          `CREATE CONSTRAINT MESSENGER_unique_webdevice_id IF NOT EXISTS
+           FOR (w:MESSENGER_webDevive)
+           REQUIRE w.id IS UNIQUE`
         )
       );
 
@@ -215,13 +230,13 @@ export class Neo4jInfoRepository implements InfoRepository {
         tx.run(
           `MATCH (u:MESSENGER_User { id: $id })-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email)
            RETURN e
-           ORDER BY e.name
+           ORDER BY e.email
            SKIP $skip
            LIMIT $limit`,
           {
             id: user_id.to_string(),
-            skip: options.offset,
-            limit: options.limit,
+            skip: int(options.offset),
+            limit: int(options.limit),
           }
         )
       );
@@ -232,7 +247,7 @@ export class Neo4jInfoRepository implements InfoRepository {
       });
 
       return emails;
-    } catch {
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -267,34 +282,37 @@ export class Neo4jInfoRepository implements InfoRepository {
   public async add_email(
     user_id: UserID,
     email: EmailAddress
-  ): Promise<EmailID | undefined> {
+  ): Promise<EmailID> {
     const session = this.driver.session();
     try {
-      let id: EmailID;
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        id = EmailID.generate();
-        // eslint-disable-next-line no-await-in-loop
-        const e = await this.get_email(user_id, id);
-        if (e === null) {
-          break;
+        const id = EmailID.generate();
+
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await session.writeTransaction((tx) =>
+            tx.run(
+              `MATCH (u:MESSENGER_User { id: $user_id })
+               CREATE (u)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, main: $main, email: $email })`,
+              {
+                user_id: user_id.to_string(),
+                email_id: id.to_string(),
+                main: email.main,
+                email: email.to_string(),
+              }
+            )
+          );
+          return id;
+        } catch (e) {
+          const error = e as Neo4jError;
+          if (
+            error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'
+          ) {
+            throw e;
+          }
         }
       }
-
-      const res = await session.writeTransaction((tx) =>
-        tx.run(
-          `MATCH (u:MESSENGER_User { id: $user_id })
-           CREATE (u)-[m:MESSENGER_MEDIUM]->(e:MESSENGER_Email { id: $email_id, main: $main, email: $email })`,
-          {
-            user_id: user_id.to_string(),
-            email_id: id.to_string(),
-            main: email.main,
-            email: email.to_string(),
-          }
-        )
-      );
-
-      return res.summary.counters.updates().nodesCreated > 0 ? id : undefined;
     } catch {
       throw new InternalServerError();
     } finally {
@@ -330,19 +348,25 @@ export class Neo4jInfoRepository implements InfoRepository {
   public async check_device_by_token(
     user_id: UserID,
     token: NotificationToken
-  ): Promise<boolean> {
+  ): Promise<WebDeviceID | null> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
            WHERE u.id = $id AND w.token = $token
-           RETURN w.id`,
+           RETURN w.id AS id`,
           { id: user_id.to_string(), token: token.to_string() }
         )
       );
-      return res.records.length > 0;
-    } catch {
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      const id = res.records[0].get('id');
+      return WebDeviceID.from_string(id);
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -429,14 +453,15 @@ export class Neo4jInfoRepository implements InfoRepository {
            LIMIT $limit`,
           {
             id: user_id.to_string(),
-            skip: options.offset,
-            limit: options.limit,
+            skip: int(options.offset),
+            limit: int(options.limit),
           }
         )
       );
 
       const devices = res.records.map((record) => {
-        const { id, fingerprint, token, name, timestamp } = record.get('w');
+        const { id, fingerprint, token, name, timestamp } =
+          record.get('w').properties;
 
         return {
           id: WebDeviceID.from_string(id),
@@ -461,43 +486,46 @@ export class Neo4jInfoRepository implements InfoRepository {
   public async add_device(
     user_id: UserID,
     device: WebDevice
-  ): Promise<WebDeviceID | undefined> {
+  ): Promise<WebDeviceID> {
     const session = this.driver.session();
     try {
-      let id: WebDeviceID;
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        id = WebDeviceID.generate();
-        // eslint-disable-next-line no-await-in-loop
-        const e = await this.get_device(user_id, id);
-        if (e === null) {
-          break;
+        const id = WebDeviceID.generate();
+
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await session.writeTransaction((tx) =>
+            tx.run(
+              `MATCH (u:MESSENGER_User { id: $user_id })
+             CREATE (u)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice {
+               id: $id,
+               fingerprint: $fingerprint,
+               token: $token,
+               name: $name, 
+               timestamp: $timestamp
+             })`,
+              {
+                user_id: user_id.to_string(),
+                id: id.to_string(),
+                fingerprint: device.fingerprint?.to_string() || null,
+                token: device.token.to_string(),
+                name: device.name,
+                timestamp: luxon_to_neo4j(device.timestamp),
+              }
+            )
+          );
+          return id;
+        } catch (e) {
+          const error = e as Neo4jError;
+          if (
+            error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'
+          ) {
+            throw e;
+          }
         }
       }
-
-      const res = await session.writeTransaction((tx) =>
-        tx.run(
-          `MATCH (u:MESSENGER_User { id: $user_id })
-           CREATE (u)->[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice {
-             id: $id,
-             fingerprint: $fingerprint,
-             token: $token,
-             name: $name, 
-             timestamp: $timestamp
-           })`,
-          {
-            user_id: user_id.to_string(),
-            id,
-            fingerprint: device.fingerprint?.to_string() || null,
-            token: device.token.to_string(),
-            name: device.name,
-            timestamp: luxon_to_neo4j(device.timestamp),
-          }
-        )
-      );
-
-      return res.summary.counters.updates().nodesCreated > 0 ? id : undefined;
-    } catch {
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();

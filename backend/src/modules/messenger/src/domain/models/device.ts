@@ -18,7 +18,10 @@ export class WebDeviceID {
    * Generates a random ID.
    */
   public static generate(): WebDeviceID {
-    const nanoid = customAlphabet('1234567890', 10);
+    const nanoid = customAlphabet(
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-',
+      11
+    );
     return new WebDeviceID(nanoid());
   }
 
@@ -30,7 +33,7 @@ export class WebDeviceID {
    * @returns
    */
   public static from_string(id: string): WebDeviceID {
-    if (!/^[0-9]{10}$/.test(id)) {
+    if (!/^[0-9a-zA-Z_-]{11}$/.test(id)) {
       throw new InvalidDeviceID(id);
     }
 

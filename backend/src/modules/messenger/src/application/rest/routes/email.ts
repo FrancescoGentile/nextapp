@@ -59,7 +59,7 @@ async function get_emails(request: Request, response: Response) {
 
 async function set_main(request: Request, response: Response) {
   const schema = Joi.object({
-    main: Joi.boolean().required().valid([true]),
+    main: Joi.boolean().required().valid(true),
   });
 
   const _ = validate(schema, request.body);
@@ -84,10 +84,10 @@ async function add_email(request: Request, response: Response) {
   const value = validate(schema, request.body);
   const id = await request.info_service.add_email(
     request.user_id,
-    EmailAddress.from_string(value.email, value.main)
+    EmailAddress.from_string(value.email, value.main || false)
   );
 
-  response.status(StatusCodes.OK).location(id_to_self(id)).end();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function delete_email(request: Request, response: Response) {

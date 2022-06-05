@@ -84,6 +84,7 @@ export class DeletingMainEmail extends NextError {
 enum DeviceErrorTypes {
   INVALID_DEVICE_ID = 1,
   DEVICE_NOT_FOUND,
+  TOKEN_ALREADY_REGISTERED,
 }
 
 function get_device_type(type: DeviceErrorTypes): string {
@@ -109,6 +110,19 @@ export class DeviceNotFound extends NextError {
       StatusCodes.NOT_FOUND,
       'Device not found',
       `No device with id ${id} was found among your saved devices.`,
+      options
+    );
+  }
+}
+
+export class TokenAlreadyRegistered extends NextError {
+  public constructor(token: string, id: string, options?: ErrorOptions) {
+    super(
+      get_device_type(DeviceErrorTypes.TOKEN_ALREADY_REGISTERED),
+      StatusCodes.CONFLICT,
+      'Token already registered',
+      `The token${token} is already associated to the device with id ${id}. ` +
+        `Please update the token of that device and only then you can retry this operation.`,
       options
     );
   }

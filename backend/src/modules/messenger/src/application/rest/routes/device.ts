@@ -71,7 +71,7 @@ async function get_devices(request: Request, response: Response) {
 async function add_device(request: Request, response: Response) {
   const schema = Joi.object({
     token: Joi.string().required(),
-    fingerptint: Joi.string(),
+    fingerprint: Joi.string(),
     name: Joi.string().required(),
   });
 
@@ -83,7 +83,7 @@ async function add_device(request: Request, response: Response) {
     timestamp: DateTime.utc(),
   });
 
-  response.status(StatusCodes.OK).location(id_to_self(id)).end();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function delete_device(request: Request, response: Response) {

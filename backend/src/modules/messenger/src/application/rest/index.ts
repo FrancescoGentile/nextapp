@@ -65,10 +65,8 @@ export function init_rest_api(info_service: UserInfoService): express.Router {
 
   router.use(init_request(info_service));
 
-  router.use(init_email_routes());
-  router.use(init_device_routes());
-
-  router.use(handle_error);
+  router.use(init_email_routes(), handle_error);
+  router.use(init_device_routes(), handle_error);
 
   return router;
 }

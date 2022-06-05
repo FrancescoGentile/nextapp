@@ -67,11 +67,10 @@ export interface InfoRepository {
 
   /**
    * Adds the new email to the emails of the user.
-   * If no user with the given id exists, undefined is returned.
    * @param user_id
    * @param email
    */
-  add_email(user_id: UserID, email: EmailAddress): Promise<EmailID | undefined>;
+  add_email(user_id: UserID, email: EmailAddress): Promise<EmailID>;
 
   /**
    * Deletes the given email from the ones the user has associated.
@@ -114,7 +113,7 @@ export interface InfoRepository {
   check_device_by_token(
     user_id: UserID,
     token: NotificationToken
-  ): Promise<boolean>;
+  ): Promise<WebDeviceID | null>;
 
   /**
    * Adds the passed device to the user.
@@ -122,10 +121,7 @@ export interface InfoRepository {
    * @param user_id
    * @param device
    */
-  add_device(
-    user_id: UserID,
-    device: WebDevice
-  ): Promise<WebDeviceID | undefined>;
+  add_device(user_id: UserID, device: WebDevice): Promise<WebDeviceID>;
 
   /**
    * Removes the device with the given id from the ones saved by the user.
