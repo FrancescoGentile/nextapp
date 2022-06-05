@@ -1,5 +1,4 @@
 <script>
-import { getCurrentToken } from '@/firebase'
 
 export default {
     data() {
@@ -8,29 +7,50 @@ export default {
             chosenDevice: {}
         }
     },
-    
+
     computed: {
         loadedDevices() {
             return this.$store.getters.getUserDevices
         }
     },
 
-    mounted(){
+    mounted() {
         this.$store.dispatch("userDevices"
-        ).then(()=>{
+        ).then(() => {
             this.devices = this.loadedDevices
-        }).catch(err=>{
+        }).catch(err => {
             console.log(err)
         })
     },
 
     methods: {
-        addDevice(){
-            getCurrentToken()
+        addDevice(device) {
+            this.$store.dispatch("addUserDevice", device
+            ).then(() => {
+                this.$store.dispatch("userDevices"
+                ).then(() => {
+                    this.devices = this.loadedDevices
+                }).catch(err => {
+                    console.log(err)
+                })
+            }).catch(err => {
+                console.log(err)
+            })
         },
 
-        removeDevice(){
-
+        removeDevice(device) {
+            const deviceId = device.self.replace("/api/v2/users/me/devices/", "")
+            this.$store.dispatch("removeUserDevice", deviceId
+            ).then(()=>{
+                this.$store.dispatch("userDevices"
+                ).then(() => {
+                    this.devices = this.loadedDevices
+                }).catch(err => {
+                    console.log(err)
+                })
+            }).catch(err=>{
+                console.log(err)
+            })
         }
     },
 }
@@ -62,7 +82,7 @@ export default {
                                         <td>{{ device.name }}</td>
                                         <td>
                                             <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
-                                                data-bs-target="#removeDevice" @click="chosenDevice = device"> 
+                                                data-bs-target="#removeDevice" @click="chosenDevice = device">
                                                 Stop receiving notifications
                                             </button>
                                         </td>
@@ -89,8 +109,7 @@ export default {
                 <div class="modal-body">
                     <form class="p-4 p-md-5 border rounded-3 bg-light">
                         <div class="form-floating mb-3">
-                            <input v-model="chosenDevice.name" type="text" class="form-control"
-                                placeholder="name">
+                            <input v-model="chosenDevice.name" type="text" class="form-control" placeholder="name">
                             <label for="floatingInput">Name</label>
                         </div>
                     </form>
@@ -115,7 +134,8 @@ export default {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" @click="deleteDevice(this.chosenDevice)">Confirm</button>
+                    <button type="button" class="btn btn-primary"
+                        @click="deleteDevice(this.chosenDevice)">Confirm</button>
                 </div>
             </div>
         </div>
