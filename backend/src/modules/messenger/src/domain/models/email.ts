@@ -8,7 +8,7 @@ import { InvalidEmail, InvalidEmailID } from '../errors';
 
 /**
  * ID associated to each user's email.
- * Each ID is a string of 10 digits.
+ * Each ID is a string of 10 characters.
  */
 export class EmailID {
   private constructor(private readonly id: string) {}
@@ -17,7 +17,10 @@ export class EmailID {
    * Generates a random ID.
    */
   public static generate(): EmailID {
-    const nanoid = customAlphabet('1234567890', 10);
+    const nanoid = customAlphabet(
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-',
+      11
+    );
     return new EmailID(nanoid());
   }
 
@@ -29,7 +32,7 @@ export class EmailID {
    * @returns
    */
   public static from_string(id: string): EmailID {
-    if (!/^[0-9]{10}$/.test(id)) {
+    if (!/^[0-9a-zA-Z_-]{11}$/.test(id)) {
       throw new InvalidEmailID(id);
     }
 

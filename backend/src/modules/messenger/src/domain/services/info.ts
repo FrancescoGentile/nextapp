@@ -9,6 +9,7 @@ import {
   DeletingMainEmail,
   DeviceNotFound,
   EmailNotFound,
+  TokenAlreadyRegistered,
 } from '../errors';
 import { WebDevice, WebDeviceID } from '../models/device';
 import { EmailAddress, EmailID } from '../models/email';
@@ -72,18 +73,14 @@ export class NextUserInfoService implements UserInfoService {
       throw new AlreadyUsedEmail(email.to_string());
     }
 
-    let id: EmailID | undefined;
+    let id: EmailID;
     if (email.main) {
       [, id] = await Promise.all([
         this.repo.unset_email_main(user_id),
         this.repo.add_email(user_id, email),
       ]);
     } else {
-      id = await this.add_email(user_id, email);
-    }
-
-    if (id === undefined) {
-      throw new InternalServerError();
+      id = await this.repo.add_email(user_id, email);
     }
 
     return id;
@@ -130,21 +127,19 @@ export class NextUserInfoService implements UserInfoService {
     user_id: UserID,
     device: WebDevice
   ): Promise<WebDeviceID> {
-    const present = await this.repo.check_device_by_token(
+    const present_id = await this.repo.check_device_by_token(
       user_id,
       device.token
     );
 
-    if (present) {
-      // TODO: decide what to do
-      throw new Error('');
+    if (present_id !== null) {
+      throw new TokenAlreadyRegistered(
+        device.token.to_string(),
+        present_id.to_string()
+      );
     }
 
     const id = await this.repo.add_device(user_id, device);
-    if (id === undefined) {
-      throw new InternalServerError();
-    }
-
     return id;
   }
 
