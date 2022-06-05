@@ -114,12 +114,14 @@ export class Neo4jChannelRepository implements ChannelRepository {
 
   public async get_channel(channel_id: ChannelID): Promise<Channel | null> {
     const session = this.driver.session();
+    const channel_id_stringa = channel_id.to_string();
+    console.log(channel_id_stringa);
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel { id: $id })
            RETURN u, c`,
-          { id: channel_id.to_string() }
+          { id: channel_id_stringa }
         )
       );
 
@@ -141,7 +143,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
         presidents,
         ChannelID.from_string(id)
       );
-    } catch {
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -191,7 +194,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
 
           return id;
         } catch (e) {
-          console.log(e);
+          //console.log(e);
           const error = e as Neo4jError;
           if (
             error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'

@@ -4,7 +4,6 @@
 
 import EventEmitter from 'eventemitter3';
 import { Driver } from 'neo4j-driver';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import supertest from 'supertest';
 import { Channel } from '../domain/models/channel';
 import { User } from '../domain/models/user';

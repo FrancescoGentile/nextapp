@@ -88,29 +88,8 @@ async function delete_channel(request: Request, response: Response) {
 }
 
 async function create_subscriber(request: Request, response: Response){
-
-  const schema = Joi.object({
-    channel: Joi.object({
-      self: Joi.string().required(),
-    }).required(),
-  });
-
-  const value = validate(schema, request.body);
-  const path = value.channel.self;
-  const regex = /^\/api\/v1\/${BASE_PATH}\/(.*)$/;
-  const match = path.match(regex);
-
-  if (match === null) {
-    throw new InvalidSubscribeChannel();
-  }
-
-  let channel_id;
-  try {
-    channel_id = ChannelID.from_string(match[1]);
-  } catch {
-    throw new InvalidSubscribeChannel();
-  }
-
+  const channel_id_stringa: string = request.params.channel_id!;
+  const channel_id = ChannelID.from_string(channel_id_stringa);
   const id = await request.sub_service!.create_sub(
     request.user_id!,
     channel_id
