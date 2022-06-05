@@ -49,8 +49,8 @@ export function init_rest_api(
   router.use(express.json() as any);
   router.use(init_request(channel_service, sub_service));
   
-  router.use(API_VERSION, init_channel_routes(), handle_error);
-  router.use(API_VERSION, init_sub_routes(), handle_error);
+  router.use(init_channel_routes(), handle_error);
+  router.use(init_sub_routes(), handle_error);
 
   return  router ;
 }
