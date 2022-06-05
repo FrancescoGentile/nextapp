@@ -62,6 +62,7 @@
     "joi": "^17.6.0",
     "json-joi-converter": "^17.2.1-f",
     "jsonwebtoken": "^8.5.1",
-    "email-validator": "^2.0.4"
+    "email-validator": "^2.0.4",
+    "neo4j-driver-core": "^4.4.5"
   }
 }

@@ -4,6 +4,7 @@
 
 import EventEmitter from 'eventemitter3';
 import {
+  SendMessageEvent,
   UserCreatedEvent,
   UserDeletedEvent,
   UserRoleChangedEvent,
@@ -14,23 +15,30 @@ export class EventEmitterBroker implements EventBroker {
   public constructor(private readonly emitter: EventEmitter) {}
 
   public on_user_created(
+    name: string,
     listener: (event: UserCreatedEvent) => void,
     context?: any
   ): void {
-    this.emitter.on('user_created', listener, context);
+    this.emitter.on(name, listener, context);
   }
 
   public on_user_deleted(
+    name: string,
     listener: (event: UserDeletedEvent) => void,
     context?: any
   ): void {
-    this.emitter.on('user_deleted', listener, context);
+    this.emitter.on(name, listener, context);
   }
 
   public on_user_role_changed(
+    name: string,
     listener: (event: UserRoleChangedEvent) => void,
     context?: any
   ): void {
-    this.emitter.on('user_role_changed', listener, context);
+    this.emitter.on(name, listener, context);
+  }
+
+  public emit_send_message(name: string, event: SendMessageEvent): void {
+    this.emitter.emit(name, event);
   }
 }
