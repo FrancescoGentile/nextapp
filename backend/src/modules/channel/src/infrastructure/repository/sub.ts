@@ -5,7 +5,7 @@
 import { UserID } from '@nextapp/common/user';
 import { InternalServerError } from '@nextapp/common/error';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
-import { ChannelID } from '../../domain/models/channel';
+import { Channel, ChannelID } from '../../domain/models/channel';
 import { SubRepository } from '../../domain/ports/sub.repository';
 import { SearchOptions } from '../../domain/models/search';
 import { Sub, SubID } from '../../domain/models/sub';
@@ -13,9 +13,30 @@ import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jSubRepository implements SubRepository {
     private constructor(private readonly driver: Driver) {}
-  
-  
-    
+
+  public async is_sub(user: UserID, channel: ChannelID): Promise<boolean>{
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:CHANNEL_User{id: $user_id})-[s:CHANNEL_SUB]->(c:CHANNEL_Channel{id: $channel_id})
+            RETURN s.id as sid`,
+          {
+            user_id: user.to_string(),
+            channel_id: channel.to_string(),
+          }
+        )
+      );
+      
+      return res.records.length > 0;
+    } catch(e) {
+      console.log(e);
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
   public static async create(driver: Driver): Promise<Neo4jSubRepository> {
     return new Neo4jSubRepository(driver);
   }
@@ -39,7 +60,8 @@ export class Neo4jSubRepository implements SubRepository {
       return res.summary.counters.updates().relationshipsCreated > 0
         ? sub.id!
         : undefined;
-    } catch {
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

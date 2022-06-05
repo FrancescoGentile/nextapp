@@ -56,6 +56,16 @@ export interface SubRepository {
   get_club_subscribers(
     channel_id: ChannelID
   ): Promise<UserID[]>;
-
+    
+  /**
+   * Returns true if the user is subscribed to the given channel.
+   * False otherwise.
+   * @param user_id
+   * @param channel_id
+   */
+  is_sub(
+    user_id: UserID,
+    channel_id: ChannelID
+  ): Promise<boolean>;
 
 }

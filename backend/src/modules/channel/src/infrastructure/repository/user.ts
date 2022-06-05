@@ -47,7 +47,8 @@ export class Neo4jUserRepository implements UserRepository {
 
       const is_admin = res.records[0].get('admin');
       return is_admin ? UserRole.SYS_ADMIN : UserRole.SIMPLE;
-    } catch {
+    } catch(e) {
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

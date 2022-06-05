@@ -7,7 +7,8 @@ import { customAlphabet } from 'nanoid';
 import {
     InvalidChannelID,
     InvalidChannelName,
-    InvalidChannelDescription
+    InvalidChannelDescription,
+    InvalidPresidentsNumber
 } from '../errors';
 
 export class ChannelID {
@@ -63,8 +64,17 @@ export class Channel {
         if (!/^[a-zA-Z0-9_-]{5,100}$/.test(name)) {
             throw new InvalidChannelName(name);
         }
-        if (description !== undefined && !/^[a-zA-Z0-9- -_-]{5,300}$/.test(description!)) {
+        if (
+          description !== undefined 
+          && (description!.length < 5 || description!.length > 300)
+        ) {
             throw new InvalidChannelDescription(description!);
+        }
+        if (
+          presID_array.length < Channel.MIN_PRESIDENTS
+          || presID_array.length > Channel.MAX_PRESIDENTS
+        ) {
+          throw new InvalidPresidentsNumber(presID_array.length);
         }
         this.name = name;
         this.description = description;

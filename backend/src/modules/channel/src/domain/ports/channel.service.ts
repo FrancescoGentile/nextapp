@@ -26,7 +26,7 @@ export interface ChannelInfoService {
   create_channel(
     admin: UserID, 
     channel: Channel
-  ): Promise<ChannelID>;
+  ): Promise<ChannelID | undefined>;
 
   /**
    * Return the list of all channels.

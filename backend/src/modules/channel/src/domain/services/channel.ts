@@ -11,7 +11,8 @@ import {
   InvalidPresidentsNumber,
   NoChannelAvailable,
   UserNotAPresident,
-  ChannelNameNotFound
+  ChannelNameNotFound,
+  PresidentNotAUser
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -19,6 +20,7 @@ import { ChannelInfoService } from '../ports/channel.service';
 import { UserRepository } from '../ports/user.repository';
 import { SearchOptions } from '../models/search';
 import { SubRepository } from '../ports/sub.repository';
+import { Sub, SubID } from '../models/sub';
 
 export class NextChannelInfoService implements ChannelInfoService {
   public constructor(
@@ -70,9 +72,26 @@ export class NextChannelInfoService implements ChannelInfoService {
     ) {
       throw new InvalidPresidentsNumber(channel.presID_array.length);
     }
+    for(const pres of channel.presID_array){
+      const role = await this.user_repo.get_user_role(pres);
+      if(role === null){
+        throw new PresidentNotAUser(pres);
+      }
+    }
     const id = await this.channel_repo.create_channel(channel);
     if (id === undefined) {
       throw new ChannelNameAlreadyUsed(channel.name);
+    }
+    for(const pres of channel.presID_array){
+      if(! await this.sub_repo.is_sub(pres, id)){
+        const subscription: Sub = 
+            {
+              id: SubID.generate(),
+              user: pres,
+              channel: id,
+            };
+        await this.sub_repo.create_sub(subscription);
+      }
     }
     return id;
   }
@@ -87,9 +106,7 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
 
   public async delete_channel(user_id: UserID, channel_id: ChannelID): Promise<void> {
-    console.log('DEBUG 1');
     if (!(await this.is_admin(user_id))) {
-      console.log('DEBUG not admin');
       throw new ChannelCreationNotAuthorized();
     }
     const deleted = await this.channel_repo.delete_channel(channel_id);
@@ -107,13 +124,11 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
   
   private async is_admin(user_id: UserID): Promise<boolean> {
-    console.log('DEBUG 2');
     const role = await this.user_repo.get_user_role(user_id);
     if (role === null) {
       // the user with the given id has still not been created
       throw new InternalServerError();
     }
-    console.log(role.toString());
     return role === UserRole.SYS_ADMIN;
   }
   

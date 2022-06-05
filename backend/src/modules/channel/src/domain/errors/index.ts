@@ -3,6 +3,7 @@
 //
 
 import { NextError, StatusCodes } from '@nextapp/common/error';
+import { UserID } from '@nextapp/common/user';
 import { Channel } from '../models/channel';
 
 export { InternalServerError } from '@nextapp/common/error';
@@ -10,18 +11,18 @@ export { InternalServerError } from '@nextapp/common/error';
 // ---------------------------------------------------------------
 // -------------------------- CHANNEL ----------------------------
 // ---------------------------------------------------------------
-
 enum ChannelErrorTypes {
-    INVALID_ID = 1,
-    INVALID_NAME,
-    INVALID_DESCRIPTION,
-    CHANNEL_NOT_FOUND,
-    CHANNEL_CREATION_NOT_AUTHORIZED,
-    NAME_ALREADY_USED,
-    INVALID_PRESIDENT_NUMBERS,
-    CHANNEL_DELETION_NOT_AUTHORIZED,
-    NO_CHANNEL_AVAILABLE,
-    CHANNEL_NAME_NOT_FOUND
+  INVALID_ID = 1,
+  INVALID_NAME,
+  INVALID_DESCRIPTION,
+  CHANNEL_NOT_FOUND,
+  CHANNEL_CREATION_NOT_AUTHORIZED,
+  NAME_ALREADY_USED,
+  INVALID_PRESIDENT_NUMBERS,
+  CHANNEL_DELETION_NOT_AUTHORIZED,
+  NO_CHANNEL_AVAILABLE,
+  CHANNEL_NAME_NOT_FOUND,
+  PRESIDENT_NOT_USER
 }
 
 
@@ -151,6 +152,18 @@ export class ChannelNameNotFound extends NextError {
       StatusCodes.NOT_FOUND,
       'Channel not found',
       `Channel with name ${channel_name} was not found.`,
+      options
+    );
+  }
+}
+
+export class PresidentNotAUser extends NextError {
+  public constructor(user_id: UserID, options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.PRESIDENT_NOT_USER),
+      StatusCodes.NOT_FOUND,
+      'President is not a user',
+      `User id${user_id} was not found.`,
       options
     );
   }

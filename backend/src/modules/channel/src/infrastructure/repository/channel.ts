@@ -151,7 +151,6 @@ export class Neo4jChannelRepository implements ChannelRepository {
   public async create_channel(channel: Channel): Promise<ChannelID | undefined> {
     let session = this.driver.session();
     try {
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const id = ChannelID.generate();
         const name = channel.name;
@@ -160,13 +159,12 @@ export class Neo4jChannelRepository implements ChannelRepository {
             ? null
             : JSON.stringify(channel.description);
         try {
-          // eslint-disable-next-line no-await-in-loop
           await session.writeTransaction((tx) =>
             tx.run(
               `CREATE (c:CHANNEL_Channel {
                id: $id, 
                name: $name,
-               description: $description,
+               description: $description
             })`,
               { id: id.to_string(), name: name, description: description }
             )
@@ -176,43 +174,31 @@ export class Neo4jChannelRepository implements ChannelRepository {
           session = this.driver.session();
 
           for (
-              let i = 0; 
-              i < Channel.MAX_PRESIDENTS;
-              i++
+              const pres of channel.presID_array
             ) {
             await session.writeTransaction((tx) =>
               tx.run(
-                `MATCH (u:CHANNEL_User), (r:CHANNEL_Channel)
+                `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
                 WHERE u.id = $user_id AND c.id = $channel_id
                 CREATE (u)-[p:CHANNEL_PRESIDENT]->(c)`,
                 { 
-                  user_id: channel.presID_array[i],
-                  channel_id: channel.id!.to_string()
+                  user_id: pres.to_string(),
+                  channel_id: id.to_string()
                 }
               )
             );
-            // check if president is subscribed. If not, subscribe
-            if (!this.is_sub( channel.presID_array[i], channel.id!)) {
-              const subscription: Sub = 
-              {
-                id: SubID.generate(),
-                user: channel.presID_array[i],
-                channel: channel.id!
-              };
-              this.create_sub(subscription);
-            }
-            
           }
 
           return id;
         } catch (e) {
+          console.log(e);
           const error = e as Neo4jError;
           if (
             error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'
           ) {
             throw e;
           }
-          // there is already a room with the same name
+          // there is already a channel with the same name
           if (error.message.includes(name)) {
             return undefined;
           }
@@ -339,55 +325,6 @@ export class Neo4jChannelRepository implements ChannelRepository {
       } else {
         return true;
       }
-    } catch {
-      throw new InternalServerError();
-    } finally {
-      await session.close();
-    }
-  }
-
-  private async is_sub(user: UserID, channel: ChannelID): Promise<boolean>{
-    const session = this.driver.session();
-    try {
-      const res = await session.writeTransaction((tx) =>
-        tx.run(
-          `MATCH (u:CHANNEL_User{u.id: $user_id})-[s:CHANNEL_SUB]-(c:CHANNEL_Channel{c.id: $channel_id})
-            RETURN s.id as sid`,
-          {
-            user_id: user.to_string(),
-            channel_id: channel.to_string(),
-          }
-        )
-      );
-      
-      return res.records.length > 0;
-    } catch {
-      throw new InternalServerError();
-    } finally {
-      await session.close();
-    }
-  }
-
-  private async create_sub(sub: Sub): Promise<SubID | undefined> {
-    const session = this.driver.session();
-    try {
-      const sub_id = SubID.generate();
-      const res = await session.writeTransaction((tx) =>
-        tx.run(
-          `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
-            WHERE u.id = $user_id AND c.id = $channel_id
-            CREATE (u)-[s:CHANNEL_SUB { id: $sub_id }]-(c)`,
-          {
-            user_id: sub.user.to_string(),
-            channel_id: sub.channel.to_string(),
-            sub_id: sub_id.to_string()
-          }
-        )
-      );
-      
-      return res.summary.counters.updates().relationshipsCreated > 0
-        ? sub_id
-        : undefined;
     } catch {
       throw new InternalServerError();
     } finally {

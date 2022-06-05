@@ -45,7 +45,7 @@ async function create_channel(request: Request, response: Response){
   const schema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().required(),
-    presID_array: Joi.array().items(Joi.string())
+    presID_array: Joi.array().items(Joi.string()).required()
   });
 
   const value = validate(schema, request.body);
@@ -57,7 +57,7 @@ async function create_channel(request: Request, response: Response){
 
   response
     .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}${BASE_PATH}/${id.to_string()}`)
+    .location(`${API_VERSION}${BASE_PATH}/${id!.to_string()}`)
     .end();
 }
 
@@ -80,12 +80,10 @@ async function get_channel_list(request: Request, response: Response) {
 }
 
 async function delete_channel(request: Request, response: Response) {
-  console.log('DEBUG 0');
   await request.channel_service!.delete_channel(
     request.user_id!,
     ChannelID.from_string(request.params.channel_id)
   );
-  console.log('DEBUG 4');
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
