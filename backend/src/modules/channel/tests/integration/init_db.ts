@@ -10,6 +10,7 @@ import { InternalServerError } from '@nextapp/common/error';
 import { User } from '../../src/domain/models/user';
 import { Channel, ChannelID } from '../../src/domain/models/channel';
 import { Sub, SubID } from '../../src/domain/models/sub';
+import { pid } from 'process';
 
 export async function populate_users(driver: Driver): Promise<User[]> {
   const users: User[] = [
@@ -78,7 +79,7 @@ async function populate_channels(driver: Driver, users: User[]): Promise<Channel
       await session.close();
       session = driver.session();
       for (const pres of channel.presID_array) {
-        //console.log('POPULATING: u ' +pres.to_string() + ' --> c ' + channel.id!.to_string())
+        // console.log('POPULATING: u ' + pres.to_string() + ' --> c ' + channel.id!.to_string())
         await session.writeTransaction((tx) =>
           tx.run(
             `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
@@ -92,7 +93,7 @@ async function populate_channels(driver: Driver, users: User[]): Promise<Channel
         );
       }
     } catch(e){
-      // console.log(e);
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

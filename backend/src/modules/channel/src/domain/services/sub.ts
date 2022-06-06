@@ -7,7 +7,8 @@ import { InternalServerError } from '@nextapp/common/error';
 import {
   InvalidSubscribeChannel,
   UserNotAPresident,
-  SubNotFound
+  SubNotFound,
+  ChannelNotFound
 } from '../errors';
 import { ChannelID } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -64,11 +65,20 @@ export class NextSubService implements SubService {
     this.sub_repo.delete_subscriber(subscriber_id, sub_id);
   }
 
-  public async get_club_subscribers(requester: UserID, channel_id: ChannelID): Promise<UserID[]> {
-    const is_pres = this.channel_repo.is_president(requester, channel_id);
+  public async get_club_subscribers(requester: UserID, channel_id: ChannelID): Promise<Sub[]> {
+    const channel_exists: boolean = 
+      await this.channel_repo.get_channel(channel_id) == null
+        ? false
+        : true;
+    if(!channel_exists){
+      throw new ChannelNotFound(channel_id.to_string());
+    }
+    
+    const is_pres = await this.channel_repo.is_president(requester, channel_id);
     if(!is_pres){
       throw new UserNotAPresident(requester.to_string());
     }
+    
     return await this.sub_repo.get_club_subscribers(channel_id);
   }
 

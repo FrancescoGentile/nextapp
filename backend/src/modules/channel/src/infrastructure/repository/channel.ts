@@ -219,8 +219,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
     try {
       const res_chan = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]->(c:CHANNEL_Channel)
-           RETURN c, u.id as uid
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel)
+           RETURN c, p, u.id as uid
            ORDER BY c.id
            SKIP $skip
            LIMIT $limit`,
@@ -236,7 +236,10 @@ export class Neo4jChannelRepository implements ChannelRepository {
         const channel_id: ChannelID = ChannelID.from_string(info.id);
         const presidents: string[] = res_chan.records.map((record) => {
           //const info = record.get('u').properties;
+          console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
           const id = record.get('uid');
+          console.log(id);
+          console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
           return id
         });
         console.log('name ' + channel_name);

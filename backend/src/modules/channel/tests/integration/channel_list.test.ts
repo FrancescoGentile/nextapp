@@ -51,7 +51,7 @@ describe('list channels', () => {
     expect(res.status).toBe(400);
   });
 
-  // ------------------------ LS-2 ------------------------
+  // ------------------------ LC-2 ------------------------
 
   it('(lc-2) invalid limit: not a number', async () => {
     const res = await request.get('/channels?limit=hello');
@@ -73,11 +73,10 @@ describe('list channels', () => {
     expect(res.status).toBe(400);
   });
 
-  // ------------------------ LS-3 ------------------------
+  // ------------------------ LC-3 ------------------------
 
   it('(lc-3) successful channel list retrieval: no constraints', async () => {
-    const res = await request.get('/channels');
-    expect(res.status).toBe(200);
+    
     let pres_string_0: string[] = [];
     for (let i = 0; i < 2; i++) {
       pres_string_0[i] = channels[0].presID_array[i].to_string();
@@ -87,9 +86,9 @@ describe('list channels', () => {
     for (let i = 0; i < 2; i++) {
       pres_string_1[i] = channels[1].presID_array[i].to_string();
     }
-
+    const res = await request.get('/channels');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual([
+    expect.arrayContaining([
       {
         self: `/ap1/v1/channels/${channels[0].id!.to_string()}`,
         name: channels[0].name,

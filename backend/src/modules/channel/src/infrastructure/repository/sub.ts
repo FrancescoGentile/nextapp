@@ -149,24 +149,32 @@ export class Neo4jSubRepository implements SubRepository {
     }
   }
   
-  public async get_club_subscribers(channel_id: ChannelID): Promise<UserID[]> {
+  public async get_club_subscribers(channel_id: ChannelID): Promise<Sub[]> {
     const session = this.driver.session();
     try {
       const res = await session.writeTransaction((tx) =>
         tx.run(
           `MATCH (user:CHANNEL_User)-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel {id: $id})
-           RETURN u.id as uid`,
+           RETURN s.id as sid, user.id as uid, chan.id as cid
+           ORDER BY s.id`,
           { id: channel_id.to_string() }
         )
       );
 
-      const users: UserID[] = res.records.map((record) => {
-        const user_id = new UserID(record.get('uid'));
-        return user_id
-      });
+      const subs: Sub[] = res.records.map((record) => {
+        const id = SubID.from_string(record.get('sid'));
+        const channel = ChannelID.from_string(record.get('cid'));
+        const user = new UserID(record.get('uid'));
+        return {
+          id,
+          channel,
+          user
+        }
+      })
 
-      return users;
-    } catch {
+      return subs;
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
