@@ -9,8 +9,9 @@ import { RoomInfoService } from '../../domain/ports/room.service';
 
 declare module 'express-serve-static-core' {
   export interface Request {
-    user_id?: UserID;
-    room_service?: RoomInfoService;
-    booking_service?: BookingService;
+    version: string;
+    user_id: UserID;
+    room_service: RoomInfoService;
+    booking_service: BookingService;
   }
 }

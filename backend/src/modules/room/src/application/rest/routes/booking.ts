@@ -9,18 +9,22 @@ import express from 'express';
 
 import { DateTime } from 'luxon';
 import { RoomID } from '../../../domain/models/room';
-import { API_VERSION, asyncHandler, validate } from '../utils';
+import { asyncHandler, validate } from '../utils';
 import { Booking, BookingID } from '../../../domain/models/booking';
 import { SearchOptions } from '../../../domain/models/search';
 import { BookingNotFound, InvalidBookingRoom } from '../../../domain/errors';
 
 const BASE_PATH = '/users/me/bookings';
 
+function id_to_self(id: BookingID): string {
+  return `${BASE_PATH}/${id.to_string()}`;
+}
+
 function booking_to_json(booking: Booking): any {
   return {
-    self: `${API_VERSION}${BASE_PATH}/${booking.id!.to_string()}`,
+    self: id_to_self(booking.id!),
     room: {
-      self: `${API_VERSION}/rooms/${booking.room.to_string()}`,
+      self: `/rooms/${booking.room.to_string()}`,
     },
     start: booking.interval.interval.start.toString(),
     end: booking.interval.interval.end.toString(),
@@ -102,10 +106,7 @@ async function create_booking(request: Request, response: Response) {
     DateTime.fromJSDate(value.end)
   );
 
-  response
-    .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}/users/me/bookings/${id.to_string()}`)
-    .end();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function delete_booking(request: Request, response: Response) {

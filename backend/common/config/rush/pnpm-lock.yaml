@@ -5779,11 +5779,12 @@ packages:
     dev: false
 
   file:projects/room.tgz:
-    resolution: {integrity: sha512-BkxJwVhDCJKA8GMTjDS64MHd9yYau0y72dweH4YWG79riMiHTN8VIKTfY3Cg3TjL5DNTXSEFYKMNpjiJbAlVzA==, tarball: file:projects/room.tgz}
+    resolution: {integrity: sha512-YVMur3QmWEo97ceEOsQTVHcRLrqzTpIEVdDan+sgBZO82obnWRhiQ9u1s5cUhQB3FoCp231KWxezllzxC7dGsw==, tarball: file:projects/room.tgz}
     name: '@rush-temp/room'
     version: 0.0.0
     dependencies:
       '@types/express': 4.17.13
+      '@types/express-version-request': 1.7.1
       '@types/luxon': 2.3.2
       '@typescript-eslint/eslint-plugin': 5.27.1_043f48e0ee10c350c28cdede89899bc7
       '@typescript-eslint/parser': 5.27.1_eslint@8.17.0+typescript@4.7.3
@@ -5795,6 +5796,7 @@ packages:
       eventemitter3: 4.0.7
       express: 4.18.1
       express-serve-static-core: 0.1.1
+      express-version-request: 1.7.0
       joi: 17.6.0
       json-joi-converter: 17.2.1-f_joi@17.6.0
       luxon: 2.4.0
