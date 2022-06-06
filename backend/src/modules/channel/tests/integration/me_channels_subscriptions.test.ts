@@ -40,7 +40,50 @@ describe('me subscriptions', () => {
 
 
 
-  test('(mcs-1) successful subscription list retrieval', async () => {
+ 
+
+// ------------------------ MCS-1 ------------------------
+
+it('(mcs-1) invalid offset: not a number', async () => {
+    const res = await request.get('/users/me/subscriptions?offset=ab');
+    expect(res.status).toBe(400);
+  });
+
+  it('(mcs-1) invalid offset: not an integer', async () => {
+    const res = await request.get('/users/me/subscriptions?offset=3.5');
+    expect(res.status).toBe(400);
+  });
+
+  it('(mcs-1) invalid offset: less than 0', async () => {
+    const res = await request.get('/users/me/subscriptions?offset=-1');
+    expect(res.status).toBe(400);
+  });
+
+  // ------------------------ MCS-2 ------------------------
+
+  it('(mcs-2) invalid limit: not a number', async () => {
+    const res = await request.get('/users/me/subscriptions?limit=hello');
+    expect(res.status).toBe(400);
+  });
+
+  it('(mcs-2) invalid limit: not an integer', async () => {
+    const res = await request.get('/users/me/subscriptions?limit=10.34');
+    expect(res.status).toBe(400);
+  });
+
+  it('(mcs-2) invalid limit: less than 1', async () => {
+    const res = await request.get('/users/me/subscriptions?limit=0');
+    expect(res.status).toBe(400);
+  });
+
+  it('(mcs-2) invalid limit: greater than 40', async () => {
+    const res = await request.get('/users/me/subscriptions?limit=41');
+    expect(res.status).toBe(400);
+  });
+
+  // ------------------------ MCS-3 ------------------------
+
+  test('(mcs-3) successful subscription list retrieval', async () => {
     const res = await request.get('/users/me/subscriptions');
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
@@ -63,46 +106,6 @@ describe('me subscriptions', () => {
         }
       }
     ]);
-    
-  });
-
-// ------------------------ LC-1 ------------------------
-
-it('(mcs-1) invalid offset: not a number', async () => {
-    const res = await request.get('/users/me/subscriptions?offset=ab');
-    expect(res.status).toBe(400);
-  });
-
-  it('(mcs-1) invalid offset: not an integer', async () => {
-    const res = await request.get('/users/me/subscriptions?offset=3.5');
-    expect(res.status).toBe(400);
-  });
-
-  it('(mcs-1) invalid offset: less than 0', async () => {
-    const res = await request.get('/users/me/subscriptions?offset=-1');
-    expect(res.status).toBe(400);
-  });
-
-  // ------------------------ LC-2 ------------------------
-
-  it('(mcs-2) invalid limit: not a number', async () => {
-    const res = await request.get('/users/me/subscriptions?limit=hello');
-    expect(res.status).toBe(400);
-  });
-
-  it('(mcs-2) invalid limit: not an integer', async () => {
-    const res = await request.get('/users/me/subscriptions?limit=10.34');
-    expect(res.status).toBe(400);
-  });
-
-  it('(mcs-2) invalid limit: less than 1', async () => {
-    const res = await request.get('/users/me/subscriptions?limit=0');
-    expect(res.status).toBe(400);
-  });
-
-  it('(mcs-2) invalid limit: greater than 40', async () => {
-    const res = await request.get('/users/me/subscriptions?limit=41');
-    expect(res.status).toBe(400);
   });
 
 })
