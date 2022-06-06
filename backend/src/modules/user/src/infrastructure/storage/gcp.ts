@@ -3,7 +3,7 @@
 //
 
 import { InternalServerError } from '@nextapp/common/error';
-import admin, { ServiceAccount } from 'firebase-admin';
+import admin from 'firebase-admin';
 import getRawBody from 'raw-body';
 import path from 'path';
 import { FileStorage } from '../../domain/ports/file.storage';
@@ -11,11 +11,7 @@ import { FileStorage } from '../../domain/ports/file.storage';
 export class GoogleCloudStorage implements FileStorage {
   private readonly bucket;
 
-  public constructor(auth: ServiceAccount, bucket_name: string) {
-    admin.initializeApp({
-      credential: admin.credential.cert(auth),
-      storageBucket: bucket_name,
-    });
+  public constructor() {
     this.bucket = admin.storage().bucket();
   }
 

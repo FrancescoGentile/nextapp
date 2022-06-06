@@ -11,4 +11,5 @@ export default async (): Promise<Config.InitialOptions> => ({
   coverageReporters: ['json-summary'],
   testTimeout: 10000,
   silent: false,
+  testPathIgnorePatterns: ['tests/integration/picture.test.ts'], // ignore this tests because we do not have the picture in GitHub
 });
