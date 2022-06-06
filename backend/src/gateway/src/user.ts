@@ -17,8 +17,16 @@ export async function init_user_module(
   routes: express.Router;
   auth_middleware: AuthMiddleware;
 }> {
-  const { repository, broker } = await init_infrastructure(driver, emitter);
-  const { user_service, auth_service } = init_services(repository, key, broker);
+  const { repository, broker, storage } = await init_infrastructure(
+    driver,
+    emitter
+  );
+  const { user_service, auth_service } = init_services(
+    repository,
+    storage,
+    key,
+    broker
+  );
   const { router, auth_middleware } = init_rest_api(user_service, auth_service);
 
   return { routes: router, auth_middleware };

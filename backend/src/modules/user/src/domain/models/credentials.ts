@@ -3,6 +3,7 @@
 //
 
 import * as argon2 from 'argon2';
+import { customAlphabet } from 'nanoid';
 import zxcvbn from 'zxcvbn';
 import { InvalidPassword, InvalidUsername } from '../errors';
 
@@ -69,4 +70,18 @@ export class Password {
   public async verify(password: string): Promise<boolean> {
     return argon2.verify(this.password, password);
   }
+}
+
+export function generate_password(): string {
+  const nanoid = customAlphabet(
+    '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ?!',
+    15
+  );
+
+  return nanoid();
+}
+
+export interface Credentials {
+  username: Username;
+  password: Password;
 }

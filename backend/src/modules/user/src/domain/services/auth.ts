@@ -3,10 +3,10 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { Username } from '../models/user.credentials';
+import { Username } from '../models/credentials';
 import { AuthService } from '../ports/auth.service';
 import { UserRepository } from '../ports/user.repository';
-import { InvalidCredentials } from '../errors';
+import { InternalServerError, InvalidCredentials } from '../errors';
 import { AuthToken, AuthKey } from '../models/auth';
 
 export class NextAuthService implements AuthService {
@@ -32,7 +32,13 @@ export class NextAuthService implements AuthService {
     }
 
     const { id, password } = res;
-    const valid = await password.verify(pwd);
+
+    let valid: boolean;
+    try {
+      valid = await password.verify(pwd);
+    } catch {
+      throw new InternalServerError();
+    }
     if (!valid) {
       throw new InvalidCredentials();
     }

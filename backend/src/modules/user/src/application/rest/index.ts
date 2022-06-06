@@ -2,12 +2,17 @@
 //
 //
 
-import { InternalServerError, NextError } from '@nextapp/common/error';
+import {
+  InternalServerError,
+  InvalidAPIVersion,
+  NextError,
+} from '@nextapp/common/error';
 import { NextFunction, Request, Response } from 'express-serve-static-core';
 import express from 'express';
+import versionRequest from 'express-version-request';
 import { init_user_routes } from './routes/user';
 import { UserInfoService } from '../../domain/ports/user.service';
-import { API_VERSION, AuthMiddleware, verify_token } from './utils';
+import { AuthMiddleware, verify_token } from './utils';
 import { AuthService } from '../../domain/ports/auth.service';
 import { init_auth_routes } from './routes/auth';
 
@@ -41,11 +46,29 @@ function handle_error(
   res.status(error.code).json(error);
 }
 
+function check_api_version(
+  request: Request,
+  response: Response,
+  next?: NextFunction
+) {
+  // if the version is not specified, we use the last available version
+  if (request.version === '2.0.0' || request.version === undefined) {
+    next!();
+  } else {
+    const error = new InvalidAPIVersion(['2.0.0']);
+    error.instance = request.url;
+    response.status(error.code).send(error);
+  }
+}
+
 export function init_rest_api(
   user_service: UserInfoService,
   auth_service: AuthService
 ): { router: express.Router; auth_middleware: AuthMiddleware } {
   const router = express.Router();
+
+  router.use(versionRequest.setVersionByAcceptHeader());
+  router.use(check_api_version);
 
   router.use(express.urlencoded() as any);
   router.use(express.json() as any);
@@ -53,9 +76,8 @@ export function init_rest_api(
 
   const auth_middleware = verify_token(auth_service);
 
-  router.use(API_VERSION, init_auth_routes(auth_middleware), handle_error);
-
-  router.use(API_VERSION, init_user_routes(auth_middleware), handle_error);
+  router.use(init_auth_routes(auth_middleware), handle_error);
+  router.use(init_user_routes(auth_middleware), handle_error);
 
   return { router, auth_middleware };
 }
