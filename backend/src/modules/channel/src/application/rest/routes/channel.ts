@@ -21,11 +21,17 @@ import { UserID } from '@nextapp/common/user';
 const BASE_PATH = '/channels';
 
 function channel_to_json(channel: Channel): any {
+
+  let pres_string: string[] = [];
+  for (let i = 0; i < 2; i++) {
+    pres_string[i] = channel.presID_array[i].to_string();
+  }
+
   return {
     self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
     name: channel.name,
     description: channel.description,
-    presID_array: Joi.array().items(Joi.string())
+    presID_array: pres_string
   };
 }
 

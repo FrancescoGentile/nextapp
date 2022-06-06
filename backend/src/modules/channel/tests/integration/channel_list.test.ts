@@ -91,45 +91,19 @@ describe('list channels', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
       {
-        self: `/channels/${channels[0].id!.to_string()}`,
+        self: `/ap1/v1/channels/${channels[0].id!.to_string()}`,
         name: channels[0].name,
         description: channels[0].description,
         presID_array: pres_string_0
       },
       {
-        self: `/channels/${channels[1].id!.to_string()}`,
+        self: `/ap1/v1/channels/${channels[1].id!.to_string()}`,
         name: channels[1].name,
         description: channels[1].description,
         presID_array: pres_string_1
       },
     ]);
     
-  });
-
-})
-
-//no channels available
-describe('list channels', () => {
-  beforeAll(async () => {
-    driver = await init_driver();
-    clear_db(driver);
-    const users = await populate_users(driver);
-
-    const emitter = new EventEmitter();
-    const app = await init_app(driver, emitter, users[1].id);
-    request = supertest(app);
-  });
-
-  afterAll(async () => {
-    await clear_db(driver);
-    await close_driver(driver);
-  });
-
-// ------------------------ LS-4 ------------------------
-  
-  it('(lc-4) no channels available', async () => {
-    const res = await request.get('/channels');
-    expect(res.status).toBe(404);
   });
 
 })

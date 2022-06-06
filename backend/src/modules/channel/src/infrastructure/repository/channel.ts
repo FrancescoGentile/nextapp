@@ -215,11 +215,12 @@ export class Neo4jChannelRepository implements ChannelRepository {
 
   public async get_channel_list(options: SearchOptions): Promise<Channel[]> {
     let session = this.driver.session();
+    //console.log('DEBUG');
     try {
       const res_chan = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (c:CHANNEL_Channel)-[p:CHANNEL_PRESIDENT]-(u:CHANNEL_User)
-           RETURN c, u
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]->(c:CHANNEL_Channel)
+           RETURN c, u.id as uid
            ORDER BY c.id
            SKIP $skip
            LIMIT $limit`,
@@ -227,23 +228,34 @@ export class Neo4jChannelRepository implements ChannelRepository {
         )
       );
 
+      //console.log('DEBUG2');
       const channels: Channel[] = res_chan.records.map((record) => {
         const info = record.get('c').properties;
-        const channel_id = ChannelID.from_string(info.id);
+        const channel_name: string = info.name;
+        const channel_description: string = info.description;
+        const channel_id: ChannelID = ChannelID.from_string(info.id);
         const presidents: string[] = res_chan.records.map((record) => {
-          const id = record.get('u').properties;
+          //const info = record.get('u').properties;
+          const id = record.get('uid');
           return id
-      });
+        });
+        console.log('name ' + channel_name);
+        console.log('desc ' + channel_description);
+        console.log('pres ' + presidents);
+        console.log('cid ' + channel_id.to_string());
+        console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa');
         return new Channel(
-          info.name,
-          info.description,
+          channel_name,
+          channel_description,
           presidents,
           channel_id
         )
       });
+      console.log(channels.length);
 
       return channels;
     } catch (e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
