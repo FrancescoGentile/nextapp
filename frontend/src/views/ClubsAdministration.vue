@@ -51,11 +51,10 @@ export default defineComponent({
                 console.log(err);
             });
         },
-        modifyRoom(channel) {
-            let channelId = channel.self.replace("/api/v2/channels/", "");
-            this.$store.dispatch("modifyChannel", { channel, channelId }).then(() => {
+        modifyChannel(channel) {
+            this.$store.dispatch("modifyChannel", channel).then(() => {
                 this.choosenChannel = channel;
-                this.$store.commit("setChanneletails", this.room);
+                this.$store.commit("setChanneletails", this.channel);
             }).catch(err => {
                 console.log(err);
             });
@@ -71,7 +70,7 @@ export default defineComponent({
             this.hideModal("confirm");
         },
         revertChanges(channel) {
-            let channelId = channel.self.replace("/api/v2/channels/", "");
+            let channelId = channel.self.replace("/channels/", "");
             this.$store.dispatch("channelDetails", channelId).then(() => {
                 this.chosenChannel = this.loadedChannel;
             }).catch(err => {
@@ -196,7 +195,7 @@ export default defineComponent({
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary"
                         @click="revertChanges(this.chooseChannel)">Close</button>
-                    <button type="submit" class="btn btn-primary" @click="modifyRoom(this.selectedRoom)">Confirm
+                    <button type="submit" class="btn btn-primary" @click="modifyChannel(this.chosenChannel)">Confirm
                         changes</button>
                 </div>
 

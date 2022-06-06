@@ -25,13 +25,13 @@ export default {
         }).catch(err => {
             console.log(err)
         })
-
+        /*
       this.$store.dispatch("publicUser"
       ).then(()=>{
         this.user = this.loadedUser
       }).catch(err=>{
         console.log(err)
-      })
+      })*/
     },
     methods: {
         registerUser() {
@@ -65,8 +65,7 @@ export default {
         },
 
       deleteUser(user) {
-          let userId = user.self.replace("/api/v1/users/", "")
-        this.$store.dispatch("deleteUser", userId
+        this.$store.dispatch("deleteUser", user
         ).then(() => {
             this.$store.dispatch("users"
             ).then(response=>{
@@ -146,7 +145,7 @@ export default {
                                         <td>{{ user.username }}</td>
                                         <td>{{ user.first_name }} {{user.middle_name}} {{ user.surname }}</td>
                                       <td>
-                                        <div class="text-right">
+                                        <div class="text-end">
                                           <div class="btn-group" role="toolbar">
 
                                             <button v-if="!user.is_admin" type="button" class="btn btn-primary me-2"

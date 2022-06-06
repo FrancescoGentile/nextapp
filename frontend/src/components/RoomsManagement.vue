@@ -67,12 +67,6 @@ export default {
       this.hideModal("addRoom")
     },
 
-    getId(room){
-      let id = room.self.replace("/api/v1/rooms/", "")
-      //console.log(id)
-      return id
-    },
-
     hideModal(modalId) {
       const myModalEl = document.getElementById(modalId)
       const modal = Modal.getInstance(myModalEl)
@@ -111,7 +105,7 @@ export default {
                   <td>{{ room.floor }}</td>
                   <td>{{ room.seats}}</td>
                   <td>
-                    <button class="btn btn-primary" @click="this.$router.push({name:'roomDetails', params:{id: getId(room)}})"> Click to see room's details </button>
+                    <button class="btn btn-primary" @click="this.$router.push({name:'roomDetails', params:{id: room.self}})"> Click to see room's details </button>
                   </td>
                 </tr>
                 </tbody>

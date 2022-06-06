@@ -57,6 +57,8 @@ export default defineComponent({
     }).catch(err => {
       console.log(err)
     })
+
+    
   },
   computed: {
     loadedRooms() {
@@ -78,7 +80,7 @@ export default defineComponent({
         let name = ""
         this.rooms.forEach(room => {
           //console.log(room.self, reservation.room.self)
-          if (this.getId(room) === this.getId(reservation.room)) {
+          if (room.self === reservation.room.self) {
             name = room.name
           }
         })
@@ -144,7 +146,7 @@ export default defineComponent({
 
     unsubscribeFromChannel(channel) {
       console.log(channel)
-      this.$store.dispatch("unsubscribeUserFromChannel", channel.self
+      this.$store.dispatch("unsubscribeUserFromChannel", channel
       ).then(() => {
         this.userChannels.filter(item => item.self !== channel.self)
         this.loadedUserChannels = this.userChannels
@@ -188,7 +190,7 @@ export default defineComponent({
     },
 
     deleteUserEvent(event) {
-      this.$store.dispatch("desertEvent", event.self.replace("/api/v1/users/me/events/", "")
+      this.$store.dispatch("desertEvent", event
       ).then(() => {
         this.userEvents.filter(item => item.self !== event.self)
         this.loadedUserEvents = this.userEvents
@@ -204,11 +206,6 @@ export default defineComponent({
         avatarText = avatarText + word[0]
       });
       return avatarText
-    },
-
-    getId(room) {
-      let id = room.self.replace("/api/v1/rooms/", "")
-      return id
     }
   },
 

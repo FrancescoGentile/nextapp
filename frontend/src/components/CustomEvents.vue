@@ -102,7 +102,7 @@ export default defineComponent({
         },
 
         deleteUserEvent(event) {
-            this.$store.dispatch("desertEvent", event.self.replace("/api/v1/users/me/events/", "")
+            this.$store.dispatch("desertEvent", event
             ).then(() => {
                 this.userEvents.filter(item => item.self !== event.self)
                 this.loadedUserEvents = this.userEvents

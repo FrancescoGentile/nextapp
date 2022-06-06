@@ -9,7 +9,8 @@ export default defineComponent({
   data() {
     return {
       channels: [],
-      userChannels: []
+      userChannels: [],
+      users: []
     }
   },
 
@@ -19,6 +20,9 @@ export default defineComponent({
     },
     loadedUserChannels() {
       return this.$store.getters.getUserChannels
+    },
+    loadedUsers() {
+      return this.$store.getters.getUsers
     }
   },
 
@@ -33,6 +37,13 @@ export default defineComponent({
     this.$store.dispatch("userChannels"
     ).then(() => {
       this.userChannels = this.loadedUserChannels
+    }).catch(err => {
+      console.log(err)
+    })
+
+    this.$store.dispatch("users"
+    ).then(() => {
+      this.users = this.loadedUsers
     }).catch(err => {
       console.log(err)
     })
@@ -74,8 +85,24 @@ export default defineComponent({
         }
       })
       return false
+    },
+
+    getAdmins(channel) {
+      let admins = []
+      this.users.forEach(user => {
+        channel.admistrators.forEach(admin => {
+          if (admin.self === user.self) {
+            admins.push({
+              name: user.first_name + " " + user.middle_name + " " + user.surname
+            })
+          }
+        })
+      })
+      return admins
     }
   }
+
+
 
 })
 </script>
@@ -85,28 +112,22 @@ export default defineComponent({
     <div class="text-center mb-2">
       <h3>Clubs</h3>
     </div>
-    <div class="card mb-3">
+    <div v-for="channel in this.channels" :key="channel.self" class="card mb-3">
       <div class="card-body">
         <div class="d-flex flex-column flex-lg-row align-items-center">
           <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar("Channel Name") }}</span>
           <div class="col-sm-3">
-            <h4 class="h5">Name</h4>
-            <span class="badge bg-secondary me-1 mb-1">Administrators</span>
-            <span class="badge bg-secondary me-1 mb-1">Administrators</span>
-            <span class="badge bg-secondary me-1 mb-1">Administrators</span>
-            <span class="badge bg-secondary me-1 mb-1">Administrators</span>
+            <h4 class="h5">{{ channel.name }}</h4>
+            <span v-for="(admin, i) in this.getAdmins(channel)" :key="i" class="badge bg-secondary me-1 mb-1"> {{admin.name}}</span>
           </div>
-          <div class="col-sm-5 py-2 ms-2">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Explicabo quidem eum, suscipit nobis cupiditate
-            excepturi laboriosam. Aperiam iusto facere soluta porro animi aliquid, ipsam deserunt. Tempora alias
-            quisquam adipisci sunt!
-          </div>
+          <div class="col-sm-5 py-2 ms-2"> {{ channel.description }} </div>
           <div class="col-sm-3 text-lg-end">
             <div class="btn-group-vertical">
               <button v-if="isSubscribed(channel)" @click="unsubscribeFromChannel(channel)"
                 class="btn btn-primary mb-1"> Unsubscribe </button>
               <button v-else @click="subscribeToChannel(channel)" class="btn btn-primary mb-1"> Subscribe </button>
-              <button @click="this.$router.push({ name: 'clubDetails', params: { id: 1, isSubscribed: true } })"
+              <button
+                @click="this.$router.push({ name: 'clubDetails', params: { id: 1, isSubscribed: isSubscribed(channel) } })"
                 class="btn btn-primary stretched-link">See details</button>
             </div>
 

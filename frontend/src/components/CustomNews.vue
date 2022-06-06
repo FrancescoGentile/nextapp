@@ -41,7 +41,7 @@ export default defineComponent({
                     date: date,
                     month: month,
                 }
-                this.printableEvents.push(res)
+                this.printableNews.push(res)
             })
         }
     }

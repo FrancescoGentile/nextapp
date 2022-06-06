@@ -113,12 +113,11 @@ export default defineComponent({
     },
 
     roomAvailability(room) {
-      const roomId = this.getId(room)
       const filter = {
         start: this.startDate.toISOString(),
         end: this.endDate.toISOString()
       }
-      this.$store.dispatch("roomSlots", { roomId, filter }
+      this.$store.dispatch("roomSlots", { room, filter }
       ).then(() => {
         this.reservationRoom = room
         this.roomIntervals = this.loadedDateReservations
@@ -134,13 +133,6 @@ export default defineComponent({
       const end = new Date(interval.split("/")[1])
       //console.log(start, end)
       return ("0"+start.getHours()).slice(-2) + ":" + ("0"+start.getMinutes()).slice(-2) + " - " + ("0"+end.getHours()).slice(-2) + ":" + ("0"+end.getMinutes()).slice(-2)
-    },
-
-    getId(room) {
-      //console.log(room)
-      let id = room.self.replace("/api/v1/rooms/", "")
-      //console.log(id)
-      return id
     }
 
   },

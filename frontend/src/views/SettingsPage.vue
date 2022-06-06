@@ -74,20 +74,42 @@ export default defineComponent({
 
     addEmail() {
       this.$store.dispatch("addEmail", this.newEmail
-      ).then((response) => {
-        this.$store.commit("setUserEmail", response.data)
-        this.emails = this.userEmails
+      ).then(() => {
+        this.$store.dispatch("userEmails"
+        ).then(() => {
+          this.emails = this.userEmails
+        }).catch(err => {
+          console.log(err)
+        })
       }).catch(err => {
         console.log(err)
       })
     },
 
     deleteEmail(email) {
-      this.$store.dispatch("deleteEmail", email.id
-      ).then(()=>{
-        this.emails.filter(item => item.id === email.id)
-        this.$store.commit("setUserEmails", this.emails)
-      }).catch(err=>{
+      this.$store.dispatch("deleteEmail", email.self
+      ).then(() => {
+        this.$store.dispatch("userEmails"
+        ).then(() => {
+          this.emails = this.userEmails
+        }).catch(err => {
+          console.log(err)
+        })
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+
+    setPrimary(email) {
+      this.$store.dispatch("primaryEmail", email
+      ).then(() => {
+        this.$store.dispatch("userEmails"
+        ).then(() => {
+          this.emails = this.userEmails
+        }).catch(err => {
+          console.log(err)
+        })
+      }).catch(err => {
         console.log(err)
       })
     },
@@ -123,7 +145,7 @@ export default defineComponent({
                   <div class="row pt-1">
                     <div class="col mb-3">
                       <h6>Emails</h6>
-                      <p v-for="(email, i) in emails" :key="i" class="text-muted">{{ email }}</p>
+                      <p v-for="(email, i) in emails" :key="i" class="text-muted">{{ email.email }}</p>
                     </div>
                   </div>
                   <div class="row pt-1">
@@ -137,7 +159,8 @@ export default defineComponent({
 
                   <div class="row pt-1">
                     <div class="col mb-3">
-                      <button type="button" class="btn btn-primary h-100" @click="this.$router.push({path: '/notifications'})">
+                      <button type="button" class="btn btn-primary h-100"
+                        @click="this.$router.push({ path: '/notifications' })">
                         Receive push notifications </button>
                     </div>
                     <div class="col mb-3">
@@ -213,7 +236,7 @@ export default defineComponent({
   </div>
 
   <div class="modal fade" id="manageEmails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Manage your emails</h5>
@@ -232,7 +255,6 @@ export default defineComponent({
         </div>
         <div class="container">
           <div class="row">
-            <div class="col-1"></div>
             <div class="col">
               <table class="table table-striped table-responsive text-center">
                 <thead>
@@ -245,16 +267,21 @@ export default defineComponent({
                 <tbody>
                   <tr v-for="(email, i) in emails" :key="i">
                     <th scope="row">{{ i + 1 }}</th>
-                    <td> {{ email }} </td>
+                    <td> {{ email.email }} </td>
                     <td>
-                      <button class="btn btn-primary align-end" @click="deleteEmail(email)"> Delete email
-                      </button>
+                      <div class="text-end">
+                        <button v-if="!email.main" class="btn btn-primary align-end" @click="setPrimary(email)"> Set as
+                          primary</button>
+                        <button v-else class="btn btn-secondary align-end" @click="setPrimary(email)" disabled> Primary email</button>
+                        <button class="btn btn-primary align-end ms-1" @click="deleteEmail(email)"> Delete
+                          email</button>
+                      </div>
+
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <div class="col-1"></div>
           </div>
         </div>
 

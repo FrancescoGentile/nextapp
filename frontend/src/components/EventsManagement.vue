@@ -89,9 +89,7 @@ export default {
         },
 
         deleteEvent(event) {
-            let eventId = event.self.replace("/api/v2/channels/" + this.channelId + "/events", "")
-            let channelId = this.channelId
-            this.$store.dispatch("deleteEvent", { eventId, channelId }
+            this.$store.dispatch("deleteEvent", event
             ).then(() => {
                 this.$store.dispatch("channelEvent", this.channelId
                 ).then(response => {
@@ -112,9 +110,7 @@ export default {
             event.start = event.start.toISOString()
             event.end = event.end.toISOString()
             console.log(event)
-            let eventId = event.self.replace("/api/v2/channels/" + this.channelId + "/events/", "")
-            let channelId = this.channelId
-            this.$store.dispatch("modifyEvent", { event, eventId, channelId }
+            this.$store.dispatch("modifyEvent", event
             ).then(() => {
                 this.$store.dispatch("channelEvent", this.channelId
                 ).then(response => {

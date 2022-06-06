@@ -14,11 +14,12 @@ export default defineComponent({
         return {
             channel: {},
             showNews: false,
-            showEvents: false
+            showEvents: false,
+            users: []
         }
     },
 
-    components:{
+    components: {
         CustomEvents, CustomNews
     },
 
@@ -43,12 +44,19 @@ export default defineComponent({
             console.log(err)
         })
 
+        this.$store.dispatch("users"
+        ).then(() => {
+            this.users = this.loadedUsers
+        }).catch(err => {
+            console.log(err)
+        })
+        /*
         this.$store.dispatch("channelDetails", this.id
         ).then(() => {
             this.news = this.loadedNews;
         }).catch(err => {
             console.log(err)
-        })
+        })*/
     },
 
     methods: {
@@ -60,14 +68,28 @@ export default defineComponent({
             return avatarText
         },
 
-        toggleEvents(){
+        toggleEvents() {
             this.showEvents = !this.showEvents
             this.showNews = false
         },
 
-        toggleNews(){
+        toggleNews() {
             this.showNews = !this.showNews
             this.showEvents = false
+        },
+
+        getAdmins(channel) {
+            let admins = []
+            this.users.forEach(user => {
+                channel.admistrators.forEach(admin => {
+                    if (admin.self === user.self) {
+                        admins.push({
+                            name: user.first_name + " " + user.middle_name + " " + user.surname
+                        })
+                    }
+                })
+            })
+            return admins
         }
     }
 
@@ -83,7 +105,7 @@ export default defineComponent({
                     <div class="card-body">
                         <h2 class="card-header mb-5">
                             <div class="row">
-                                <div class="col">Name</div>
+                                <div class="col">{{ channel.name }}</div>
                                 <div class="col text-end">
                                     <button v-if="isSubscribed" class="btn btn-primary"> Unsubscribe</button>
                                     <button v-else class="btn btn-primary"> Subscribe</button>
@@ -93,20 +115,18 @@ export default defineComponent({
                         <div class="container">
                             <div class="row align-items-center">
                                 <div class="col ">
-                                    <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar("Channel Name") }}</span>
+                                    <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{
+                                            getAvatar("ChannelName")
+                                    }}</span>
                                 </div>
                                 <div class="col-10 text-center">
-                                    <h5> Lorem, ipsum dolor sit amet consectetur adipisicing elit. Fugit officia
-                                        mollitia vel ratione, dolorem natus suscipit necessitatibus repudiandae debitis
-                                        iste, non hic nisi. Hic, libero minima blanditiis alias excepturi temporibus?
-                                    </h5>
+                                    <h5>{{ channel.description }}</h5>
                                 </div>
                                 <div class="col"></div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col">
-                                    <span class="badge bg-secondary me-1 mb-1">Administrators</span>
-                                    <span class="badge bg-secondary me-1 mb-1">Administrators</span>
+                                    <span v-for="(admin, i) in this.getAdmins(channel)" :key="i" class="badge bg-secondary me-1 mb-1"> {{admin.name}}</span>
                                 </div>
                                 <div class="col"></div>
                                 <div class="col text-end">
@@ -120,8 +140,9 @@ export default defineComponent({
             </div>
         </div>
     </div>
-    
-    <CustomEvents v-if="showEvents" :channelId="this.id" :isSubscribed="this.isSubscribed" :channelName="this.channel.name"></CustomEvents>
+
+    <CustomEvents v-if="showEvents" :channelId="this.id" :isSubscribed="this.isSubscribed"
+        :channelName="this.channel.name"></CustomEvents>
     <CustomNews v-if="showNews" :channelId="this.id" :channelName="this.channel.name"></CustomNews>
     <div class="text-center mt-2">
         <button class="btn btn-primary" @click="this.$router.push({ path: '/clubs' })"> Go back to clubs list</button>

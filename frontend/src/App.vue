@@ -6,6 +6,12 @@ export default defineComponent({
   computed: {
     isLoggedIn() {
       return this.$store.getters.isLoggedIn;
+    },
+    userRole(){
+      return this.$store.getters.getUserRole
+    },
+    clubAdmin(){
+      return this.$store.getters.isClubAdmin
     }
 
   },
@@ -44,7 +50,7 @@ export default defineComponent({
           <li class="nav-item">
             <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
           </li>
-          <li class="nav-item">
+          <li>
             <router-link to="/dashboardAdmin" class="nav-link">Administration</router-link>
           </li>
           <li class="nav-item">

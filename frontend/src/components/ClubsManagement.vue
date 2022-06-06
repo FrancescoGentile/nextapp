@@ -69,7 +69,7 @@ export default defineComponent({
         },
 
         deleteChannel(channel) {
-            this.$store.dispatch("deleteChannel", channel.self.replace("/api/v1/channels/", "")
+            this.$store.dispatch("deleteChannel", channel
             ).then(()=>{
                 this.channels.filter(element => element.self !== channel.self)
                 this.$store.commit("setChannels", this.channels)

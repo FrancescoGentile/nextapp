@@ -106,15 +106,12 @@ export default {
         },
 
         deleteNews(news) {
-            let newsId = news.self.replace("/api/v2/channels/news" + this.channelId + "/", "")
-            let channelId = this.channelId
-            this.$store.dispatch("deleteNews", { newsId, channelId }
+            this.$store.dispatch("deleteNews", news 
             ).then(() => {
                 this.$store.dispatch("channelNews", this.channelId
                 ).then(response => {
                     this.$store.commit("setChannelNews", response.data)
                     this.news = this.loadedNews
-                    //console.log(this.users)
                 }).catch(err => {
                     console.log(err)
                 })
@@ -128,9 +125,7 @@ export default {
             let news = this.news.filter(el => el.self === printableNews.self)
             news.date = news.date.toISOString()
             console.log(news)
-            let newsId = news.self.replace("/api/v2/channels/" + this.channelId + "/events", "")
-            let channelId = this.channelId
-            this.$store.dispatch("modifyNews", { news, newsId, channelId }
+            this.$store.dispatch("modifyNews", news
             ).then(() => {
                 this.$store.dispatch("channelNews", this.channelId
                 ).then(response => {

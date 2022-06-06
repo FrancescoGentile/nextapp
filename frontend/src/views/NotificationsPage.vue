@@ -1,4 +1,5 @@
 <script>
+import { Modal } from 'bootstrap'
 
 export default {
     data() {
@@ -36,21 +37,28 @@ export default {
             }).catch(err => {
                 console.log(err)
             })
+            this.hideModal("addDevice")
         },
 
         removeDevice(device) {
-            const deviceId = device.self.replace("/api/v2/users/me/devices/", "")
-            this.$store.dispatch("removeUserDevice", deviceId
-            ).then(()=>{
+            this.$store.dispatch("removeUserDevice", device
+            ).then(() => {
                 this.$store.dispatch("userDevices"
                 ).then(() => {
                     this.devices = this.loadedDevices
                 }).catch(err => {
                     console.log(err)
                 })
-            }).catch(err=>{
+            }).catch(err => {
                 console.log(err)
             })
+            this.hideModal("removeDevice")
+        },
+
+        hideModal(modalId) {
+            const myModalEl = document.getElementById(modalId)
+            const modal = Modal.getInstance(myModalEl)
+            modal.hide()
         }
     },
 }
@@ -63,7 +71,7 @@ export default {
                 <div class="card">
                     <h5 class="card-header"> List of devices yuo're receiving notifications on</h5>
                     <div class="card-body">
-                        <div class="text-end">
+                        <div class="text-center">
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                 data-bs-target="#addDevice"> Receive push notifications for this device </button>
                         </div>
@@ -81,10 +89,14 @@ export default {
                                         <th scope="row">{{ i + 1 }}</th>
                                         <td>{{ device.name }}</td>
                                         <td>
-                                            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
-                                                data-bs-target="#removeDevice" @click="chosenDevice = device">
-                                                Stop receiving notifications
-                                            </button>
+                                            <div class="text-end">
+                                                <button type="button" class="btn btn-primary me-2"
+                                                    data-bs-toggle="modal" data-bs-target="#removeDevice"
+                                                    @click="chosenDevice = device">
+                                                    Stop receiving notifications
+                                                </button>
+                                            </div>
+
                                         </td>
                                     </tr>
                                 </tbody>
@@ -135,7 +147,7 @@ export default {
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary"
-                        @click="deleteDevice(this.chosenDevice)">Confirm</button>
+                        @click="removeDevice(this.chosenDevice)">Confirm</button>
                 </div>
             </div>
         </div>

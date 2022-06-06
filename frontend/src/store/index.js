@@ -12,6 +12,8 @@ export default createStore({
   state: {
     messagingToken: "",
     logStatus: JSON.parse(localStorage.getItem("logStatus")) || "",
+    userRole: JSON.parse(localStorage.getItem("role")) || "",
+    clubAdmin: JSON.parse(localStorage.getItem("admin")) || false,
     user: {},
     userEmails: [],
     users: [],
@@ -38,6 +40,12 @@ export default createStore({
     },
     isLoggedIn(state) {
       return !!state.logStatus
+    },
+    getUserRole(state){
+      return state.userRole
+    },
+    isClubAdmin(state){
+      return !!state.clubAdmin
     },
     getUser(state) {
       return state.user
@@ -97,6 +105,12 @@ export default createStore({
   mutations: {
     setMessagingToken(state, token) {
       state.messagingToken = token
+    },
+    setUserRole(state, role){
+      state.userRole = role
+    },
+    setClubAdmin(state, admin){
+      state.clubAdmin = admin
     },
     setLogin(state) {
       state.logStatus = "logged"
@@ -168,7 +182,8 @@ export default createStore({
         instance.post("login", {
           username: user.username,
           password: user.password
-        }, { withCredentials: true }
+        }, {headers:{ "Accept": "cookie"},
+          withCredentials: true }
         ).then(response => {
           localStorage.setItem("logStatus", JSON.stringify("logged"))
           commit('setLogin')
@@ -179,12 +194,52 @@ export default createStore({
           resolve(response)
         }).catch(err => {
           localStorage.removeItem('logStatus')
+          localStorage.removeItem("role")
+          localStorage.removeItem("admin")
           notify({
             title: "Error",
             text: err.response.data.details
           })
           reject(err)
 
+        })
+      })
+    },
+
+    setupRole({commit}){
+      return new Promise((resolve, reject) => {
+        instance.get("users/me", { withCredentials: true }
+        ).then(response => {
+          commit("setUserRole", response.data.role)
+          localStorage.setItem("role", JSON.stringify(response.data.role))
+          resolve(response)
+        }).catch(err => {
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    setupAdmin({commit}){
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/president", { withCredentials: true }
+        ).then(response => {
+          console(response.data)
+          if(response.data === []){
+            this.commit("setClubAdmin", "")
+            localStorage.setItem("admin", JSON.stringify(""))
+          }else{
+            this.commit("setCLubAdmin", "admin")
+            localStorage.setItem("admin", JSON.stringify("admin"))
+          }
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
         })
       })
     },
@@ -246,7 +301,7 @@ export default createStore({
         })
       })
     },
-    //TODO: ask for offset and limit
+
     users({ commit }) {
       return new Promise((resolve, reject) => {
         instance.get("users", { withCredentials: true }
@@ -264,9 +319,9 @@ export default createStore({
       })
     },
 
-    deleteUser({ commit }, id) {
+    deleteUser({ commit }, user) {
       return new Promise((resolve, reject) => {
-        instance.delete("users/" + id, { withCredentials: true }
+        instance.delete(user.self, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -375,9 +430,9 @@ export default createStore({
       })
     },
 
-    roomDetails({ commit }, roomId) {
+    roomDetails({ commit }, room) {
       return new Promise((resolve, reject) => {
-        instance.get("rooms/" + roomId, { withCredentials: true }
+        instance.get(room, { withCredentials: true }
         ).then(response => {
           const room = response.data
           commit("setRoomDetails", room)
@@ -393,9 +448,9 @@ export default createStore({
       })
     },
 
-    deleteRoom({ commit }, id) {
+    deleteRoom({ commit }, room) {
       return new Promise((resolve, reject) => {
-        instance.delete("rooms/" + id, { withCredentials: true }
+        instance.delete(room, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -413,10 +468,10 @@ export default createStore({
       })
     },
 
-    modifyRoom({ commit }, { room, roomId }) {
+    modifyRoom({ commit }, room) {
       //console.log(room)
       return new Promise((resolve, reject) => {
-        instance.patch("rooms/" + roomId, {
+        instance.patch(room.self, {
           name: room.name,
           details: room.details,
           floor: room.floor
@@ -439,9 +494,9 @@ export default createStore({
     },
 
 
-    roomSlots({ commit }, { roomId, filter }) {
+    roomSlots({ commit }, { room, filter }) {
       return new Promise((resolve, reject) => {
-        instance.get("rooms/" + roomId + "/slots?start=" + filter.start + "&end=" + filter.end, { withCredentials: true }
+        instance.get(room.self + "/slots?start=" + filter.start + "&end=" + filter.end, { withCredentials: true }
         ).then(response => {
           const intervals = response.data
           //console.log(intervals)
@@ -579,8 +634,8 @@ export default createStore({
 
     recoverPassword({ commit }, username) {
       return new Promise((resolve, reject) => {
-        instance.post("recovery",
-          { username }, { withCredentials: true }
+        instance.post("forgot-password",
+          { username: username }, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -618,8 +673,8 @@ export default createStore({
 
     changeRole({ commit }, user) {
       return new Promise((resolve, reject) => {
-        let userId = user.self.replace("/api/v2/users/", "")
-        instance.patch("users/" + userId,
+        //let userId = user.self.replace("/users/", "")
+        instance.patch(user.self,
           {
             is_admin: !user.is_admin
           }, { withCredentials: true }
@@ -694,6 +749,28 @@ export default createStore({
         })
       })
     },
+
+    primaryEmail({commit}, email){
+      return new Promise((resolve, reject) =>{
+        instance.patch(email.self,{
+          main: !email.main
+        }, {withCredentials: true}
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
     //TODO: fix method
     userChannels({ commit }) {
       return new Promise((resolve, reject) => {
@@ -751,9 +828,9 @@ export default createStore({
       })
     },
 
-    deleteChannel({ commit }, channelId) {
+    deleteChannel({ commit }, channel) {
       return new Promise((resolve, reject) => {
-        instance.delete("channels/" + channelId,
+        instance.delete(channel.self,
           { withCredentials: true }
         ).then(response => {
           notify({
@@ -797,9 +874,9 @@ export default createStore({
       })
     },
 
-    unsubscribeUserFromChannel({ commit }, channelId) {
+    unsubscribeUserFromChannel({ commit }, channel) {
       return new Promise((resolve, reject) => {
-        instance.delete("users/me/channels/" + channelId,
+        instance.delete(channel.self,
           { withCredentials: true }
         ).then(response => {
           notify({
@@ -907,9 +984,9 @@ export default createStore({
       })
     },
 
-    desertEvent({ commit }, eventId) {
+    desertEvent({ commit }, event) {
       return new Promise((resolve, reject) => {
-        instance.delete("users/me/events/" + eventId, { withCredentials: true }
+        instance.delete(event.self, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -946,7 +1023,7 @@ export default createStore({
 
     deleteEmail({ commit }, id) {
       return new Promise((resolve, reject) => {
-        instance.delete("user/me/emails/" + id, { withCredentials: true }
+        instance.delete(id, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -964,10 +1041,10 @@ export default createStore({
       })
     },
 
-    modifyChannel({ commit }, { channel, channelId }) {
+    modifyChannel({ commit }, channel) {
       //console.log(room)
       return new Promise((resolve, reject) => {
-        instance.patch("channels/" + channelId, {
+        instance.patch(channel.self, {
           name: channel.name,
           description: channel.description,
         }, { withCredentials: true }
@@ -1041,9 +1118,9 @@ export default createStore({
       })
     },
 
-    deleteNews({ commit }, { newsId, channelId }) {
+    deleteNews({ commit }, news) {
       return new Promise((resolve, reject) => {
-        instance.delete("channels/" + channelId + "/news/" + newsId, { withCredentials: true }
+        instance.delete(news.self, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -1061,10 +1138,10 @@ export default createStore({
       })
     },
 
-    modifyNews({ commit }, { news, newsId, channelId }) {
+    modifyNews({ commit }, news) {
       //console.log(room)
       return new Promise((resolve, reject) => {
-        instance.patch("channels/" + channelId + "/news/" + newsId, {
+        instance.patch(news.self, {
           title: news.title,
           date: news.date,
           body: news.body
@@ -1106,9 +1183,9 @@ export default createStore({
       })
     },
 
-    deleteEvent({ commit }, { eventId, channelId }) {
+    deleteEvent({ commit }, event) {
       return new Promise((resolve, reject) => {
-        instance.delete("channels/" + channelId + "/events/" + eventId, { withCredentials: true }
+        instance.delete(event.self, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -1126,9 +1203,9 @@ export default createStore({
       })
     },
 
-    modifyEvent({ commit }, { event, eventId, channelId }) {
+    modifyEvent({ commit }, event) {
       return new Promise((resolve, reject) => {
-        instance.patch("channels/" + channelId + "/events/" + eventId, {
+        instance.patch(event.self, {
           name: event.name,
           description: event.description,
           start: event.start,
@@ -1176,7 +1253,7 @@ export default createStore({
             name: device.name,
             token: this.getters.getMessagingToken
           }
-          console.log(ch)
+          //console.log(ch)
           instance.post("users/me/devices", ch
             , { withCredentials: true }
           ).then(response => {
@@ -1189,6 +1266,7 @@ export default createStore({
             commit("setError")
             reject(err)
           })
+
         })
       }).catch(err=>{
         console.log(err)
@@ -1196,9 +1274,9 @@ export default createStore({
 
     },
 
-    removeUserDevice({ commit }, deviceId) {
+    removeUserDevice({ commit }, device) {
       return new Promise((resolve, reject) => {
-        instance.delete("users/me/devices" + deviceId, { withCredentials: true }
+        instance.delete(device.self, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
