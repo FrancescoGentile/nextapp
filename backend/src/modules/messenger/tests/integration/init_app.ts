@@ -9,10 +9,8 @@ import EventEmitter from 'eventemitter3';
 import { UserID } from '@nextapp/common/user';
 import fs from 'fs';
 import { InternalServerError } from '@nextapp/common/error';
-import {
-  InfrastructureConfig,
-  init_infrastructure,
-} from '../../src/infrastructure';
+import admin from 'firebase-admin';
+import { init_infrastructure } from '../../src/infrastructure';
 import { init_services } from '../../src/domain/services';
 import { init_rest_api } from '../../src/application/rest';
 
@@ -28,19 +26,21 @@ export async function init_messenger_module(
     throw new InternalServerError('missing environment variables');
   }
 
-  const file = fs.readFileSync(process.env.FIREBASE_FILE);
-  const auth = JSON.parse(file.toString());
-
-  const config: InfrastructureConfig = {
-    driver,
-    emitter,
-    key: process.env.MAILGUN_KEY,
-    domain: process.env.MAILGUN_DOMAIN,
-    account: auth,
-  };
+  if (admin.apps.length === 0) {
+    const file = fs.readFileSync(process.env.FIREBASE_FILE);
+    const auth = JSON.parse(file.toString());
+    admin.initializeApp({
+      credential: admin.credential.cert(auth),
+    });
+  }
 
   const { info_repo, broker, email_sender, notification_sender } =
-    await init_infrastructure(config);
+    await init_infrastructure(
+      driver,
+      emitter,
+      process.env.MAILGUN_KEY,
+      process.env.MAILGUN_DOMAIN
+    );
   const info_service = init_services(
     info_repo,
     email_sender,

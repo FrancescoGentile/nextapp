@@ -383,7 +383,7 @@ export class Neo4jInfoRepository implements InfoRepository {
           `MATCH (u:MESSENGER_User)-[:MESSENGER_MEDIUM]->(w:MESSENGER_WebDevice)
            WHERE u.id in $ids
            RETURN w.token as token`,
-          { ids: user_ids.map(user_ids.toString) }
+          { ids: user_ids.map((id) => id.to_string()) }
         )
       );
 

@@ -2,7 +2,7 @@
 //
 //
 
-import admin, { ServiceAccount } from 'firebase-admin';
+import admin from 'firebase-admin';
 import {
   NotificationToken,
   Notification,
@@ -12,10 +12,7 @@ import { NotificationSender } from '../../domain/ports/notification.sender';
 export class FCMNotificationSender implements NotificationSender {
   private readonly admin;
 
-  public constructor(config: ServiceAccount) {
-    admin.initializeApp({
-      credential: admin.credential.cert(config),
-    });
+  public constructor() {
     this.admin = admin;
   }
 
