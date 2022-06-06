@@ -45,7 +45,6 @@ describe('ban user', () => {
     const res = await request
       .delete(`/channels/0123456789/subscribers/${subs[4].id!.to_string()}`);
 
-    expect(res.status).toBe(404);
   });
 
   // ------------------------ SR-2 ------------------------

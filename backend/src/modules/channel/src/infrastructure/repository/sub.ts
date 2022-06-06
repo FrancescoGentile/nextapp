@@ -101,6 +101,7 @@ export class Neo4jSubRepository implements SubRepository {
   }
 
   public async get_subscription_info(sub_id : SubID): Promise<Sub | null> {
+    //console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -113,15 +114,21 @@ export class Neo4jSubRepository implements SubRepository {
       );
 
       if (res.records.length === 0) {
+        //console.log("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
         return null;
       }
-
+      
       const record = res.records[0];
-      return {
+      
+      const to_be_returned =  {
         id: SubID.from_string(record.get('sub_id')),
         channel: ChannelID.from_string(record.get('cid')),
         user: new UserID(record.get('uid'))
       };
+
+      //console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
+      return to_be_returned;
+      
     } catch(e) {
       console.log(e);
       throw new InternalServerError();

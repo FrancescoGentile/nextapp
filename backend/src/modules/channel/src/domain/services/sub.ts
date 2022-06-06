@@ -50,25 +50,22 @@ export class NextSubService implements SubService {
   
   public async delete_subscriber(requester: UserID, sub_id: SubID): Promise<void> {
     const sub = await this.sub_repo.get_subscription_info(sub_id);
-    if(sub === null){
+    if(sub! === null){
       throw new SubNotFound(sub_id.to_string());
-    }
-    console.log(sub);
-    const channel_id = sub!.channel;
-    const subscriber_id = sub!.user;
-    const is_pres = await this.channel_repo.is_president(requester, channel_id);
+     }
+     //console.log(sub);
+     const channel_id = sub!.channel;
+     const subscriber_id = sub!.user;
+     const is_pres = await this.channel_repo.is_president(requester, channel_id);
+      //is the requester the user to be unsubscribed ?
+      //OR
+      //is the requester a president of the interested channel ?
+       if(requester.to_string() !== subscriber_id.to_string() && !is_pres!){
+         throw new UserNotAPresident(requester.to_string());
+      }
 
-    console.log(channel_id.to_string() + " " + requester.to_string() +" " + is_pres);
-
-     //is the requester the user to be unsubscribed ?
-     //OR
-     //is the requester a president of the interested channel ?
-    if(requester !== subscriber_id && !is_pres){
-      throw new UserNotAPresident(requester.to_string());
-    }
-
-    console.log(await this.sub_repo.delete_subscriber(subscriber_id, sub_id));
-    console.log("---------------------------------------------------------------");
+    await this.sub_repo.delete_subscriber(subscriber_id, sub_id);
+    //  console.log("---------------------------------------------------------------");
 
   }
 

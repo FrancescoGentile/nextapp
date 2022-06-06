@@ -30,11 +30,13 @@ export class NextChannelInfoService implements ChannelInfoService {
   ) {}
 
   public async get_channel_by_name(channel_name: string): Promise<Channel> {
+    //console.log("QQQQQQQQQQQQQQQQ");
     const channel = await this.channel_repo.get_channel_by_name(channel_name);
+    
     if (channel === null) {
       throw new ChannelNameNotFound(channel_name);
     }
-    console.log(channel.name);
+   //console.log(channel.name);
     return channel;
   }
 

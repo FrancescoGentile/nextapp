@@ -33,9 +33,9 @@ function channel_to_json(channel: Channel): any {
 async function get_channel(request: Request, response: Response){
   let id;
   try {
-    id = ChannelID.from_string(request.params.room_id);
+    id = ChannelID.from_string(request.params.channel_id);
   } catch {
-    throw new ChannelNotFound(request.params.room_id);
+    throw new ChannelNotFound(request.params.channel_id);
   }
 
   const channel = await request.channel_service!.get_channel(id);
@@ -68,24 +68,27 @@ async function get_channel_list(request: Request, response: Response) {
     !(request.query.name === null 
     || request.query.name === undefined)
     ){
-      await get_channel_by_name(request, response);
-      return 
-    }
-  const schema = Joi.object({
-    offset: Joi.number(),
-    limit: Joi.number(),
-  });
-  const value = validate(schema, {
-    offset: request.query.offset,
-    limit: request.query.limit,
-  });
-  const options = SearchOptions.build(value.offset, value.limit);
+      const channel_name = request.query.name;
+      const channel = await request.channel_service!.get_channel_by_name(channel_name);
 
-  const channels = await request.channel_service!.get_channel_list(
-    request.user_id!,
-    options
-  );
-  response.status(StatusCodes.OK).json(channels.map(channel_to_json));
+      response.status(StatusCodes.OK).json(channel_to_json(channel));
+  }else{
+    const schema = Joi.object({
+      offset: Joi.number(),
+      limit: Joi.number(),
+    });
+    const value = validate(schema, {
+      offset: request.query.offset,
+      limit: request.query.limit,
+    });
+    const options = SearchOptions.build(value.offset, value.limit);
+
+    const channels = await request.channel_service!.get_channel_list(
+      request.user_id!,
+      options
+    );
+    response.status(StatusCodes.OK).json(channels.map(channel_to_json));
+  }
 }
 
 async function delete_channel(request: Request, response: Response) {
@@ -151,16 +154,6 @@ async function update_channel(request: Request, response: Response){
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
-async function get_channel_by_name(request: Request, response: Response){
-  const channel_name = request.query.name;
-  const channel = await request.channel_service!.get_channel_by_name(channel_name);
-  try{
-  response.status(StatusCodes.OK).json(channel_to_json(channel));
-  }catch(e){
-    console.log(e);
-  }
-}
-
 export function init_channel_routes(): express.Router {
   
   const router = express.Router();
@@ -171,8 +164,6 @@ export function init_channel_routes(): express.Router {
   router.get(`${BASE_PATH}/:channel_id`, asyncHandler(get_channel));
   router.delete(`${BASE_PATH}/:channel_id`, asyncHandler(delete_channel));
   router.patch(`${BASE_PATH}/:channel_id`, asyncHandler(update_channel));
-
-  router.get(`${BASE_PATH}/:name`, asyncHandler(get_channel_by_name));
 
   router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
 

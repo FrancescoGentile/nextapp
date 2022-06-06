@@ -64,7 +64,7 @@ export interface ChannelRepository {
   is_president(
     user_id: UserID, 
     channel_id: ChannelID
-    ): Promise<boolean | null>;
+    ): Promise<boolean>;
 
     /**
    * Updates an already existing channel.

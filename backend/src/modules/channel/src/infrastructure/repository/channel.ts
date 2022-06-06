@@ -330,7 +330,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean | null> {
+  public async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean> {
     const session = this.driver.session();
     //console.log('u ' + user_id.to_string() + ' --> c ' + channel_id.to_string())
     try {

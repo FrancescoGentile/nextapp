@@ -16,7 +16,7 @@ let request: supertest.SuperTest<any>;
 let channels: Channel[];
 let users: User[];
 
-describe('channel by name', () => {
+describe('channel by id', () => {
   beforeAll(async () => {
     driver = await init_driver();
     clear_db(driver);
@@ -38,11 +38,11 @@ describe('channel by name', () => {
 
   test('(sci-1) successful channel info retrieval by id', async () => {
 
-    const res = await request.get(`/channels?name=${channels[0].name}`);
+    const res = await request.get(`/channels/${channels[0].id!.to_string()}`);
     expect(res.status).toBe(200);
     expect.arrayContaining([
       {
-        self: `/ap1/v1/channels/${channels[0].id!.to_string()}`,
+        self: `/api/v1/channels/${channels[0].id!.to_string()}`,
         name: channels[0].name,
         description: channels[0].description,
         presID_array: channels[0].presID_array
@@ -52,7 +52,7 @@ describe('channel by name', () => {
 
   // ------------------------ SCI-2 ------------------------
   test('(sci-2) no-matching channel id found', async () => {
-    const res = await request.get(`/channels?name=abcde`);
+    const res = await request.get(`/channels/0123456789`);
     expect(res.status).toBe(404);
   });
 
