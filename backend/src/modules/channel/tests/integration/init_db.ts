@@ -140,7 +140,8 @@ async function populate_subscriptions(
       id: SubID.from_string('5555511111'),
       user: users[5].id,
       channel: channels[1].id!,
-    },{
+    },
+    {
       id: SubID.from_string('4444411111'),
       user: users[4].id,
       channel: channels[1].id!,
