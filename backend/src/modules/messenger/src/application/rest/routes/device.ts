@@ -104,7 +104,7 @@ export function init_device_routes(): express.Router {
   router.get(`${BASE_PATH}/:device_id`, asyncHandler(get_device));
   router.get(BASE_PATH, asyncHandler(get_devices));
   router.post(BASE_PATH, asyncHandler(add_device));
-  router.post(`${BASE_PATH}/:device_id`, asyncHandler(delete_device));
+  router.delete(`${BASE_PATH}/:device_id`, asyncHandler(delete_device));
 
   return router;
 }

@@ -46,7 +46,7 @@ describe('delete your devices', () => {
 
   it('(dd-3) successful delete', async () => {
     const res = await request.delete(
-      `/users/me/emails/${users[0].devices[1].id!.to_string()}`
+      `/users/me/devices/${users[0].devices[1].id!.to_string()}`
     );
     expect(res.status).toBe(204);
   });
