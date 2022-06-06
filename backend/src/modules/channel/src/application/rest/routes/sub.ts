@@ -21,12 +21,6 @@ import { UserID } from '@nextapp/common/user';
 
 const BASE_PATH = '/users/me/subscriptions';
 
-function sub_to_json(sub: Sub) {
-  return {
-    self: `${API_VERSION}/channels/${sub.channel.to_string()}/subscribers/${sub.user.to_string()}`
-  }
-}
-
 function subscription_to_json(subscription: Sub): any {
   return {
     self: `${API_VERSION}${BASE_PATH}/${subscription.id!.to_string()}`,
@@ -73,7 +67,7 @@ async function get_club_subscribers(request: Request, response: Response){
     request.user_id!,
     ChannelID.from_string(request.params.channel_id)
   );
-  response.status(StatusCodes.OK).json(subs.map(sub_to_json));
+  response.status(StatusCodes.OK).json(subs.map(subscription_to_json));
 }
 
 export function init_sub_routes(): express.Router {

@@ -6,6 +6,7 @@ import EventEmitter from 'eventemitter3';
 import { Driver } from 'neo4j-driver';
 import supertest from 'supertest';
 import { Channel } from '../domain/models/channel';
+import { Sub } from '../domain/models/sub';
 import { User } from '../domain/models/user';
 import { init_app } from './init_app';
 import { init_driver, clear_db, close_driver, populate_db, populate_users } from './init_db';
@@ -15,6 +16,7 @@ let request: supertest.SuperTest<any>;
 
 let channels: Channel[];
 let users: User[];
+let subs: Sub[];
 
 describe('list channels', () => {
   beforeAll(async () => {
@@ -23,6 +25,7 @@ describe('list channels', () => {
     const res = await populate_db(driver);
     channels = res.channels;
     users = res.users;
+    subs = res.supscriptions;
 
     const emitter = new EventEmitter();
     const app = await init_app(driver, emitter, res.users[1].id);
@@ -41,16 +44,40 @@ describe('list channels', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
       {
-        self: "/api/v1/channels/" + channels[0].id!.to_string() + "/subscribers/" + users[0].id!.to_string()
+        self: "/api/v1/users/me/subscriptions/" + subs[3].id!.to_string(),
+        channel: {
+          self: "/api/v1/channels/" + channels[0].id!.to_string(),
+        },
+        user: {
+          self: "/api/v1/users/" + users[0].id!.to_string()
+        }
       },
       {
-        self: "/api/v1/channels/" + channels[0].id!.to_string() + "/subscribers/" + users[1].id!.to_string()
+        self: "/api/v1/users/me/subscriptions/" + subs[4].id!.to_string(),
+        channel: {
+          self: "/api/v1/channels/" + channels[0].id!.to_string(),
+        },
+        user: {
+          self: "/api/v1/users/" + users[1].id!.to_string()
+        }
       },
       {
-        self: "/api/v1/channels/" + channels[0].id!.to_string() + "/subscribers/" + users[2].id!.to_string()
+        self: "/api/v1/users/me/subscriptions/" + subs[0].id!.to_string(),
+        channel: {
+          self: "/api/v1/channels/" + channels[0].id!.to_string(),
+        },
+        user: {
+          self: "/api/v1/users/" + users[2].id!.to_string()
+        }
       },
       {
-        self: "/api/v1/channels/" + channels[0].id!.to_string() + "/subscribers/" + users[4].id!.to_string()
+        self: "/api/v1/users/me/subscriptions/" + subs[1].id!.to_string(),
+        channel: {
+          self: "/api/v1/channels/" + channels[0].id!.to_string(),
+        },
+        user: {
+          self: "/api/v1/users/" + users[4].id!.to_string()
+        }
       }
     ]);
     
