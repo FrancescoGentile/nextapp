@@ -14,6 +14,7 @@ import fs from 'fs';
 import { InvalidEndpoint } from './errors';
 import { init_user_module } from './user';
 import { init_room_module } from './room';
+import { init_messenger_module } from './messenger';
 
 async function get_neo4j(): Promise<Driver> {
   const url = process.env.NEO4J_URL;
@@ -58,19 +59,33 @@ async function init_gateway(): Promise<express.Router> {
 
   const router = express.Router();
 
-  if (process.env.KEY === undefined) {
+  if (process.env.JWT_KEY === undefined) {
     throw new InternalServerError('Private Key is not set');
+  }
+
+  if (
+    process.env.MAILGUN_KEY === undefined ||
+    process.env.MAILGUN_DOMAIN === undefined
+  ) {
+    throw new InternalServerError('Mailgun parameters not set.');
   }
 
   const { routes, auth_middleware } = await init_user_module(
     driver,
     emitter,
-    process.env.KEY
+    process.env.JWT_KEY
   );
   const room_routes = await init_room_module(driver, emitter);
+  const messenger_routes = await init_messenger_module(
+    driver,
+    emitter,
+    process.env.MAILGUN_KEY,
+    process.env.MAILGUN_DOMAIN
+  );
 
   router.use(routes);
   router.use(auth_middleware, room_routes);
+  router.use(auth_middleware, messenger_routes);
 
   return router;
 }
