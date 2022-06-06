@@ -180,7 +180,14 @@ async function load_picture(request: Request, response: Response) {
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
-async function get_picture(request: Request, response: Response) {
+async function get_user_picture(request: Request, response: Response) {
+  const { buffer, mimetype } = await request.user_service.get_picture(
+    new UserID(request.params.user_id)
+  );
+  response.status(StatusCodes.OK).contentType(mimetype).send(buffer);
+}
+
+async function get_my_picture(request: Request, response: Response) {
   const { buffer, mimetype } = await request.user_service.get_picture(
     request.user_id
   );
@@ -234,7 +241,16 @@ export function init_user_routes(
 
   // picture
 
-  router.get('/users/me/picture', auth_middleware, asyncHandler(get_picture));
+  router.get(
+    '/users/:user_id/picture',
+    auth_middleware,
+    asyncHandler(get_user_picture)
+  );
+  router.get(
+    '/users/me/picture',
+    auth_middleware,
+    asyncHandler(get_my_picture)
+  );
 
   router.put(
     '/users/me/picture',
