@@ -22,16 +22,11 @@ const BASE_PATH = '/channels';
 
 function channel_to_json(channel: Channel): any {
 
-  let pres_string: string[] = [];
-  for (let i = 0; i < 2; i++) {
-    pres_string[i] = channel.presID_array[i].to_string();
-  }
-
   return {
     self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
     name: channel.name,
     description: channel.description,
-    presID_array: pres_string
+    presID_array: channel.presID_array
   };
 }
 
@@ -68,6 +63,14 @@ async function create_channel(request: Request, response: Response){
 }
 
 async function get_channel_list(request: Request, response: Response) {
+  console.log(request.query.name);
+  if(
+    !(request.query.name === null 
+    || request.query.name === undefined)
+    ){
+      await get_channel_by_name(request, response);
+      return 
+    }
   const schema = Joi.object({
     offset: Joi.number(),
     limit: Joi.number(),
@@ -149,11 +152,13 @@ async function update_channel(request: Request, response: Response){
 }
 
 async function get_channel_by_name(request: Request, response: Response){
-  
-  const channel_name = request.params.channel_name;
-
+  const channel_name = request.query.name;
   const channel = await request.channel_service!.get_channel_by_name(channel_name);
+  try{
   response.status(StatusCodes.OK).json(channel_to_json(channel));
+  }catch(e){
+    console.log(e);
+  }
 }
 
 export function init_channel_routes(): express.Router {
@@ -167,7 +172,7 @@ export function init_channel_routes(): express.Router {
   router.delete(`${BASE_PATH}/:channel_id`, asyncHandler(delete_channel));
   router.patch(`${BASE_PATH}/:channel_id`, asyncHandler(update_channel));
 
-  router.get(`${BASE_PATH}/:channel_name`, asyncHandler(get_channel_by_name));
+  router.get(`${BASE_PATH}/:name`, asyncHandler(get_channel_by_name));
 
   router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
 

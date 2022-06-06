@@ -34,6 +34,7 @@ export class NextChannelInfoService implements ChannelInfoService {
     if (channel === null) {
       throw new ChannelNameNotFound(channel_name);
     }
+    console.log(channel.name);
     return channel;
   }
 

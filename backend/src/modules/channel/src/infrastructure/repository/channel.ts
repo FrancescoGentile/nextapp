@@ -19,7 +19,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel)
-           WHERE c.name = name
+           WHERE c.name = $name
            RETURN u, c`,
           { name: channel_name }
         )
@@ -43,7 +43,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
         presidents,
         ChannelID.from_string(id)
       );
-    } catch {
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
