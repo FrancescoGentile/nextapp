@@ -82,13 +82,13 @@ describe('list channels', () => {
     ]);
     
   });
-  
-  test('(ls-1) sub retrieval for non-existing channel', async () => {
+  // ------------------------ LS-2 ------------------------
+  test('(ls-2) sub retrieval for non-existing channel', async () => {
     const res = await request.get(`/channels/0123456789/subscribers`);
     expect(res.status).toBe(404);
   })
-
-  test('(ls-1) sub retrieval for non valid channelID', async () => {
+  // ------------------------ LS-3 ------------------------
+  test('(ls-3) sub retrieval for non valid channelID', async () => {
     const res = await request.get(`/channels/0/subscribers`);
     expect(res.status).toBe(400);
   })
@@ -115,8 +115,8 @@ describe('modify channel', () => {
     await clear_db(driver);
     await close_driver(driver);
   });
-
-  test('(ls-1) user not a president', async () => {
+  // ------------------------ LS-4 ------------------------
+  test('(ls-4) user not a president', async () => {
     const res = await request.get(`/channels/${channels[0].id!.to_string()}/subscribers`);
     expect(res.status).toBe(403);
   });
