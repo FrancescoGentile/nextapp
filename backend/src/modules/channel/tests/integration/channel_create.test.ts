@@ -36,7 +36,7 @@ describe('create channel', () => {
 
   // ------------------------ CC-1 ------------------------
 
-  it('(cc-1) simple user', async () => {
+  it('(cc-1) attempt to create as simple user', async () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
       users[1].id!.to_string(),
@@ -90,7 +90,7 @@ describe('create channel', () => {
 
   // ------------------------ CC-3 ------------------------
 
-  it('(cc-4) channel name not specified', async () => {
+  it('(cc-3) channel name not specified', async () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
       users[1].id!.to_string(),
@@ -236,26 +236,7 @@ describe('create channel', () => {
 
   // ------------------------ CC-9 ------------------------
 
-  it('(cc-9) number of presidents more then 4', async () => {
-    const presID_array: string[] = [
-      users[0].id!.to_string(),
-      users[1].id!.to_string(),
-      users[2].id!.to_string(),
-      users[3].id!.to_string(),
-      users[4].id!.to_string(),
-    ];
-    const res = await request.post('/channels').send({
-      name: 'NerdEST',
-      description: 'Un club per nerd',
-      presID_array
-    });
-
-    expect(res.status).toBe(400);
-  });
-
-  // ------------------------ CC-10 ------------------------
-
-  it('(cc-10) president not a user', async () => {
+  it('(cc-9) president not a user', async () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
       users[1].id!.to_string(),
@@ -270,9 +251,9 @@ describe('create channel', () => {
     expect(res.status).toBe(404);
   });
 
-  // ------------------------ CC-11 ------------------------
+  // ------------------------ CC-10 ------------------------
 
-  it('(cc-11) channel successfully created', async () => {
+  it('(cc-10) channel successfully created', async () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
       users[1].id!.to_string()
