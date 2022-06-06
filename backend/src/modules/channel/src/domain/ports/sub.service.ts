@@ -51,6 +51,6 @@ export interface SubService {
   get_club_subscribers(
     user_id: UserID,
     channel_id: ChannelID
-  ): Promise<UserID[]>;
+  ): Promise<Sub[]>;
 
 }

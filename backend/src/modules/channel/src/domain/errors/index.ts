@@ -3,6 +3,7 @@
 //
 
 import { NextError, StatusCodes } from '@nextapp/common/error';
+import { UserID } from '@nextapp/common/user';
 import { Channel } from '../models/channel';
 
 export { InternalServerError } from '@nextapp/common/error';
@@ -10,7 +11,6 @@ export { InternalServerError } from '@nextapp/common/error';
 // ---------------------------------------------------------------
 // -------------------------- CHANNEL ----------------------------
 // ---------------------------------------------------------------
-
 enum ChannelErrorTypes {
   INVALID_ID = 1,
   INVALID_NAME,
@@ -22,12 +22,13 @@ enum ChannelErrorTypes {
   CHANNEL_DELETION_NOT_AUTHORIZED,
   NO_CHANNEL_AVAILABLE,
   CHANNEL_NAME_NOT_FOUND,
+  PRESIDENT_NOT_USER
 }
 
 function get_channel_type(type: ChannelErrorTypes): string {
-  return `room-${String(type).padStart(3, '0')}`;
-}
-
+    return `channel-${String(type).padStart(3, '0')}`;
+  }
+  
 export class InvalidChannelID extends NextError {
   public constructor(id: string, options?: ErrorOptions) {
     super(
@@ -55,12 +56,12 @@ export class InvalidChannelName extends NextError {
 }
 
 export class InvalidChannelDescription extends NextError {
-  public constructor(description: string, options?: ErrorOptions) {
-    super(
-      get_channel_type(ChannelErrorTypes.INVALID_DESCRIPTION),
-      StatusCodes.BAD_REQUEST,
-      'Invalid channel name',
-      `${description} does not meet on or both of the following conditions: ` +
+    public constructor(description: string, options?: ErrorOptions) {
+        super(
+        get_channel_type(ChannelErrorTypes.INVALID_DESCRIPTION),
+        StatusCodes.BAD_REQUEST,
+        'Invalid channel description',
+        `${description} does not meet on or both of the following conditions: ` +
         `length between 5 and 300 characters, ` +
         `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
       options
@@ -150,6 +151,18 @@ export class ChannelNameNotFound extends NextError {
       StatusCodes.NOT_FOUND,
       'Channel not found',
       `Channel with name ${channel_name} was not found.`,
+      options
+    );
+  }
+}
+
+export class PresidentNotAUser extends NextError {
+  public constructor(user_id: UserID, options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.PRESIDENT_NOT_USER),
+      StatusCodes.NOT_FOUND,
+      'President is not a user',
+      `User id${user_id} was not found.`,
       options
     );
   }
@@ -319,9 +332,9 @@ export class UserNotAPresident extends NextError {
   public constructor(id: string, options?: ErrorOptions) {
     super(
       get_pres_type(PresErrorTypes.NOT_A_PRESIDENT),
-      StatusCodes.NOT_FOUND,
+      StatusCodes.FORBIDDEN,
       'You do not manage any channel',
-      `Cannot find a channel ypu do manage.`,
+      `Cannot find a channel you do manage.`,
       options
     );
   }

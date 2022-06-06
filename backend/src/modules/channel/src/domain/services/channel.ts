@@ -11,7 +11,8 @@ import {
   InvalidPresidentsNumber,
   NoChannelAvailable,
   UserNotAPresident,
-  ChannelNameNotFound
+  ChannelNameNotFound,
+  PresidentNotAUser
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -19,6 +20,7 @@ import { ChannelInfoService } from '../ports/channel.service';
 import { UserRepository } from '../ports/user.repository';
 import { SearchOptions } from '../models/search';
 import { SubRepository } from '../ports/sub.repository';
+import { Sub, SubID } from '../models/sub';
 
 export class NextChannelInfoService implements ChannelInfoService {
   public constructor(
@@ -28,17 +30,25 @@ export class NextChannelInfoService implements ChannelInfoService {
   ) {}
 
   public async get_channel_by_name(channel_name: string): Promise<Channel> {
+    //console.log("QQQQQQQQQQQQQQQQ");
     const channel = await this.channel_repo.get_channel_by_name(channel_name);
+    
     if (channel === null) {
       throw new ChannelNameNotFound(channel_name);
     }
+   //console.log(channel.name);
     return channel;
   }
 
   public async update_channel(requester: UserID, channel: Channel): Promise<boolean> {
-    
-    const is_pres = this.channel_repo.is_president(requester, channel.id!);
-
+    const channel_exists: boolean = 
+      await this.channel_repo.get_channel(channel.id!) == null
+        ? false
+        : true;
+    if(!channel_exists){
+      throw new ChannelNotFound(channel.id!.to_string());
+    }
+    const is_pres = await this.channel_repo.is_president(requester, channel.id!);
     if(!is_pres){
       throw new UserNotAPresident(requester.to_string());
     }
@@ -70,9 +80,26 @@ export class NextChannelInfoService implements ChannelInfoService {
     ) {
       throw new InvalidPresidentsNumber(channel.presID_array.length);
     }
+    for(const pres of channel.presID_array){
+      const role = await this.user_repo.get_user_role(pres);
+      if(role === null){
+        throw new PresidentNotAUser(pres);
+      }
+    }
     const id = await this.channel_repo.create_channel(channel);
     if (id === undefined) {
       throw new ChannelNameAlreadyUsed(channel.name);
+    }
+    for(const pres of channel.presID_array){
+      if(! await this.sub_repo.is_sub(pres, id)){
+        const subscription: Sub = 
+            {
+              id: SubID.generate(),
+              user: pres,
+              channel: id,
+            };
+        await this.sub_repo.create_sub(subscription);
+      }
     }
     return id;
   }
@@ -97,10 +124,12 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
   
   public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]> {
-    const channels = await this.channel_repo.get_channel_list(options);
-    if(channels == null){
+    
+    const channels = await this.channel_repo.get_pres_channels(requester, options);
+    if(channels === null){
       throw new UserNotAPresident(requester.to_string());
     }
+    // console.log(channels);
     return channels;
   }
   

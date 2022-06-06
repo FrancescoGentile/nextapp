@@ -8,6 +8,7 @@ import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { ChannelID, Channel } from '../../domain/models/channel';
 import { ChannelRepository } from '../../domain/ports/channel.repository';
 import { SearchOptions } from '../../domain/models/search';
+import { Sub, SubID } from '../../domain/models/sub';
 
 export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
@@ -18,7 +19,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel)
-           WHERE c.name = name
+           WHERE c.name = $name
            RETURN u, c`,
           { name: channel_name }
         )
@@ -42,7 +43,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
         presidents,
         ChannelID.from_string(id)
       );
-    } catch {
+    } catch(e) {
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -113,12 +115,13 @@ export class Neo4jChannelRepository implements ChannelRepository {
 
   public async get_channel(channel_id: ChannelID): Promise<Channel | null> {
     const session = this.driver.session();
+    const channel_id_stringa = channel_id.to_string();
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
           `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel { id: $id })
            RETURN u, c`,
-          { id: channel_id.to_string() }
+          { id: channel_id_stringa }
         )
       );
 
@@ -140,7 +143,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
         presidents,
         ChannelID.from_string(id)
       );
-    } catch {
+    } catch(e) {
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -150,24 +154,22 @@ export class Neo4jChannelRepository implements ChannelRepository {
   public async create_channel(channel: Channel): Promise<ChannelID | undefined> {
     let session = this.driver.session();
     try {
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const id = ChannelID.generate();
-        const { name } = channel;
+        const name = channel.name;
         const description =
           channel.description === undefined || channel.description === null
             ? null
             : JSON.stringify(channel.description);
         try {
-          // eslint-disable-next-line no-await-in-loop
           await session.writeTransaction((tx) =>
             tx.run(
               `CREATE (c:CHANNEL_Channel {
                id: $id, 
                name: $name,
-               description: $description,
+               description: $description
             })`,
-              { id: id.to_string(), name, description }
+              { id: id.to_string(), name: name, description: description }
             )
           );
           
@@ -175,18 +177,16 @@ export class Neo4jChannelRepository implements ChannelRepository {
           session = this.driver.session();
 
           for (
-              let i = 0; 
-              i < Channel.MAX_PRESIDENTS;
-              i++
+              const pres of channel.presID_array
             ) {
             await session.writeTransaction((tx) =>
               tx.run(
-                `MATCH (u:CHANNEL_User), (r:CHANNEL_Channel)
+                `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
                 WHERE u.id = $user_id AND c.id = $channel_id
                 CREATE (u)-[p:CHANNEL_PRESIDENT]->(c)`,
                 { 
-                  user_id: channel.presID_array[i],
-                  channel_id: channel.id!.to_string()
+                  user_id: pres.to_string(),
+                  channel_id: id.to_string()
                 }
               )
             );
@@ -194,13 +194,14 @@ export class Neo4jChannelRepository implements ChannelRepository {
 
           return id;
         } catch (e) {
+          //console.log(e);
           const error = e as Neo4jError;
           if (
             error.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed'
           ) {
             throw e;
           }
-          // there is already a room with the same name
+          // there is already a channel with the same name
           if (error.message.includes(name)) {
             return undefined;
           }
@@ -215,11 +216,12 @@ export class Neo4jChannelRepository implements ChannelRepository {
 
   public async get_channel_list(options: SearchOptions): Promise<Channel[]> {
     let session = this.driver.session();
+    //console.log('DEBUG');
     try {
       const res_chan = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (c:CHANNEL_Channel)-[p:CHANNEL_PRESIDENT]-(u:CHANNEL_User)
-           RETURN c, u
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel)
+           RETURN c, p, u.id as uid
            ORDER BY c.id
            SKIP $skip
            LIMIT $limit`,
@@ -227,23 +229,37 @@ export class Neo4jChannelRepository implements ChannelRepository {
         )
       );
 
+      //console.log('DEBUG2');
       const channels: Channel[] = res_chan.records.map((record) => {
         const info = record.get('c').properties;
-        const channel_id = ChannelID.from_string(info.id);
+        const channel_name: string = info.name;
+        const channel_description: string = info.description;
+        const channel_id: ChannelID = ChannelID.from_string(info.id);
         const presidents: string[] = res_chan.records.map((record) => {
-          const id = record.get('u').properties;
+          //const info = record.get('u').properties;
+          //console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
+          const id = record.get('uid');
+          //console.log(id);
+          //console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
           return id
-      });
+        });
+        //console.log('name ' + channel_name);
+        //console.log('desc ' + channel_description);
+        //console.log('pres ' + presidents);
+        //console.log('cid ' + channel_id.to_string());
+        //console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa');
         return new Channel(
-          info.name,
-          info.description,
+          channel_name,
+          channel_description,
           presidents,
           channel_id
         )
       });
+      //console.log(channels.length);
 
       return channels;
     } catch (e) {
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -261,7 +277,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
         )
       );
 
-      return res.summary.counters.updates().relationshipsDeleted > 0;
+      const update = res.summary.counters.updates();
+      return update.nodesDeleted > 0;
     } catch {
       throw new InternalServerError();
     } finally {
@@ -269,7 +286,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]> {
+  public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[] | null> {
     let session = this.driver.session();
     try {
       const res_chan = await session.readTransaction((tx) =>
@@ -280,7 +297,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
            SKIP $skip
            LIMIT $limit`,
           { 
-            id: requester,
+            id: requester.to_string(),
             skip: int(options.offset), 
             limit: int(options.limit) 
           }
@@ -301,23 +318,28 @@ export class Neo4jChannelRepository implements ChannelRepository {
           channel_id
         )
       });
-
+      if (channels.length === 0) {
+        return null;
+      }
       return channels;
     } catch (e) {
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
     }
   }
 
-  public async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean | null> {
+  public async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean> {
     const session = this.driver.session();
+    //console.log('u ' + user_id.to_string() + ' --> c ' + channel_id.to_string())
     try {
       const res = await session.readTransaction((tx) =>
         tx.run(
-          `MATCH (u:CHANNEL_User { id: $id }-[p:CHANNEL_PRESIDENT]-(c:CHANNEL_Channel))
-           RETURN u.id as pres_id`,
-          { id: user_id.to_string() }
+          `MATCH (u:CHANNEL_User)-[p:CHANNEL_PRESIDENT]->(c:CHANNEL_Channel)
+           WHERE u.id = $uid AND c.id = $cid
+           RETURN u`,
+          { uid: user_id.to_string(), cid: channel_id.to_string() }
         )
       );
 
@@ -326,7 +348,8 @@ export class Neo4jChannelRepository implements ChannelRepository {
       } else {
         return true;
       }
-    } catch {
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

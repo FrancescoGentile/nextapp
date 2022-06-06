@@ -47,13 +47,14 @@ export interface ChannelRepository {
 
    /**
    * Gets the list of channel managed by the requester.
+   * Returns null if the requester does not manage any channel
    * @param requester
    * @param options
    */
    get_pres_channels(
     requester: UserID, 
     options: SearchOptions
-    ): Promise<Channel[]>
+    ): Promise<Channel[] | null>
 
    /**
    * Returns true if the user is a president of a given channel; otherwise false.
@@ -63,7 +64,7 @@ export interface ChannelRepository {
   is_president(
     user_id: UserID, 
     channel_id: ChannelID
-    ): Promise<boolean | null>;
+    ): Promise<boolean>;
 
     /**
    * Updates an already existing channel.
