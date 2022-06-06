@@ -40,22 +40,22 @@ describe('ban user', () => {
 
   // ------------------------ SR-1 ------------------------
 
-  it('(sc-1) ban on non-existing channel', async () => {
+  it('(sr-1) ban on non-existing channel', async () => {
 
     const res = await request
       .delete(`/channels/0123456789/subscribers/${subs[4].id!.to_string()}`);
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(404);
   });
 
   // ------------------------ SR-2 ------------------------
 
-  it('(sc-2) successful ban', async () => {
+  it('(sr-2) successful ban', async () => {
     
     const res = await request
       .delete(`/channels/${channels[0].id!.to_string()}/subscribers/${subs[4].id!.to_string()}`);
 
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(204);
   });
 
 });
@@ -81,7 +81,7 @@ describe('unsubscribe', () => {
 
   // ------------------------ SR-3 ------------------------
 
-  it('(sc-3) try to ban user while not president', async () => {
+  it('(sr-3) try to ban user while not president', async () => {
     
     const res = await request
       .delete(`/channels/${channels[0].id!.to_string()}/subscribers/${subs[4].id!.to_string()}`);
@@ -89,10 +89,10 @@ describe('unsubscribe', () => {
     expect(res.status).toBe(403);
   });
 
-  it('(sc-4) user unsubscribe', async () => {
+  it('(sr-4) user unsubscribe', async () => {
     const res = await request
       .delete(`/channels/${channels[0].id!.to_string()}/subscribers/${subs[5].id!.to_string()}`);
 
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(204);
   });
 });  

@@ -44,7 +44,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
         ChannelID.from_string(id)
       );
     } catch(e) {
-      console.log(e);
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -144,7 +144,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
         ChannelID.from_string(id)
       );
     } catch(e) {
-      console.log(e);
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -237,17 +237,17 @@ export class Neo4jChannelRepository implements ChannelRepository {
         const channel_id: ChannelID = ChannelID.from_string(info.id);
         const presidents: string[] = res_chan.records.map((record) => {
           //const info = record.get('u').properties;
-          console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
+          //console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
           const id = record.get('uid');
-          console.log(id);
-          console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
+          //console.log(id);
+          //console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
           return id
         });
-        console.log('name ' + channel_name);
-        console.log('desc ' + channel_description);
-        console.log('pres ' + presidents);
-        console.log('cid ' + channel_id.to_string());
-        console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa');
+        //console.log('name ' + channel_name);
+        //console.log('desc ' + channel_description);
+        //console.log('pres ' + presidents);
+        //console.log('cid ' + channel_id.to_string());
+        //console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa');
         return new Channel(
           channel_name,
           channel_description,
@@ -255,11 +255,11 @@ export class Neo4jChannelRepository implements ChannelRepository {
           channel_id
         )
       });
-      console.log(channels.length);
+      //console.log(channels.length);
 
       return channels;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -323,7 +323,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
       }
       return channels;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -349,7 +349,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
         return true;
       }
     } catch(e) {
-      //console.log(e);
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

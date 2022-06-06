@@ -107,7 +107,7 @@ export class Neo4jSubRepository implements SubRepository {
         tx.run(
           `MATCH (user:CHANNEL_User)-[s:CHANNEL_SUB]-(chan:CHANNEL_Channel)
            WHERE s.id = $sub_id
-           RETURN u.id as uid, chan.id as cid, s.id as sub_id`,
+           RETURN user.id as uid, chan.id as cid, s.id as sub_id`,
           { sub_id: sub_id.to_string() }
         )
       );
@@ -122,7 +122,8 @@ export class Neo4jSubRepository implements SubRepository {
         channel: ChannelID.from_string(record.get('cid')),
         user: new UserID(record.get('uid'))
       };
-    } catch {
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
@@ -142,7 +143,8 @@ export class Neo4jSubRepository implements SubRepository {
       );
 
       return res.summary.counters.updates().relationshipsDeleted > 0;
-    } catch {
+    } catch(e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();

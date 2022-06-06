@@ -38,7 +38,7 @@ describe('delete channel', () => {
   // ------------------------ CR-1 ------------------------
 
   it('(cr-1) attempt to remove channel made by simple user', async () => {
-    console.log(`/channels/${channels[1].id!.to_string()}`);
+    //console.log(`/channels/${channels[1].id!.to_string()}`);
     const res = await request
       .delete(`/channels/${channels[1].id!.to_string()}`);
     expect(res.status).toBe(403);

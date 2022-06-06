@@ -63,7 +63,7 @@ async function create_channel(request: Request, response: Response){
 }
 
 async function get_channel_list(request: Request, response: Response) {
-  console.log(request.query.name);
+  //console.log(request.query.name);
   if(
     !(request.query.name === null 
     || request.query.name === undefined)

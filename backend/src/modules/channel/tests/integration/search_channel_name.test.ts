@@ -42,7 +42,7 @@ describe('channel by id', () => {
     expect(res.status).toBe(200);
     expect.arrayContaining([
       {
-        self: `/ap1/v1/channels/${channels[0].id!.to_string()}`,
+        self: `/api/v1/channels/${channels[0].id!.to_string()}`,
         name: channels[0].name,
         description: channels[0].description,
         presID_array: channels[0].presID_array

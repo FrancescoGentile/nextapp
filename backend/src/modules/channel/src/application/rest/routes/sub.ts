@@ -55,11 +55,15 @@ async function get_user_subscriptions(request: Request, response: Response){
 }
 
 async function delete_subscriber(request: Request, response: Response){
-  await request.sub_service!.delete_subscriber(
+  try{
+   await request.sub_service!.delete_subscriber(
     request.user_id!,
-    SubID.from_string(request.params.sub_id)
+    SubID.from_string(request.params.subscriber_id)
   );
   response.sendStatus(StatusCodes.NO_CONTENT);
+  }catch(e){
+    console.log(e);
+  }
 }
 
 async function get_club_subscribers(request: Request, response: Response){
