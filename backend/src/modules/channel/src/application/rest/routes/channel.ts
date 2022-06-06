@@ -176,7 +176,7 @@ export function init_channel_routes(): express.Router {
 
   router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
 
-  router.get(`users/me/president`, asyncHandler(get_pres_channels));
+  router.get(`/users/me/president`, asyncHandler(get_pres_channels));
 
   return router;
 }

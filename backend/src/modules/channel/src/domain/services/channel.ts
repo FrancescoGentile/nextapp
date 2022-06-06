@@ -122,10 +122,12 @@ export class NextChannelInfoService implements ChannelInfoService {
   }
   
   public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]> {
-    const channels = await this.channel_repo.get_channel_list(options);
-    if(channels == null){
+    
+    const channels = await this.channel_repo.get_pres_channels(requester, options);
+    if(channels === null){
       throw new UserNotAPresident(requester.to_string());
     }
+    // console.log(channels);
     return channels;
   }
   

@@ -286,7 +286,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[]> {
+  public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[] | null> {
     let session = this.driver.session();
     try {
       const res_chan = await session.readTransaction((tx) =>
@@ -297,7 +297,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
            SKIP $skip
            LIMIT $limit`,
           { 
-            id: requester,
+            id: requester.to_string(),
             skip: int(options.offset), 
             limit: int(options.limit) 
           }
@@ -318,9 +318,12 @@ export class Neo4jChannelRepository implements ChannelRepository {
           channel_id
         )
       });
-
+      if (channels.length === 0) {
+        return null;
+      }
       return channels;
     } catch (e) {
+      console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
