@@ -10,7 +10,6 @@ import { EventEmitter } from 'eventemitter3';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import admin from 'firebase-admin';
-import fs from 'fs';
 import { InvalidEndpoint } from './errors';
 import { init_user_module } from './user';
 import { init_room_module } from './room';
@@ -41,14 +40,19 @@ function init_firebase_admin() {
   }
 
   if (process.env.FIREBASE_BUCKET === undefined) {
-    throw new InternalServerError('Firebase Bucket not set');
+    throw new InternalServerError('Firebase Bucket not set.');
+  }
+  if (process.env.FIREBASE_CERT === undefined) {
+    throw new InternalServerError('Firebase certificate not set.');
   }
 
-  const file = fs.readFileSync('firebase.json');
-  const cert = JSON.parse(file.toString());
-
+  const serviceAccount = JSON.parse(process.env.FIREBASE_CERT);
   admin.initializeApp({
-    credential: admin.credential.cert(cert),
+    credential: admin.credential.cert({
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email,
+      privateKey: serviceAccount.private_key.replace(/\\n/g, '\n'),
+    }),
     storageBucket: process.env.FIREBASE_BUCKET,
   });
 }
