@@ -112,7 +112,7 @@ async function create_event(request: Request, response: Response) {
     throw new InvalidEventRoomID(path);
   }
 
-  const id = await request.event_service.create_event(
+  await request.event_service.create_event(
     request.user_id,
     channel_id,
     value.name,
@@ -122,7 +122,7 @@ async function create_event(request: Request, response: Response) {
     DateTime.fromJSDate(value.end)
   );
 
-  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
+  response.sendStatus(StatusCodes.ACCEPTED);
 }
 
 async function update_event(request: Request, response: Response) {

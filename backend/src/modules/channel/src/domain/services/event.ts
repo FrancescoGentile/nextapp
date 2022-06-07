@@ -4,6 +4,8 @@
 
 import { UserID } from '@nextapp/common/user';
 import { DateTime } from 'luxon';
+import { ModuleID } from '@nextapp/common/event';
+import { nanoid } from 'nanoid';
 import { EventInfoService } from '../ports/event.service';
 import { EventRepository } from '../ports/event.repository';
 import { EventBroker } from '../ports/event.broker';
@@ -27,14 +29,32 @@ import { SubRepository } from '../ports/sub.repository';
 import { ChannelRepository } from '../ports/channel.repository';
 import { ParticipationID, Participation } from '../models/participation';
 import { NextInterval } from '../models/interval';
+import { EventCache } from '../ports/event.cache';
+import {
+  CreateBookingResponseEvent,
+  DeleteBookingResponseEvent,
+} from '../events';
 
 export class NextEventInfoService implements EventInfoService {
   public constructor(
     private readonly events_repo: EventRepository,
     private readonly sub_repo: SubRepository,
     private readonly channel_repo: ChannelRepository,
+    private readonly cache: EventCache,
     private readonly broker: EventBroker
-  ) {}
+  ) {
+    this.broker.on_create_booking_response(
+      'create_booking_response',
+      this.terminate_creation,
+      this
+    );
+
+    this.broker.on_delete_booking_response(
+      'delete_booking_response',
+      this.terminate_delete,
+      this
+    );
+  }
 
   public async get_event(user: UserID, event_id: EventID): Promise<Event> {
     const event = await this.events_repo.get_event(event_id);
@@ -92,13 +112,13 @@ export class NextEventInfoService implements EventInfoService {
       event.interval,
       event.room,
       event.seats,
+      event.booking,
       event.id
     );
 
     await this.events_repo.update_event(new_event);
   }
 
-  // TODO: terminate
   public async create_event(
     user: UserID,
     channel: ChannelID,
@@ -107,14 +127,15 @@ export class NextEventInfoService implements EventInfoService {
     room: RoomID,
     start: DateTime,
     end: DateTime
-  ): Promise<EventID> {
-    const _ = new Event(
+  ): Promise<void> {
+    const event = new Event(
       channel,
       name,
       description,
       NextInterval.from_dates(start, end, true),
       room,
-      0 // temporary value
+      0, // temporary value,
+      '' // temporary value
     );
 
     const is_president = this.channel_repo.is_president(user, channel);
@@ -122,12 +143,19 @@ export class NextEventInfoService implements EventInfoService {
       throw new EventCreationNotAuthorized();
     }
 
-    return EventID.generate();
-
-    // TODO: send event
+    const key = this.cache.save_event(event);
+    this.broker.emit_create_booking_request({
+      name: 'create_booking_request',
+      module: ModuleID.CHANNEL,
+      timestamp: DateTime.utc(),
+      request_id: key,
+      requester_id: event.channel.to_string(),
+      room_id: event.room.to_string(),
+      start: event.interval.start,
+      end: event.interval.end,
+    });
   }
 
-  // TODO:
   public async delete_event(user: UserID, event_id: EventID): Promise<void> {
     const event = await this.events_repo.get_event(event_id);
     if (event === null) {
@@ -139,7 +167,108 @@ export class NextEventInfoService implements EventInfoService {
       throw new EventDeletionNotAuthorized();
     }
 
-    // TODO: send event
+    this.broker.emit_delete_booking_request({
+      name: 'delete_booking_request',
+      module: ModuleID.CHANNEL,
+      timestamp: DateTime.utc(),
+      request_id: nanoid(),
+      requester_id: event.channel.to_string(),
+      booking_id: event.booking,
+    });
+
+    const subs = await this.sub_repo.get_club_subscribers(event.channel);
+    const users = subs.map((s) => s.user);
+
+    this.broker.emit_send_message({
+      name: 'send_message',
+      module: ModuleID.CHANNEL,
+      timestamp: DateTime.utc(),
+      users,
+      type: 'notification',
+      title: 'Event cancelled',
+      body: `Event '${event.name}' is cancelled.`,
+    });
+  }
+
+  private async terminate_creation(event: CreateBookingResponseEvent) {
+    try {
+      const e = this.cache.get_event(event.request_id);
+      if (e === null) {
+        // TODO: write log error
+        return;
+      }
+      this.cache.delete_event(event.request_id);
+
+      if (event.confirmed) {
+        const channel = await this.channel_repo.get_channel(e.channel);
+        if (channel === null) {
+          // TODO: write log error
+          return;
+        }
+
+        const new_event = new Event(
+          e.channel,
+          e.name,
+          e.description,
+          e.interval,
+          e.room,
+          event.seats!,
+          event.booking_id!
+        );
+
+        await this.events_repo.create_event(new_event);
+
+        const pres = channel.presID_array;
+        this.broker.emit_send_message({
+          name: 'send_message',
+          module: ModuleID.CHANNEL,
+          timestamp: DateTime.utc(),
+          users: pres,
+          type: 'notification',
+          title: 'Event created',
+          body: `The event ${new_event.name} has been successfully created.`,
+        });
+
+        const subs = await this.sub_repo.get_club_subscribers(e.channel);
+        const users = subs.map((s) => s.user);
+
+        this.broker.emit_send_message({
+          name: 'send_message',
+          module: ModuleID.CHANNEL,
+          timestamp: DateTime.utc(),
+          users,
+          type: 'notification',
+          title: new_event.name,
+          body: new_event.description,
+        });
+      } else {
+        const channel = await this.channel_repo.get_channel(e.channel);
+        if (channel === null) {
+          // TODO: write log error
+          return;
+        }
+
+        const pres = channel.presID_array;
+        this.broker.emit_send_message({
+          name: 'send_message',
+          module: ModuleID.CHANNEL,
+          timestamp: DateTime.utc(),
+          users: pres,
+          type: 'notification',
+          title: 'Event not created',
+          body: `The event ${event.name} could not be created for the following reason: ${event.error}`,
+        });
+      }
+    } catch {
+      // TODO: write log error
+    }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  private async terminate_delete(event: DeleteBookingResponseEvent) {
+    if (!event.confirmed) {
+      // TODO: write log error
+    }
   }
 
   // -----------------------------------------------------------------

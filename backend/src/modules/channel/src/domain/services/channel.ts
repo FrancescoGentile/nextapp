@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 //
 //
 //
@@ -13,6 +15,7 @@ import {
   UserNotAPresident,
   ChannelNameNotFound,
   PresidentNotAUser,
+  ChannelDeletionNotAuthorized,
 } from '../errors';
 import { ChannelID, Channel } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
@@ -30,13 +33,13 @@ export class NextChannelInfoService implements ChannelInfoService {
   ) {}
 
   public async get_channel_by_name(channel_name: string): Promise<Channel> {
-    //console.log("QQQQQQQQQQQQQQQQ");
+    // console.log("QQQQQQQQQQQQQQQQ");
     const channel = await this.channel_repo.get_channel_by_name(channel_name);
 
     if (channel === null) {
       throw new ChannelNameNotFound(channel_name);
     }
-    //console.log(channel.name);
+    // console.log(channel.name);
     return channel;
   }
 
@@ -45,7 +48,7 @@ export class NextChannelInfoService implements ChannelInfoService {
     channel: Channel
   ): Promise<boolean> {
     const channel_exists: boolean =
-      (await this.channel_repo.get_channel(channel.id!)) == null ? false : true;
+      (await this.channel_repo.get_channel(channel.id!)) != null;
     if (!channel_exists) {
       throw new ChannelNotFound(channel.id!.to_string());
     }
@@ -125,7 +128,7 @@ export class NextChannelInfoService implements ChannelInfoService {
     channel_id: ChannelID
   ): Promise<void> {
     if (!(await this.is_admin(user_id))) {
-      throw new ChannelCreationNotAuthorized();
+      throw new ChannelDeletionNotAuthorized();
     }
     const deleted = await this.channel_repo.delete_channel(channel_id);
     if (!deleted) {

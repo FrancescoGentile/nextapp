@@ -58,7 +58,7 @@ export interface EventInfoService {
     room: RoomID,
     start: DateTime,
     end: DateTime
-  ): Promise<EventID>;
+  ): Promise<void>;
 
   /**
    * Removes a specific event

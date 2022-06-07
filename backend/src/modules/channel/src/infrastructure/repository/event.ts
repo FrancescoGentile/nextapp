@@ -84,7 +84,7 @@ export class Neo4jEventRepository implements EventRepository {
       }
 
       const record = res.records[0];
-      const { name, description, start, end, room, seats } =
+      const { name, description, start, end, room, seats, booking } =
         record.get('e').properties;
 
       return new Event(
@@ -94,6 +94,7 @@ export class Neo4jEventRepository implements EventRepository {
         neo4j_to_interval(start, end),
         new RoomID(room),
         seats.toNumber(),
+        booking,
         event_id
       );
     } catch {
@@ -148,7 +149,7 @@ export class Neo4jEventRepository implements EventRepository {
       }
 
       const events = res.records.map((record) => {
-        const { id, name, description, start, end, room, seats } =
+        const { id, name, description, start, end, room, seats, booking } =
           record.get('e').properties;
 
         return new Event(
@@ -158,6 +159,7 @@ export class Neo4jEventRepository implements EventRepository {
           neo4j_to_interval(start, end),
           new RoomID(room),
           seats.toNumber(),
+          booking,
           EventID.from_string(id)
         );
       });
@@ -208,7 +210,8 @@ export class Neo4jEventRepository implements EventRepository {
                  start: $start, 
                  end: $end, 
                  room: $room,
-                 seats: $seats })`,
+                 seats: $seats,
+                 booking: $booking })`,
               {
                 c_id: event.channel.to_string(),
                 name: event.name,
@@ -217,6 +220,7 @@ export class Neo4jEventRepository implements EventRepository {
                 end: luxon_to_neo4j(event.interval.end),
                 room: event.room.to_string(),
                 seats: int(event.seats),
+                booking: event.booking,
               }
             )
           );

@@ -3,6 +3,8 @@
 //
 
 import { UserID } from '@nextapp/common/user';
+import { ModuleID } from '@nextapp/common/event';
+import { DateTime } from 'luxon';
 import {
   NewsDeletionNotAuthorized,
   NewsCreationNotAuthorized,
@@ -17,12 +19,14 @@ import { SearchOptions } from '../models/search';
 import { ChannelID } from '../models/channel';
 import { ChannelRepository } from '../ports/channel.repository';
 import { SubRepository } from '../ports/sub.repository';
+import { EventBroker } from '../ports/event.broker';
 
 export class NextNewsInfoService implements NewsInfoService {
   public constructor(
     private readonly news_repo: NewsRepository,
     private readonly channel_repo: ChannelRepository,
-    private readonly sub_repo: SubRepository
+    private readonly sub_repo: SubRepository,
+    private readonly broker: EventBroker
   ) {}
 
   public async create_news(news: News): Promise<NewsID> {
@@ -31,6 +35,20 @@ export class NextNewsInfoService implements NewsInfoService {
     }
 
     const id = await this.news_repo.create_news(news);
+
+    const subs = await this.sub_repo.get_club_subscribers(news.channel);
+    const users = subs.map((s) => s.user);
+
+    this.broker.emit_send_message({
+      name: 'send_message',
+      module: ModuleID.CHANNEL,
+      timestamp: DateTime.utc(),
+      users,
+      type: 'notification',
+      title: news.title,
+      body: news.body,
+    });
+
     return id;
   }
 

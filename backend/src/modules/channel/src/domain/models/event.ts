@@ -67,6 +67,8 @@ export class Event {
 
   public readonly seats: number;
 
+  public readonly booking: string;
+
   public constructor(
     channel: ChannelID,
     name: string,
@@ -74,6 +76,7 @@ export class Event {
     interval: NextInterval,
     room: RoomID,
     seats: number,
+    booking: string,
     id?: EventID
   ) {
     if (name.trim() === '' || name.length > 100) {
@@ -90,6 +93,7 @@ export class Event {
     this.interval = interval;
     this.room = room;
     this.seats = seats;
+    this.booking = booking;
     this.id = id;
   }
 
