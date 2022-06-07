@@ -16,7 +16,7 @@ let request: supertest.SuperTest<any>;
 let channels: Channel[];
 let users: User[];
 
-//set requester to not president
+// set requester to not president
 describe('modify channel', () => {
   beforeAll(async () => {
     driver = await init_driver();
@@ -49,7 +49,7 @@ describe('modify channel', () => {
   });
 });
 
-//set requester as president
+// set requester as president
 describe('modify channel', () => {
   beforeAll(async () => {
     driver = await init_driver();

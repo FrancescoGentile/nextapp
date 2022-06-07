@@ -167,7 +167,7 @@ async function delete_event(request: Request, response: Response) {
 function participation_to_json(part: Participation): any {
   return {
     self: `/users/me/participations/${part.id!.to_string()}`,
-    participant: {
+    user: {
       self: '/users/me',
     },
     event: {
@@ -292,7 +292,7 @@ async function delete_participation(request: Request, response: Response) {
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
-export function init_news_routes(): express.Router {
+export function init_event_routes(): express.Router {
   const router = express.Router();
 
   router.get('/events/:event_id', asyncHandler(get_event));

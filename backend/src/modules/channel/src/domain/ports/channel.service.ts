@@ -3,7 +3,6 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { DateTime } from 'luxon';
 import { Channel, ChannelID } from '../models/channel';
 import { SearchOptions } from '../models/search';
 
@@ -21,10 +20,7 @@ export interface ChannelInfoService {
    * @param admin
    * @param channel
    */
-  create_channel(
-    admin: UserID,
-    channel: Channel
-  ): Promise<ChannelID | undefined>;
+  create_channel(admin: UserID, channel: Channel): Promise<ChannelID>;
 
   /**
    * Return the list of all channels.

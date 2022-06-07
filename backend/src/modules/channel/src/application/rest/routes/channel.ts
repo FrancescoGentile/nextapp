@@ -7,19 +7,27 @@ import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import express from 'express';
 import { UserID } from '@nextapp/common/user';
-import { API_VERSION, asyncHandler, validate } from '../utils';
+import { asyncHandler, validate } from '../utils';
 import { Channel, ChannelID } from '../../../domain/models/channel';
 import { ChannelNotFound } from '../../../domain/errors';
 import { SearchOptions } from '../../../domain/models/search';
 
 const BASE_PATH = '/channels';
 
+function id_to_self(id: ChannelID): string {
+  return `/channels/${id.to_string()}`;
+}
+
 function channel_to_json(channel: Channel): any {
   return {
-    self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
+    self: id_to_self(channel.id!),
     name: channel.name,
     description: channel.description,
-    presID_array: channel.presID_array,
+    presidents: [
+      channel.presID_array.map((p) => ({
+        self: `/users/${p.to_string()}`,
+      })),
+    ],
   };
 }
 
@@ -49,10 +57,7 @@ async function create_channel(request: Request, response: Response) {
     new Channel(value.name, value.description, value.presID_array)
   );
 
-  response
-    .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}${BASE_PATH}/${id!.to_string()}`)
-    .end();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function get_channel_list(request: Request, response: Response) {
@@ -102,7 +107,7 @@ async function create_subscriber(request: Request, response: Response) {
   response
     .status(StatusCodes.CREATED)
     .location(
-      `${API_VERSION}${BASE_PATH}/${channel_id.to_string()}/subscribers/${id.to_string()}`
+      `/channels/${channel_id.to_string()}/subscribers/${id.to_string()}`
     )
     .end();
 }

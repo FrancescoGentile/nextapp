@@ -16,7 +16,7 @@ let request: supertest.SuperTest<any>;
 
 let channels: Channel[];
 
-//set requester to simple user
+// set requester to simple user
 describe('delete channel', () => {
   beforeAll(async () => {
     driver = await init_driver();
@@ -37,7 +37,7 @@ describe('delete channel', () => {
   // ------------------------ CR-1 ------------------------
 
   it('(cr-1) attempt to remove channel made by simple user', async () => {
-    //console.log(`/channels/${channels[1].id!.to_string()}`);
+    // console.log(`/channels/${channels[1].id!.to_string()}`);
     const res = await request.delete(
       `/channels/${channels[1].id!.to_string()}`
     );
@@ -47,7 +47,7 @@ describe('delete channel', () => {
 
 // ------------------------ CR-2 ------------------------
 
-//set requester to admin
+// set requester to admin
 describe('delete channel', () => {
   beforeAll(async () => {
     driver = await init_driver();

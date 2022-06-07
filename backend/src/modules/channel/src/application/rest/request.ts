@@ -11,6 +11,7 @@ import { SubService } from '../../domain/ports/sub.service';
 
 declare module 'express-serve-static-core' {
   export interface Request {
+    version: string;
     user_id: UserID;
     channel_service: ChannelInfoService;
     sub_service: SubService;

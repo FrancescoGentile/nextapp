@@ -15,16 +15,31 @@ export async function init_channel_module(
   driver: Driver,
   emitter: EventEmitter
 ): Promise<express.Router> {
-  const { user_repo, channel_repo, sub_repo, news_repo, broker } =
-    await init_infrastructure(driver, emitter);
-  const { channel_service, sub_service, news_service } = init_services(
+  const {
     user_repo,
     channel_repo,
     sub_repo,
     news_repo,
-    broker
+    event_repo,
+    cache,
+    broker,
+  } = await init_infrastructure(driver, emitter);
+  const { channel_service, sub_service, news_service, event_service } =
+    init_services(
+      user_repo,
+      channel_repo,
+      sub_repo,
+      news_repo,
+      event_repo,
+      cache,
+      broker
+    );
+  const router = init_rest_api(
+    channel_service,
+    sub_service,
+    news_service,
+    event_service
   );
-  const router = init_rest_api(channel_service, sub_service, news_service);
 
   return router;
 }

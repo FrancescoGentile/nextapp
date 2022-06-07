@@ -569,7 +569,7 @@ export class ParticipationNotAuthorized extends NextError {
       ),
       StatusCodes.FORBIDDEN,
       'Cannot participate',
-      'You cannot participate to ane event of a channel you are not subscribed to.',
+      'You cannot participate to an event of a channel you are not subscribed to.',
       options
     );
   }

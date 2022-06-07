@@ -89,21 +89,21 @@ describe('me subscriptions', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
       {
-        self: '/api/v1/users/me/subscriptions/' + subs[1].id!.to_string(),
+        self: `/api/v1/users/me/subscriptions/${subs[1].id!.to_string()}`,
         channel: {
-          self: '/api/v1/channels/' + channels[0].id!.to_string(),
+          self: `/api/v1/channels/${channels[0].id!.to_string()}`,
         },
         user: {
-          self: '/api/v1/users/' + users[4].id!.to_string(),
+          self: `/api/v1/users/${users[4].id!.to_string()}`,
         },
       },
       {
-        self: '/api/v1/users/me/subscriptions/' + subs[6].id!.to_string(),
+        self: `/api/v1/users/me/subscriptions/${subs[6].id!.to_string()}`,
         channel: {
-          self: '/api/v1/channels/' + channels[1].id!.to_string(),
+          self: `/api/v1/channels/${channels[1].id!.to_string()}`,
         },
         user: {
-          self: '/api/v1/users/' + users[4].id!.to_string(),
+          self: `/api/v1/users/${users[4].id!.to_string()}`,
         },
       },
     ]);
