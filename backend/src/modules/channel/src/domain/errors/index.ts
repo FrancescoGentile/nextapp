@@ -225,10 +225,11 @@ export class SubNotFound extends NextError {
 enum NewsErrorTypes {
   INVALID_ID = 1,
   INVALID_TITLE,
+  INVALID_BODY,
   NEWS_NOT_FOUND,
   NEWS_CREATION_NOT_AUTHORIZED,
   NEWS_UPDATE_NOT_AUTHORIZED,
-  INVALID_BODY,
+  NEWS_VIEW_NOT_AUTHORIZED,
 }
 
 function get_news_type(type: NewsErrorTypes): string {
@@ -272,34 +273,49 @@ export class InvalidNewsBody extends NextError {
 }
 
 export class NewsCreationNotAuthorized extends NextError {
-  public constructor() {
+  public constructor(options?: ErrorOptions) {
     super(
       get_news_type(NewsErrorTypes.NEWS_CREATION_NOT_AUTHORIZED),
       StatusCodes.FORBIDDEN,
-      'Missing authorization to create a news' +
-        'You have to be a channel administator to create a news.'
+      'Missing authorization to create a news',
+      'You have to be a channel president to create a news.',
+      options
     );
   }
 }
 
 export class NewsDeletionNotAuthorized extends NextError {
-  public constructor() {
+  public constructor(options?: ErrorOptions) {
     super(
       get_news_type(NewsErrorTypes.NEWS_CREATION_NOT_AUTHORIZED),
       StatusCodes.FORBIDDEN,
-      'Missing authorization to create a news' +
-        'You have to be a channel administator to create a news.'
+      'Missing authorization to create a news',
+      'You have to be a channel president to delete a news.',
+      options
     );
   }
 }
 
 export class NewsUpdateNotAuthorized extends NextError {
-  public constructor() {
+  public constructor(options?: ErrorOptions) {
     super(
       get_news_type(NewsErrorTypes.NEWS_UPDATE_NOT_AUTHORIZED),
       StatusCodes.FORBIDDEN,
-      'Missing authorization to update a news' +
-        'You have to be a channel administator to create a news.'
+      'Missing authorization to update a news',
+      'You have to be a channel administator to update a news.',
+      options
+    );
+  }
+}
+
+export class NewsViewNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_news_type(NewsErrorTypes.NEWS_UPDATE_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to view news',
+      'You have to be subscribed to a channel to see its news.',
+      options
     );
   }
 }
@@ -310,7 +326,7 @@ export class NewsNotFound extends NextError {
       get_news_type(NewsErrorTypes.NEWS_NOT_FOUND),
       StatusCodes.NOT_FOUND,
       'News not found',
-      `${id} is not a valid id for a news`,
+      `No news with id ${id} was found.`,
       options
     );
   }

@@ -36,7 +36,7 @@ export interface NewsInfoService {
   ): Promise<void>;
 
   /**
-   * Gets a list oif all the news.
+   * Gets a list of all the news.
    * @param requester the user who wants to get the news list
    */
   get_news_list(requester: UserID, options: SearchOptions): Promise<News[]>;

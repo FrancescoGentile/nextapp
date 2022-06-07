@@ -21,10 +21,10 @@ function news_to_json(news: News): any {
   return {
     self: id_to_self(news.id!),
     channel: {
-      self: news.channel.to_string(),
+      self: `/channels/${news.channel.to_string()}`,
     },
     author: {
-      self: news.author.to_string,
+      self: `/users/${news.author.to_string()}`,
     },
     date: news.date.toISO(),
     title: news.title,
@@ -126,9 +126,9 @@ async function update_news(request: Request, response: Response) {
 
   let id;
   try {
-    id = NewsID.from_string(request.params.event_id);
+    id = NewsID.from_string(request.params.news_id);
   } catch {
-    throw new NewsNotFound(request.params.event_id);
+    throw new NewsNotFound(request.params.news_id);
   }
 
   await request.news_service!.update_news(
@@ -144,9 +144,9 @@ async function update_news(request: Request, response: Response) {
 async function delete_news(request: Request, response: Response) {
   let id: NewsID;
   try {
-    id = NewsID.from_string(request.params.event_id);
+    id = NewsID.from_string(request.params.news_id);
   } catch {
-    throw new NewsNotFound(request.params.event_id);
+    throw new NewsNotFound(request.params.news_id);
   }
 
   await request.news_service!.delete_news(request.user_id!, id);
