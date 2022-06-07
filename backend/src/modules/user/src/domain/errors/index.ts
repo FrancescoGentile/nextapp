@@ -8,6 +8,7 @@ export { InternalServerError } from '@nextapp/common/error';
 
 enum UserErrorTypes {
   INVALID_FIRST_NAME = 1,
+  INVALID_MIDDLE_NAME,
   INVALID_SURNAME,
   INVALID_USERNAME,
   INVALID_PASSWORD,
@@ -15,7 +16,9 @@ enum UserErrorTypes {
   USED_USERNAME,
   INVALID_EMAIL,
   OLD_PASSWORD_WRONG,
+  INVALID_PICTURE,
   NOT_ADMIN,
+  PICTURE_NOT_FOUND,
 }
 
 function get_user_type(type: UserErrorTypes): string {
@@ -29,6 +32,18 @@ export class InvalidFirstName extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid first name',
       'Your first name cannot be empty.',
+      options
+    );
+  }
+}
+
+export class InvalidMiddleName extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_user_type(UserErrorTypes.INVALID_FIRST_NAME),
+      StatusCodes.BAD_REQUEST,
+      'Invalid middle name',
+      'Your middle name cannot be empty.',
       options
     );
   }
@@ -114,7 +129,7 @@ export class InvalidUserID extends NextError {
       get_user_type(UserErrorTypes.INVALID_USERID),
       StatusCodes.BAD_REQUEST,
       'Invalid user ID',
-      `${id} is not a valid userid`,
+      `${id} is not a valid user-id`,
       options
     );
   }
@@ -132,6 +147,18 @@ export class UserNotFound extends NextError {
   }
 }
 
+export class PictureNotFound extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_user_type(UserErrorTypes.PICTURE_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Picture not found',
+      'You have to upload a picture first.',
+      options
+    );
+  }
+}
+
 export class OldPasswordWrong extends NextError {
   public constructor(options?: ErrorOptions) {
     super(
@@ -139,6 +166,18 @@ export class OldPasswordWrong extends NextError {
       StatusCodes.BAD_REQUEST,
       'Wrong old password',
       undefined,
+      options
+    );
+  }
+}
+
+export class InvalidPicture extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_user_type(UserErrorTypes.INVALID_PICTURE),
+      StatusCodes.UNSUPPORTED_MEDIA_TYPE,
+      'Invalid picture',
+      'No picture was provided or the media type was not accepted.',
       options
     );
   }

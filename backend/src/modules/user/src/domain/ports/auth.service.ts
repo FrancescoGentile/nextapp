@@ -18,7 +18,7 @@ export interface AuthService {
 
   /** User authenticate with JWT
    *
-   * @param AuthToken
+   * @param token
    */
   authenticate(token: AuthToken): UserID;
 }
