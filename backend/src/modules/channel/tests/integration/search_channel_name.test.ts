@@ -8,7 +8,13 @@ import supertest from 'supertest';
 import { Channel } from '../domain/models/channel';
 import { User } from '../domain/models/user';
 import { init_app } from './init_app';
-import { init_driver, clear_db, close_driver, populate_db, populate_users } from './init_db';
+import {
+  init_driver,
+  clear_db,
+  close_driver,
+  populate_db,
+  populate_users,
+} from './init_db';
 
 let driver: Driver;
 let request: supertest.SuperTest<any>;
@@ -37,7 +43,6 @@ describe('channel by name', () => {
   // ------------------------ SCN-1 ------------------------
 
   test('(scn-1) successful channel info retrieval by name', async () => {
-
     const res = await request.get(`/channels?name=${channels[0].name}`);
     expect(res.status).toBe(200);
     expect.arrayContaining([
@@ -45,8 +50,8 @@ describe('channel by name', () => {
         self: `/api/v1/channels/${channels[0].id!.to_string()}`,
         name: channels[0].name,
         description: channels[0].description,
-        presID_array: channels[0].presID_array
-      }
+        presID_array: channels[0].presID_array,
+      },
     ]);
   });
 
@@ -55,5 +60,4 @@ describe('channel by name', () => {
     const res = await request.get(`/channels?name=abcdef`);
     expect(res.status).toBe(404);
   });
-
-})
+});

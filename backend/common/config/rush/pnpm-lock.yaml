@@ -32,6 +32,7 @@ specifiers:
   eventemitter3: ^4.0.7
   express: ^4.18.1
   express-serve-static-core: ^0.1.1
+  express-version-request: ^1.7.0
   http-status-codes: ^2.2.0
   jest: ^28.1.0
   joi: ^17.6.0
@@ -82,6 +83,7 @@ dependencies:
   eventemitter3: 4.0.7
   express: 4.18.1
   express-serve-static-core: 0.1.1
+  express-version-request: 1.7.0
   http-status-codes: 2.2.0
   jest: 28.1.0_d0860ccdff211a7de80dc6026d71132a
   joi: 17.6.0
@@ -905,6 +907,12 @@ packages:
       '@types/node': 17.0.40
       '@types/qs': 6.9.7
       '@types/range-parser': 1.2.4
+    dev: false
+
+  /@types/express-version-request/1.7.1:
+    resolution: {integrity: sha512-PtcUl+R6IjcZxYV/esmBKtyQO15zl06eBAdOaz9I6zFClp7aitDm/dlcbWaRkwtnwK6oZPapmahWw3z8KkxoBA==}
+    dependencies:
+      '@types/express': 4.17.13
     dev: false
 
   /@types/express/4.17.13:
@@ -2137,6 +2145,10 @@ packages:
 
   /express-serve-static-core/0.1.1:
     resolution: {integrity: sha512-phQFPo1vVwBLOjDq+EspUY6PpWZIs/s62Lvu6QuReViQ9j9ANBnMqPBRwdxs3zxNmpMJ9KBKrmMqCjMwHnGRyQ==}
+    dev: false
+
+  /express-version-request/1.7.0:
+    resolution: {integrity: sha512-arhavpFgjpfIOvpUt/U5h7azHq3y8atJYQOY2XaOUx1+pvZ+kU6qumkICPBdtzlt9lxnHme9tN55kgIugUHgdw==}
     dev: false
 
   /express/4.18.1:
@@ -4580,13 +4592,14 @@ packages:
     dev: false
 
   file:projects/channel.tgz:
-    resolution: {integrity: sha512-ckvGOj6mlEh6JZxAqF2eGFltz0xeih4OMZ66rRAhD2IMOzuSidAvHY6QsXsiFxF3pIfxWyFwA1PWy1hFFexezg==, tarball: file:projects/channel.tgz}
+    resolution: {integrity: sha512-R/6+dIURi6d+QrMw1yLWNq2wMOGHa5brbCZQi/a1rF879QUKLlN1umKUb7OD7OCmT9yJizUSaZLLfXr3mWykcw==, tarball: file:projects/channel.tgz}
     name: '@rush-temp/channel'
     version: 0.0.0
     dependencies:
       '@jest/types': 28.1.0
       '@types/cookie-parser': 1.4.3
       '@types/express': 4.17.13
+      '@types/express-version-request': 1.7.1
       '@types/jest': 28.1.1
       '@types/jsonwebtoken': 8.5.8
       '@types/luxon': 2.3.2
@@ -4607,6 +4620,7 @@ packages:
       eventemitter3: 4.0.7
       express: 4.18.1
       express-serve-static-core: 0.1.1
+      express-version-request: 1.7.0
       jest: 28.1.0_d0860ccdff211a7de80dc6026d71132a
       joi: 17.6.0
       json-joi-converter: 17.2.1-f_joi@17.6.0

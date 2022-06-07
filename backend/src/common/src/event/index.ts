@@ -19,5 +19,6 @@ export interface NextEvent {
 export enum ModuleID {
   USER = 'user',
   ROOM = 'room',
-  CLUB = 'club',
+  CHANNEL = 'channel',
+  MESSENGER = 'messenger',
 }

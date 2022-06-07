@@ -55,7 +55,8 @@
     "cookie-parser": "^1.4.6",
     "@types/cookie-parser": "^1.4.3",
     "dotenv": "^16.0.1",
-    "@types/node": "^17.0.39"
+    "@types/node": "^17.0.39",
+    "@types/express-version-request": "^1.7.1"
   },
   "dependencies": {
     "@nextapp/common": "^1.0.0",
@@ -74,6 +75,7 @@
     "json-joi-converter": "^17.2.1-f",
     "jsonwebtoken": "^8.5.1",
     "email-validator": "^2.0.4",
-    "neo4j-driver-core": "^4.4.5"
+    "neo4j-driver-core": "^4.4.5",
+    "express-version-request": "^1.7.0"
   }
 }

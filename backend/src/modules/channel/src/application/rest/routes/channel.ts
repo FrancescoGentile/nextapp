@@ -7,23 +7,27 @@ import { Request, Response } from 'express-serve-static-core';
 import Joi from 'joi';
 import express from 'express';
 import { UserID } from '@nextapp/common/user';
-import { API_VERSION, asyncHandler, validate } from '../utils';
+import { asyncHandler, validate } from '../utils';
 import { Channel, ChannelID } from '../../../domain/models/channel';
-import {
-  ChannelNotFound,
-  InvalidSubscribeChannel,
-} from '../../../domain/errors';
+import { ChannelNotFound } from '../../../domain/errors';
 import { SearchOptions } from '../../../domain/models/search';
 
 const BASE_PATH = '/channels';
 
-function channel_to_json(channel: Channel): any {
+function id_to_self(id: ChannelID): string {
+  return `/channels/${id.to_string()}`;
+}
 
+function channel_to_json(channel: Channel): any {
   return {
-    self: `${API_VERSION}${BASE_PATH}/${channel.id!.to_string()}`,
+    self: id_to_self(channel.id!),
     name: channel.name,
     description: channel.description,
-    presID_array: channel.presID_array
+    presidents: [
+      channel.presID_array.map((p) => ({
+        self: `/users/${p.to_string()}`,
+      })),
+    ],
   };
 }
 
@@ -43,7 +47,7 @@ async function create_channel(request: Request, response: Response) {
   const schema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().required(),
-    presID_array: Joi.array().items(Joi.string()).required()
+    presID_array: Joi.array().items(Joi.string()).required(),
   });
 
   const value = validate(schema, request.body);
@@ -53,23 +57,19 @@ async function create_channel(request: Request, response: Response) {
     new Channel(value.name, value.description, value.presID_array)
   );
 
-  response
-    .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}${BASE_PATH}/${id!.to_string()}`)
-    .end();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function get_channel_list(request: Request, response: Response) {
-  //console.log(request.query.name);
-  if(
-    !(request.query.name === null 
-    || request.query.name === undefined)
-    ){
-      const channel_name = request.query.name;
-      const channel = await request.channel_service!.get_channel_by_name(channel_name);
+  // console.log(request.query.name);
+  if (!(request.query.name === null || request.query.name === undefined)) {
+    const channel_name = request.query.name;
+    const channel = await request.channel_service!.get_channel_by_name(
+      channel_name
+    );
 
-      response.status(StatusCodes.OK).json(channel_to_json(channel));
-  }else{
+    response.status(StatusCodes.OK).json(channel_to_json(channel));
+  } else {
     const schema = Joi.object({
       offset: Joi.number(),
       limit: Joi.number(),
@@ -96,7 +96,7 @@ async function delete_channel(request: Request, response: Response) {
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
-async function create_subscriber(request: Request, response: Response){
+async function create_subscriber(request: Request, response: Response) {
   const channel_id_stringa: string = request.params.channel_id!;
   const channel_id = ChannelID.from_string(channel_id_stringa);
   const id = await request.sub_service!.create_sub(
@@ -107,7 +107,7 @@ async function create_subscriber(request: Request, response: Response){
   response
     .status(StatusCodes.CREATED)
     .location(
-      `${API_VERSION}${BASE_PATH}/${channel_id.to_string()}/subscribers/${id.to_string()}`
+      `/channels/${channel_id.to_string()}/subscribers/${id.to_string()}`
     )
     .end();
 }
@@ -147,14 +147,13 @@ async function update_channel(request: Request, response: Response) {
 
   await request.channel_service!.update_channel(
     request.user_id!,
-    new Channel( value.name, value.description, empty, channel_id, true)
+    new Channel(value.name, value.description, empty, channel_id, true)
   );
 
   response.sendStatus(StatusCodes.NO_CONTENT);
 }
 
 export function init_channel_routes(): express.Router {
-  
   const router = express.Router();
 
   router.get(BASE_PATH, asyncHandler(get_channel_list));
@@ -164,7 +163,10 @@ export function init_channel_routes(): express.Router {
   router.delete(`${BASE_PATH}/:channel_id`, asyncHandler(delete_channel));
   router.patch(`${BASE_PATH}/:channel_id`, asyncHandler(update_channel));
 
-  router.post(`${BASE_PATH}/:channel_id/subscribers`, asyncHandler(create_subscriber));
+  router.post(
+    `${BASE_PATH}/:channel_id/subscribers`,
+    asyncHandler(create_subscriber)
+  );
 
   router.get(`/users/me/president`, asyncHandler(get_pres_channels));
 

@@ -4,7 +4,7 @@
 
 import { customAlphabet } from 'nanoid';
 import { UserID } from '@nextapp/common/user';
-import { ChannelID, Channel } from './channel';
+import { ChannelID } from './channel';
 import { InvalidSubID } from '../errors';
 
 /**

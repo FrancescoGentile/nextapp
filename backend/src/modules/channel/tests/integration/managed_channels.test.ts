@@ -8,7 +8,13 @@ import supertest from 'supertest';
 import { Channel } from '../domain/models/channel';
 import { User } from '../domain/models/user';
 import { init_app } from './init_app';
-import { init_driver, clear_db, close_driver, populate_db, populate_users } from './init_db';
+import {
+  init_driver,
+  clear_db,
+  close_driver,
+  populate_db,
+  populate_users,
+} from './init_db';
 
 let driver: Driver;
 let request: supertest.SuperTest<any>;
@@ -77,7 +83,6 @@ describe('managed channels', () => {
   // ------------------------ LC-3 ------------------------
 
   it('(mc-3) successful channel list retrieval: no constraints', async () => {
-    
     const res = await request.get('/users/me/president');
     expect(res.status).toBe(200);
     expect.arrayContaining([
@@ -85,13 +90,11 @@ describe('managed channels', () => {
         self: `/ap1/v1/channels/${channels[0].id!.to_string()}`,
         name: channels[0].name,
         description: channels[0].description,
-        presID_array: channels[0].presID_array
-      }
+        presID_array: channels[0].presID_array,
+      },
     ]);
-    
   });
-
-})
+});
 
 // user is not president
 
@@ -114,9 +117,7 @@ describe('managed channels', () => {
   });
 
   it('(mc-4) non-president user try to retrieve managed channels', async () => {
-    
     const res = await request.get('/users/me/president');
     expect(res.status).toBe(403);
-    
   });
-})
+});

@@ -13,7 +13,9 @@ import { Sub, SubID } from '../../domain/models/sub';
 export class Neo4jChannelRepository implements ChannelRepository {
   private constructor(private readonly driver: Driver) {}
 
-  public async get_channel_by_name(channel_name: string): Promise<Channel | null> {
+  public async get_channel_by_name(
+    channel_name: string
+  ): Promise<Channel | null> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -29,12 +31,11 @@ export class Neo4jChannelRepository implements ChannelRepository {
         return null;
       }
 
-      const { id, name, description } =
-        res.records[0].get('c').properties;
+      const { id, name, description } = res.records[0].get('c').properties;
 
       const presidents: string[] = res.records.map((record) => {
-          const id = record.get('u').properties;
-          return id
+        const id = record.get('u').properties;
+        return id;
       });
 
       return new Channel(
@@ -43,7 +44,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
         presidents,
         ChannelID.from_string(id)
       );
-    } catch(e) {
+    } catch (e) {
       //console.log(e);
       throw new InternalServerError();
     } finally {
@@ -65,7 +66,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
           {
             id: channel.id!.to_string(),
             name: channel.name,
-            description
+            description,
           }
         )
       );
@@ -129,12 +130,11 @@ export class Neo4jChannelRepository implements ChannelRepository {
         return null;
       }
 
-      const { id, name, description } =
-        res.records[0].get('c').properties;
+      const { id, name, description } = res.records[0].get('c').properties;
 
       const presidents: string[] = res.records.map((record) => {
-          const id = record.get('u').properties;
-          return id
+        const id = record.get('u').properties;
+        return id;
       });
 
       return new Channel(
@@ -143,7 +143,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
         presidents,
         ChannelID.from_string(id)
       );
-    } catch(e) {
+    } catch (e) {
       //console.log(e);
       throw new InternalServerError();
     } finally {
@@ -151,7 +151,9 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async create_channel(channel: Channel): Promise<ChannelID | undefined> {
+  public async create_channel(
+    channel: Channel
+  ): Promise<ChannelID | undefined> {
     let session = this.driver.session();
     try {
       while (true) {
@@ -172,21 +174,19 @@ export class Neo4jChannelRepository implements ChannelRepository {
               { id: id.to_string(), name: name, description: description }
             )
           );
-          
+
           await session.close();
           session = this.driver.session();
 
-          for (
-              const pres of channel.presID_array
-            ) {
+          for (const pres of channel.presID_array) {
             await session.writeTransaction((tx) =>
               tx.run(
                 `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
                 WHERE u.id = $user_id AND c.id = $channel_id
                 CREATE (u)-[p:CHANNEL_PRESIDENT]->(c)`,
-                { 
+                {
                   user_id: pres.to_string(),
-                  channel_id: id.to_string()
+                  channel_id: id.to_string(),
                 }
               )
             );
@@ -241,7 +241,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
           const id = record.get('uid');
           //console.log(id);
           //console.log('BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB');
-          return id
+          return id;
         });
         //console.log('name ' + channel_name);
         //console.log('desc ' + channel_description);
@@ -253,7 +253,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
           channel_description,
           presidents,
           channel_id
-        )
+        );
       });
       //console.log(channels.length);
 
@@ -266,7 +266,7 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async delete_channel(channel_id: ChannelID): Promise<boolean>{
+  public async delete_channel(channel_id: ChannelID): Promise<boolean> {
     const session = this.driver.session();
     try {
       const res = await session.writeTransaction((tx) =>
@@ -286,7 +286,10 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async get_pres_channels(requester: UserID, options: SearchOptions): Promise<Channel[] | null> {
+  public async get_pres_channels(
+    requester: UserID,
+    options: SearchOptions
+  ): Promise<Channel[] | null> {
     let session = this.driver.session();
     try {
       const res_chan = await session.readTransaction((tx) =>
@@ -296,10 +299,10 @@ export class Neo4jChannelRepository implements ChannelRepository {
            ORDER BY c.id
            SKIP $skip
            LIMIT $limit`,
-          { 
+          {
             id: requester.to_string(),
-            skip: int(options.offset), 
-            limit: int(options.limit) 
+            skip: int(options.offset),
+            limit: int(options.limit),
           }
         )
       );
@@ -309,14 +312,9 @@ export class Neo4jChannelRepository implements ChannelRepository {
         const channel_id = ChannelID.from_string(info.id);
         const presidents: string[] = res_chan.records.map((record) => {
           const id = record.get('u').properties;
-          return id
-      });
-        return new Channel(
-          info.name,
-          info.description,
-          presidents,
-          channel_id
-        )
+          return id;
+        });
+        return new Channel(info.name, info.description, presidents, channel_id);
       });
       if (channels.length === 0) {
         return null;
@@ -330,7 +328,10 @@ export class Neo4jChannelRepository implements ChannelRepository {
     }
   }
 
-  public async is_president(user_id: UserID, channel_id: ChannelID): Promise<boolean> {
+  public async is_president(
+    user_id: UserID,
+    channel_id: ChannelID
+  ): Promise<boolean> {
     const session = this.driver.session();
     //console.log('u ' + user_id.to_string() + ' --> c ' + channel_id.to_string())
     try {
@@ -348,12 +349,11 @@ export class Neo4jChannelRepository implements ChannelRepository {
       } else {
         return true;
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
     }
   }
-
 }

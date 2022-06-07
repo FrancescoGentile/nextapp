@@ -3,31 +3,52 @@
 //
 
 import { UserID } from '@nextapp/common/user';
+import { ModuleID } from '@nextapp/common/event';
+import { DateTime } from 'luxon';
 import {
   NewsDeletionNotAuthorized,
   NewsCreationNotAuthorized,
   NewsNotFound,
   NewsUpdateNotAuthorized,
+  NewsViewNotAuthorized,
 } from '../errors';
 import { NewsRepository } from '../ports/news.repository';
-import { UserRepository } from '../ports/user.repository';
 import { NewsInfoService } from '../ports/news.service';
 import { News, NewsID } from '../models/news';
 import { SearchOptions } from '../models/search';
 import { ChannelID } from '../models/channel';
+import { ChannelRepository } from '../ports/channel.repository';
+import { SubRepository } from '../ports/sub.repository';
+import { EventBroker } from '../ports/event.broker';
 
 export class NextNewsInfoService implements NewsInfoService {
   public constructor(
     private readonly news_repo: NewsRepository,
-    private readonly user_repo: UserRepository
+    private readonly channel_repo: ChannelRepository,
+    private readonly sub_repo: SubRepository,
+    private readonly broker: EventBroker
   ) {}
 
   public async create_news(news: News): Promise<NewsID> {
-    if (!(await this.user_repo.is_channel_admin(news.author, news.channel))) {
+    if (!(await this.channel_repo.is_president(news.author, news.channel))) {
       throw new NewsCreationNotAuthorized();
     }
 
     const id = await this.news_repo.create_news(news);
+
+    const subs = await this.sub_repo.get_club_subscribers(news.channel);
+    const users = subs.map((s) => s.user);
+
+    this.broker.emit_send_message({
+      name: 'send_message',
+      module: ModuleID.CHANNEL,
+      timestamp: DateTime.utc(),
+      users,
+      type: 'notification',
+      title: news.title,
+      body: news.body,
+    });
+
     return id;
   }
 
@@ -37,7 +58,7 @@ export class NextNewsInfoService implements NewsInfoService {
       throw new NewsNotFound(news_id.to_string());
     }
 
-    if (!(await this.user_repo.is_channel_admin(user_id, news.channel))) {
+    if (!(await this.channel_repo.is_president(user_id, news.channel))) {
       throw new NewsDeletionNotAuthorized();
     }
 
@@ -59,7 +80,7 @@ export class NextNewsInfoService implements NewsInfoService {
       throw new NewsNotFound(news_id.to_string());
     }
 
-    if (!(await this.user_repo.is_channel_admin(user_id, news.channel))) {
+    if (!(await this.channel_repo.is_president(user_id, news.channel))) {
       throw new NewsUpdateNotAuthorized();
     }
 
@@ -83,13 +104,6 @@ export class NextNewsInfoService implements NewsInfoService {
     }
   }
 
-  public async get_news(
-    requester: UserID,
-    options: SearchOptions
-  ): Promise<News[]> {
-    return this.news_repo.get_news_list(requester, options);
-  }
-
   public async get_news_info(
     requester: UserID,
     news_id: NewsID
@@ -98,6 +112,12 @@ export class NextNewsInfoService implements NewsInfoService {
     if (news === null) {
       throw new NewsNotFound(news_id.to_string());
     }
+
+    const is_sub = await this.sub_repo.is_sub(requester, news.channel);
+    if (!is_sub) {
+      throw new NewsViewNotAuthorized();
+    }
+
     return news;
   }
 
@@ -113,6 +133,10 @@ export class NextNewsInfoService implements NewsInfoService {
     channel_id: ChannelID,
     options: SearchOptions
   ): Promise<News[]> {
+    const is_sub = await this.sub_repo.is_sub(requester, channel_id);
+    if (!is_sub) {
+      throw new NewsViewNotAuthorized();
+    }
     return this.news_repo.get_news_list_by_channel(channel_id, options);
   }
 }

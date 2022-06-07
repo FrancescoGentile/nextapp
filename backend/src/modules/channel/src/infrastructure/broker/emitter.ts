@@ -4,6 +4,10 @@
 
 import EventEmitter from 'eventemitter3';
 import {
+  CreateBookingRequestEvent,
+  CreateBookingResponseEvent,
+  DeleteBookingRequestEvent,
+  DeleteBookingResponseEvent,
   SendMessageEvent,
   UserCreatedEvent,
   UserDeletedEvent,
@@ -38,7 +42,31 @@ export class EventEmitterBroker implements EventBroker {
     this.emitter.on(name, listener, context);
   }
 
-  public emit_send_message(name: string, event: SendMessageEvent): void {
-    this.emitter.emit(name, event);
+  public on_create_booking_response(
+    name: string,
+    listener: (event: CreateBookingResponseEvent) => void,
+    context?: any
+  ): void {
+    this.emitter.on(name, listener, context);
+  }
+
+  on_delete_booking_response(
+    name: string,
+    listener: (event: DeleteBookingResponseEvent) => void,
+    context?: any
+  ): void {
+    this.emitter.on(name, listener, context);
+  }
+
+  public emit_create_booking_request(event: CreateBookingRequestEvent): void {
+    this.emitter.emit(event.name, event);
+  }
+
+  public emit_delete_booking_request(event: DeleteBookingRequestEvent): void {
+    this.emitter.emit(event.name, event);
+  }
+
+  public emit_send_message(event: SendMessageEvent): void {
+    this.emitter.emit(event.name, event);
   }
 }
