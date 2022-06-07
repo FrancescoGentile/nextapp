@@ -1,0 +1,14 @@
+# rush
+.rush
+room.build.log
+
+# secrets
+.env
+
+# dependencies
+node_modules
+
+# output files
+dist
+
+src/coverage-summary.json

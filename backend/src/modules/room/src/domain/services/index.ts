@@ -23,7 +23,11 @@ export function init_services(
     booking_repo,
     user_repo
   );
-  const booking_service = new NextBookingService(booking_repo, room_repo);
+  const booking_service = new NextBookingService(
+    booking_repo,
+    room_repo,
+    broker
+  );
   const _ = new NextUserService(broker, user_repo);
 
   return { room_service, booking_service };

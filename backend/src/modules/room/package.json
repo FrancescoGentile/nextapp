@@ -24,9 +24,10 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --p tsconfig.build.json",
     "lint": "eslint --ignore-path .eslintignore --ext .ts",
-    "format": "prettier --ignore-path .prettierignore --write \"**/*.+(js|ts|json)\""
+    "format": "prettier --ignore-path .prettierignore --write \"**/*.+(js|ts|json)\"",
+    "test": "jest --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -41,9 +42,18 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "prettier": "^2.6.2",
+    "@types/node": "^17.0.38",
     "@types/luxon": "^2.3.2",
     "@types/express": "^4.17.13",
-    "@types/express-version-request": "^1.7.1"
+    "@types/express-version-request": "^1.7.1",
+    "jest": "^28.1.0",
+    "ts-jest": "^28.0.3",
+    "ts-node": "^10.8.0",
+    "@jest/types": "^28.1.0",
+    "@types/jest": "^28.1.0",
+    "@types/supertest": "^2.0.12",
+    "supertest": "^6.2.3",
+    "dotenv": "^16.0.1"
   },
   "dependencies": {
     "@nextapp/common": "^1.0.0",

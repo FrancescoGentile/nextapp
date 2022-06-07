@@ -23,6 +23,9 @@ function id_to_self(id: BookingID): string {
 function booking_to_json(booking: Booking): any {
   return {
     self: id_to_self(booking.id!),
+    user: {
+      self: '/users/me',
+    },
     room: {
       self: `/rooms/${booking.room.to_string()}`,
     },
@@ -86,7 +89,7 @@ async function create_booking(request: Request, response: Response) {
   const value = validate(schema, request.body);
 
   const path = value.room.self;
-  const regex = /^\/api\/v1\/rooms\/(.*)$/;
+  const regex = /^\/rooms\/(.*)$/;
   const match = path.match(regex);
 
   if (match === null) {
