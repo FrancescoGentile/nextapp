@@ -21,9 +21,14 @@ export default defineComponent({
       maxDate: "",
       date: new Date(),
 
+      channels: [],
       userChannels: [],
       userEvents: [],
-      printableEvents: []
+      printableEvents: [],
+      user: [],
+
+      showEvents: false,
+      showChannels: false
     }
 
   },
@@ -34,15 +39,21 @@ export default defineComponent({
   created() {
     this.minDate = new Date()
     this.maxDate = new Date(new Date().setDate(this.minDate.getDate() + 30));
-  },
 
-  mounted() {
     this.$store.dispatch("rooms"
     ).then(() => {
       this.rooms = this.loadedRooms
     }).catch(err => {
       console.log(err)
-    })
+    }),
+
+      this.$store.dispatch("channels"
+      ).then(() => {
+        this.channels = this.loadedChannels
+        this.ready += 1
+      }).catch(err => {
+        console.log(err)
+      })
 
     this.$store.dispatch("userChannels"
     ).then(() => {
@@ -56,12 +67,14 @@ export default defineComponent({
       this.userEvents = this.loadedUserEvents
     }).catch(err => {
       console.log(err)
-    })
+    }),
 
-    this.$store.dispatch("setupRole").catch(err=>{
-      console.log(err)
-    })
-
+      this.$store.dispatch("privateUser"
+      ).then(() => {
+        this.user = this.loadedUser
+      }).catch(err => {
+        console.log(err)
+      })
 
   },
   computed: {
@@ -71,11 +84,17 @@ export default defineComponent({
     loadedUserChannels() {
       return this.$store.getters.getUserChannels
     },
+    loadedChannels() {
+      return this.$store.getters.getChannels
+    },
     loadedUserEvents() {
       return this.$store.getters.getUserEvents
     },
-    loadedEvent(){
+    loadedEvent() {
       return this.$store.getters.getEventDetails
+    },
+    loadedUser() {
+      return this.$store.getters.getUser
     }
   },
   methods: {
@@ -100,6 +119,24 @@ export default defineComponent({
         }
         this.printableReservations.push(res)
       })
+    },
+
+    getprintableChannels(subscriptions) {
+      let userChannels = []
+      //console.log(subscriptions)
+      this.channels.forEach(channel => {
+        subscriptions.forEach(sub => {
+          if (channel.self === sub.channel.self) {
+            //console.log(channel.self)
+            //console.log(sub.channel.self)
+            userChannels.push({
+              self: sub.self,
+              channel: channel
+            })
+          }
+        })
+      })
+      return userChannels
     },
 
     handleSubmit(modelData) {
@@ -152,11 +189,15 @@ export default defineComponent({
     },
 
     unsubscribeFromChannel(channel) {
-      console.log(channel)
+      //console.log(channel)
       this.$store.dispatch("unsubscribeUserFromChannel", channel
       ).then(() => {
-        this.userChannels.filter(item => item.self !== channel.self)
-        this.loadedUserChannels = this.userChannels
+        this.$store.dispatch("userChannels"
+        ).then(() => {
+          this.userChannels = this.loadedUserChannels
+        }).catch(err => {
+          console.log(err)
+        })
       }).catch(err => {
         console.log(err)
       })
@@ -289,24 +330,32 @@ export default defineComponent({
       </div>
     </div>
   </div>
+  <div class="text-center">
+    <button v-if="!showChannels" class="btn btn-primary me-2" @click="showChannels = true"> Show Channels </button>
+    <button v-else class="btn btn-primary me-2" @click="showChannels = false"> Hide Channels </button>
+    <button v-if="!showEvents" class="btn btn-primary" @click="showEvents = true"> Show Events </button>
+    <button v-else class="btn btn-primary" @click="showEvents = false"> Hide Events </button>
+  </div>
 
-  <div class="container">
+  <div v-if="showChannels" class="container">
     <div class="text-center mb-2 mt-5">
       <h3>Clubs</h3>
     </div>
-    <div v-for="channel in this.userChannels" :key="channel.self" class="card mb-3">
+    <div v-for="channel in getprintableChannels(userChannels)" :key="channel.channel.self" class="card mb-3">
       <div class="card-body">
         <div class="d-flex flex-column flex-lg-row align-items-center">
-          <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar(channel.name) }}</span>
+          <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar(channel.channel.name) }}</span>
           <div class="col-sm-3">
-            <h4 class="h5"> {{ channel.name }} </h4>
-            <span v-for="(admin, i) in channel.array" :key="i" class="badge bg-secondary me-1 mb-1">{{ admin }}</span>
+            <h4 class="h5"> {{ channel.channel.name }} </h4>
+            <span v-for="(admin, i) in channel.channel.array" :key="i" class="badge bg-secondary me-1 mb-1">{{ admin
+            }}</span>
           </div>
-          <div class="col-sm-5 py-2 ms-2"> {{ channel.description }} </div>
+          <div class="col-sm-5 py-2 ms-2"> {{ channel.channel.description }} </div>
           <div class="col-sm-3 text-lg-end">
             <div class="btn-group-vertical">
               <button @click="unsubscribeFromChannel(channel)" class="btn btn-primary mb-1"> Unsubscribe </button>
-              <button @click="this.$router.push({ name: 'clubDetails', params: { id: 1, subscribed: true } })"
+              <button
+                @click="this.$router.push({ name: 'clubDetails', params: { id: channel.channel.self, subscribed: true } })"
                 class="btn btn-primary stretched-link">See details</button>
             </div>
 
@@ -317,7 +366,7 @@ export default defineComponent({
 
   </div>
 
-  <div class="event-schedule-area-two bg-color pad100 mt-5">
+  <div v-if="showEvents" class="event-schedule-area-two bg-color pad100 mt-5">
     <div class="container">
       <div class="row">
         <div class="col-lg-12">

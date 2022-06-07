@@ -11,9 +11,11 @@ export default defineComponent({
       channels: [],
       userChannels: [],
       users: [],
+      user: [],
       searchedChannel: "",
       filteredChannel: "",
-      showSearch: false
+      showSearch: false,
+      ready: 0
     }
   },
 
@@ -29,13 +31,25 @@ export default defineComponent({
     },
     loadedFilteredChannel() {
       return this.$store.getters.getSearchedChannel
+    },
+    loadedUser(){
+      return this.$store.getters.getUser
     }
   },
 
-  mounted() {
+  created() {
+    this.$store.dispatch("users"
+    ).then(() => {
+      this.users = this.loadedUsers
+      this.ready += 1
+    }).catch(err => {
+      console.log(err)
+    })
+
     this.$store.dispatch("channels"
     ).then(() => {
       this.channels = this.loadedChannels
+      this.ready += 1
     }).catch(err => {
       console.log(err)
     })
@@ -43,34 +57,46 @@ export default defineComponent({
     this.$store.dispatch("userChannels"
     ).then(() => {
       this.userChannels = this.loadedUserChannels
+      this.ready += 1
     }).catch(err => {
       console.log(err)
     })
 
-    this.$store.dispatch("users"
-    ).then(() => {
-      this.users = this.loadedUsers
+  this.$store.dispatch("privateUser"
+  ).then(() => {
+      this.user = this.loadedUser
     }).catch(err => {
       console.log(err)
     })
+    
   },
 
   methods: {
     unsubscribeFromChannel(channel) {
-      this.$store.dispatch("unsubscribeUserFromChannel", channel.self
+      let user = this.user
+      this.$store.dispatch("unsubscribeUserFromChannel", {channel, user}
       ).then(() => {
-        this.userChannels.filter(item => item.self !== channel.self)
-        this.loadedUserChannels = this.userChannels
+        this.$store.dispatch("userChannels"
+        ).then(() => {
+          this.userChannels = this.loadedUserChannels
+        }).catch(err => {
+          console.log(err)
+        })
       }).catch(err => {
         console.log(err)
       })
     },
 
     subscribeToChannel(channel) {
-      this.$store.dispatch("subscribeUserToChannel", channel
+      let user = this.user
+      this.$store.dispatch("subscribeUserToChannel", {channel, user}
       ).then(() => {
-        this.userChannels.push(channel)
-        this.loadedUserChannels = this.userChannels
+        this.$store.dispatch("userChannels"
+        ).then(() => {
+          this.userChannels = this.loadedUserChannels
+        }).catch(err => {
+          console.log(err)
+        })
       }).catch(err => {
         console.log(err)
       })
@@ -107,16 +133,19 @@ export default defineComponent({
     },
 
     getAdmins(channel) {
+      this.users = this.loadedUsers
       let admins = []
+      //console.log(channel)
       this.users.forEach(user => {
-        channel.admistrators.forEach(admin => {
-          if (admin.self === user.self) {
-            admins.push({
-              name: user.first_name + " " + user.middle_name + " " + user.surname
-            })
+        channel.presidents.forEach(admin => {
+          //console.log(user.self)
+          //console.log(admin[0].self)
+          if (admin[0].self === user.self) {
+            admins.push({name: user.first_name + " " + user.middle_name + " " + user.surname})
           }
         })
       })
+      //console.log(admins)
       return admins
     }
   }
@@ -127,7 +156,7 @@ export default defineComponent({
 </script>
 
 <template >
-  <div class="container">
+  <div v-if="ready===3" class="container">
     <div class="row">
       <div class="col">
         <h3>Clubs</h3>
@@ -166,7 +195,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
-    <div v-for="channel in this.channels" :key="channel.self" class="card mb-3">
+    <div  v-for="channel in this.channels" :key="channel.self" class="card mb-3">
       <div class="card-body">
         <div class="d-flex flex-column flex-lg-row align-items-center">
           <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar(channel.name) }}</span>

@@ -12,21 +12,9 @@ export default defineComponent({
             channels: [],
             registeredChannel: {},
             selectedChannel: {},
-            users: [
-                {
-                    id: "1",
-                    username: "user1"
-                },
-                {
-                    id: "2",
-                    username: "user2"
-                },
-                {
-                    id: "3",
-                    username: "user3"
-                }
-            ],
-            adminList: ""
+            users: [],
+            adminList: "",
+            ready : 0
         }
     },
 
@@ -40,42 +28,82 @@ export default defineComponent({
     },
 
     mounted() {
-        this.$store.dispatch("channels"
-        ).then(() => {
-            this.channels = this.loadedChannels
-        }).catch(err => {
-            console.log(err)
-        })
-        
         this.$store.dispatch("users"
         ).then(() => {
             this.users = this.loadedUsers
+            this.ready += 1
         }).catch(err => {
             console.log(err)
         })
+
+        this.$store.dispatch("channels"
+        ).then(() => {
+            this.channels = this.loadedChannels
+            this.ready += 1
+        }).catch(err => {
+            console.log(err)
+        })
+
+
     },
 
     methods: {
         addChannel() {
-            this.registeredChannel.array = this.adminList.split(" ").filter(admin => admin.length >1)
+            let admins = this.adminList.split(" ").filter(admin => admin.length > 1)
+            this.registeredChannel.presID_array = []
+            this.users.forEach(user => {
+                admins.forEach(admin => {
+                    if (admin === user.username) {
+                        this.registeredChannel.presID_array.push(user.self.replace("/users/", ""))
+                    }
+                })
+            })
+            this.adminList = []
             console.log(this.registeredChannel)
             this.$store.dispatch("addChannel", this.registeredChannel
-            ).then(()=>{
-                this.channels.push(this.registeredChannel)
-                this.$store.commit("setChannels", this.channels)
-            }).catch(err=>{
+            ).then(() => {
+                this.$store.dispatch("channels"
+                ).then(() => {
+                    this.channels = this.loadedChannels
+                }).catch(err => {
+                    console.log(err)
+                })
+            }).catch(err => {
                 console.log(err)
             })
+            this.hideModal("addChannel")
         },
 
         deleteChannel(channel) {
             this.$store.dispatch("deleteChannel", channel
-            ).then(()=>{
-                this.channels.filter(element => element.self !== channel.self)
-                this.$store.commit("setChannels", this.channels)
-            }).catch(err=>{
+            ).then(() => {
+                this.$store.dispatch("channels"
+                ).then(() => {
+                    this.channels = this.loadedChannels
+                }).catch(err => {
+                    console.log(err)
+                })
+            }).catch(err => {
                 console.log(err)
             })
+            this.hideModal("deleteChannel")
+        },
+
+        getAdmins(channel) {
+            this.users = this.loadedUsers
+            let admins = []
+            //console.log(channel)
+            this.users.forEach(user => {
+                channel.presidents.forEach(admin => {
+                    //console.log(user.self)
+                    //console.log(admin[0].self)
+                    if (admin[0].self === user.self) {
+                        admins.push({ name: user.first_name + " " + user.middle_name + " " + user.surname })
+                    }
+                })
+            })
+            //console.log(admins)
+            return admins
         },
 
         hideModal(modalId) {
@@ -88,7 +116,7 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="container">
+    <div v-if="ready === 2" class="container">
         <div class="row">
             <div class="col ">
                 <div class="card">
@@ -115,7 +143,8 @@ export default defineComponent({
                                         <td>{{ channel.name }}</td>
                                         <td>{{ channel.description }}</td>
                                         <td>
-                                            <span v-for="(admin, j) in channel.array" :key="j"> {{ admin }}</span>
+                                            <p v-for="(admin, j) in getAdmins(channel)" :key="j"> {{ admin.name }}
+                                            </p>
                                         </td>
                                         <td>
                                             <div class="text-right">
@@ -165,10 +194,13 @@ export default defineComponent({
                                 data-bs-toggle="dropdown" aria-expanded="false"> </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li v-for="user in this.users" :key="user.self">
-                                    <a class="dropdown-item" @click="adminList = adminList + user.username + ' '">{{ user.username }} </a>
+                                    <a class="dropdown-item" @click="adminList = adminList + user.username + ' '">{{
+                                            user.username
+                                    }} </a>
                                 </li>
                             </ul>
-                            <input v-model="adminList" type="text" id="administrators" class="form-control" placeholder="Administrators" >
+                            <input v-model="adminList" type="text" id="administrators" class="form-control"
+                                placeholder="Administrators">
 
                         </div>
                     </form>

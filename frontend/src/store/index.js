@@ -12,7 +12,7 @@ export default createStore({
   state: {
     messagingToken: "",
     logStatus: JSON.parse(localStorage.getItem("logStatus")) || "",
-    userRole: JSON.parse(localStorage.getItem("role")) || "",
+
     user: {},
     userEmails: [],
     users: [],
@@ -615,7 +615,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -636,7 +636,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -654,7 +654,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit('setError')
           reject(err)
@@ -678,7 +678,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -695,7 +695,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -707,12 +707,12 @@ export default createStore({
       return new Promise((resolve, reject) => {
         instance.get("channels", { withCredentials: true }
         ).then(response => {
-          commit("setChannels", response)
+          commit("setChannels", response.data)
           resolve(response)
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -733,7 +733,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -755,7 +755,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -765,28 +765,14 @@ export default createStore({
     //TODO: fix method
     userChannels({ commit }) {
       return new Promise((resolve, reject) => {
-        instance.get("users/me/subscriptions", { withCredentials: true }
+        instance.get("/users/me/subscribtions", { withCredentials: true }
         ).then(response => {
-          let channelsId = response.data
-          let userChannels = []
-          this.dispatch("channels"
-          ).then(() => {
-            this.state.channels.forEach(channel => {
-              channelsId.forEach(ch => {
-                if (channel.self === ch.self) {
-                  userChannels.push(channel)
-                }
-              })
-            })
-          }).catch(err => {
-            console.log(err)
-          })
-          commit("setUserChannels", response)
+          commit("setUserChannels", response.data)
           resolve(response)
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -800,7 +786,7 @@ export default createStore({
           {
             name: channel.name,
             description: channel.description,
-            array: channel.array
+            presID_array: channel.presID_array
           }, { withCredentials: true }
         ).then(response => {
           notify({
@@ -811,7 +797,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -832,7 +818,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -840,14 +826,12 @@ export default createStore({
       })
     },
 
-    subscribeUserToChannel({ commit }, channel) {
+    subscribeUserToChannel({ commit }, {channel, user}) {
       return new Promise((resolve, reject) => {
-        instance.post("users/me/subscriptions/" + channel.self.replace("/channels/", ""),
-          {
-            name: channel.name,
-            description: channel.description,
-            array: channel.array
-          }, { withCredentials: true }
+        instance.post(channel.self + "/subscribers",
+        {
+          self: user.self
+        }, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -857,7 +841,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -866,8 +850,9 @@ export default createStore({
     },
 
     unsubscribeUserFromChannel({ commit }, channel) {
+      console.log(channel)
       return new Promise((resolve, reject) => {
-        instance.delete("users/me/subscriptions/" + channel.self.replace("/channels/", ""),
+        instance.delete(channel.channel.self + "/subscribers/" + channel.self.replace("/users/me/subscriptions/", ""),
           { withCredentials: true }
         ).then(response => {
           notify({
@@ -878,7 +863,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -911,7 +896,7 @@ export default createStore({
 
     channelDetails({ commit }, channel) {
       return new Promise((resolve, reject) => {
-        instance.get(channel.self, { withCredentials: true }
+        instance.get(channel, { withCredentials: true }
         ).then(response => {
           const channel = response.data
           commit("setChannelDetails", channel)
@@ -980,7 +965,7 @@ export default createStore({
 
     userEvents({ commit }) {
       return new Promise((resolve, reject) => {
-        instance.get("users/me/events", { withCredentials: true }
+        instance.get("users/me/participations", { withCredentials: true }
         ).then((response) => {
           commit("setUserEvents", response.data)
           resolve(response)
@@ -1024,7 +1009,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -1044,7 +1029,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -1061,7 +1046,7 @@ export default createStore({
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -1118,13 +1103,13 @@ export default createStore({
       return new Promise((resolve, reject) => {
         instance.get(channel.self + "/subscribers", { withCredentials: true }
         ).then(response => {
-          let subscribersId = response.data
+          let subscriptions = response.data
           let subscribers = []
           this.dispatch("users"
           ).then(() => {
             this.state.users.forEach(user => {
-              subscribersId.forEach(sub => {
-                if (sub.self === user.self) {
+              subscriptions.forEach(sub => {
+                if (sub.user === user.self) {
                   subscribers.push(user)
                 }
               })
@@ -1301,10 +1286,13 @@ export default createStore({
             name: device.name,
             token: this.getters.getMessagingToken
           }
-          //console.log(ch)
           instance.post("users/me/devices", ch
             , { withCredentials: true }
           ).then(response => {
+            notify({
+              title: "Success",
+              text: "This action may need a page refresh"
+            })
             resolve(response)
           }).catch(err => {
             notify({

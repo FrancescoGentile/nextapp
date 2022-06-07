@@ -15,7 +15,8 @@ export default defineComponent({
             channel: {},
             showNews: false,
             showEvents: false,
-            users: []
+            users: [],
+            ready: 0
         }
     },
 
@@ -32,31 +33,31 @@ export default defineComponent({
         },
         loadedNews() {
             return this.$store.getters.getChannelNews
+        },
+        loadedUser() {
+            return this.$store.getters.getUsers
         }
     },
 
-    mounted() {
+    created() {
+        this.$store.dispatch("users"
+        ).then(() => {
+            this.users = this.loadedUsers
+            this.ready += 1
+        }).catch(err => {
+            console.log(err)
+        })
+
         this.$store.dispatch("channelDetails", this.id
         ).then(() => {
             this.channel = this.loadedChannel;
+            this.ready += 1
             //console.log(this.channel)
         }).catch(err => {
             console.log(err)
         })
 
-        this.$store.dispatch("users"
-        ).then(() => {
-            this.users = this.loadedUsers
-        }).catch(err => {
-            console.log(err)
-        })
-        /*
-        this.$store.dispatch("channelDetails", this.id
-        ).then(() => {
-            this.news = this.loadedNews;
-        }).catch(err => {
-            console.log(err)
-        })*/
+
     },
 
     methods: {
@@ -77,18 +78,20 @@ export default defineComponent({
             this.showNews = !this.showNews
             this.showEvents = false
         },
-
         getAdmins(channel) {
+            this.users = this.loadedUsers
             let admins = []
+            //console.log(channel)
             this.users.forEach(user => {
-                channel.admistrators.forEach(admin => {
-                    if (admin.self === user.self) {
-                        admins.push({
-                            name: user.first_name + " " + user.middle_name + " " + user.surname
-                        })
+                channel.presidents.forEach(admin => {
+                    //console.log(user.self)
+                    //console.log(admin[0].self)
+                    if (admin[0].self === user.self) {
+                        admins.push({ name: user.first_name + " " + user.middle_name + " " + user.surname })
                     }
                 })
             })
+            //console.log(admins)
             return admins
         }
     }
@@ -98,7 +101,8 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="container mb-3">
+
+    <div v-if="ready === 2" class="container mb-3">
         <div class="row">
             <div class="col">
                 <div class="card">
@@ -126,7 +130,8 @@ export default defineComponent({
                             </div>
                             <div class="row mt-3">
                                 <div class="col">
-                                    <span v-for="(admin, i) in this.getAdmins(channel)" :key="i" class="badge bg-secondary me-1 mb-1"> {{admin.name}}</span>
+                                    <span v-for="(admin, i) in this.getAdmins(channel)" :key="i"
+                                        class="badge bg-secondary me-1 mb-1"> {{ admin.name }}</span>
                                 </div>
                                 <div class="col"></div>
                                 <div class="col text-end">

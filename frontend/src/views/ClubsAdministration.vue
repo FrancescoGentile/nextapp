@@ -61,7 +61,6 @@ export default defineComponent({
             this.hideModal("modifyChannel");
         },
 
-        //yet to be implemnted in store
         removeUser(user) {
             let ch = this.chooseChannel
             this.$store.dispatch("banUser", {ch, user}).then(() => {
