@@ -6,9 +6,31 @@ import { InternalServerError } from '@nextapp/common/error';
 import { UserID, UserRole } from '@nextapp/common/user';
 import { Driver, int, Neo4jError } from 'neo4j-driver';
 import { SearchOptions } from '../../domain/models/search';
-import { User } from '../../domain/models/user';
-import { Username, Password } from '../../domain/models/user.credentials';
+import { IdentityInfo, User } from '../../domain/models/user';
+import { Username, Password } from '../../domain/models/credentials';
 import { UserRepository } from '../../domain/ports/user.repository';
+
+function node_to_user(node: any): User {
+  const info = node.properties;
+
+  const identity = new IdentityInfo(
+    info.first_name,
+    info.middle_name,
+    info.surname
+  );
+
+  const credentials = {
+    username: Username.from_string(info.username),
+    password: Password.from_hash(info.password),
+  };
+
+  return {
+    id: new UserID(info.id),
+    role: info.admin ? UserRole.SYS_ADMIN : UserRole.SIMPLE,
+    credentials,
+    identity,
+  };
+}
 
 export class Neo4jUserRepository implements UserRepository {
   public constructor(private readonly driver: Driver) {}
@@ -111,21 +133,21 @@ export class Neo4jUserRepository implements UserRepository {
             tx.run(
               `CREATE (u:USER_User {
                 id: $id,
+                admin: $admin,
                 username: $username,
                 password: $password,
                 first_name: $first_name,
                 middle_name: $middle_name,
-                surname: $surname, 
-                email: $email
+                surname: $surname
               })`,
               {
                 id: id.to_string(),
-                username: user.username.to_string(),
-                password: user.password.to_string(),
-                first_name: user.first_name,
-                middle_name: user.middle_name ?? null,
-                surname: user.surname,
-                email: user.email.to_string(),
+                admin: user.role === UserRole.SYS_ADMIN,
+                username: user.credentials.username.to_string(),
+                password: user.credentials.password.to_string(),
+                first_name: user.identity.first_name,
+                middle_name: user.identity.middle_name || null,
+                surname: user.identity.surname,
               }
             )
           );
@@ -138,7 +160,7 @@ export class Neo4jUserRepository implements UserRepository {
             throw e;
           }
           // there is already a user with the same username
-          if (error.message.includes(user.username.to_string())) {
+          if (error.message.includes(user.credentials.username.to_string())) {
             return undefined;
           }
         }
@@ -150,7 +172,7 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-  public async get_user_info(user_id: UserID): Promise<User | null> {
+  public async get_user(user_id: UserID): Promise<User | null> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -165,18 +187,7 @@ export class Neo4jUserRepository implements UserRepository {
         return null;
       }
 
-      const info = res.records[0].get('u').properties;
-
-      return new User(
-        info.first_name,
-        info.middle_name,
-        info.surname,
-        info.admin,
-        Username.from_string(info.username),
-        Password.from_hash(info.password),
-        info.email,
-        new UserID(info.id)
-      );
+      return node_to_user(res.records[0].get('u'));
     } catch {
       throw new InternalServerError();
     } finally {
@@ -184,7 +195,7 @@ export class Neo4jUserRepository implements UserRepository {
     }
   }
 
-  public async get_users_list(options: SearchOptions): Promise<User[]> {
+  public async get_users(options: SearchOptions): Promise<User[]> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -198,20 +209,7 @@ export class Neo4jUserRepository implements UserRepository {
         )
       );
 
-      const users = res.records.map((record) => {
-        const info = record.get('u').properties;
-        return new User(
-          info.first_name,
-          info.middle_name,
-          info.surname,
-          info.admin,
-          Username.from_string(info.username),
-          Password.from_hash(info.password),
-          info.email,
-          new UserID(info.id)
-        );
-      });
-
+      const users = res.records.map((record) => node_to_user(record.get('u')));
       return users;
     } catch (e) {
       throw new InternalServerError();
@@ -254,6 +252,70 @@ export class Neo4jUserRepository implements UserRepository {
 
       return res.summary.counters.updates().propertiesSet > 0;
     } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async add_user_picture(
+    user_id: UserID,
+    name: string
+  ): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:USER_User { id: $id })
+           SET u.picture = $picture`,
+          { id: user_id.to_string(), picture: name }
+        )
+      );
+
+      return res.summary.counters.updates().propertiesSet > 0;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async get_user_picture(user_id: UserID): Promise<string | null> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:USER_User { id: $id })
+           RETURN u.picture AS picture`,
+          { id: user_id.to_string() }
+        )
+      );
+
+      if (res.records.length === 0) {
+        return null;
+      }
+
+      return res.records[0].get('picture') || null;
+    } catch {
+      throw new InternalServerError();
+    } finally {
+      await session.close();
+    }
+  }
+
+  public async remove_user_picture(user_id: UserID): Promise<boolean> {
+    const session = this.driver.session();
+    try {
+      const res = await session.writeTransaction((tx) =>
+        tx.run(
+          `MATCH (u:USER_User { id: $id })
+           SET u.picture = $picture`,
+          { id: user_id.to_string(), picture: null }
+        )
+      );
+
+      return res.summary.counters.updates().propertiesSet > 0;
+    } catch (e) {
       throw new InternalServerError();
     } finally {
       await session.close();

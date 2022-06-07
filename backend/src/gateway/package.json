@@ -54,10 +54,13 @@
     "@nextapp/common": "^1.0.0",
     "@nextapp/user": "^1.0.0",
     "@nextapp/room": "^1.0.0",
+    "@nextapp/messenger": "^1.0.0",
+    "@nextapp/channel": "^1.0.0",
     "neo4j-driver": "^4.4.5",
     "eventemitter3": "^4.0.7",
     "cookie-parser": "^1.4.6",
     "express-serve-static-core": "^0.1.1",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "firebase-admin": "^10.2.0"
   }
 }

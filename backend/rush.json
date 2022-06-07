@@ -398,11 +398,19 @@
     {
       "packageName": "@nextapp/user",
       "projectFolder": "src/modules/user"
-    }, 
+    },
     {
       "packageName": "@nextapp/room",
       "projectFolder": "src/modules/room"
-    }, 
+    },
+    {
+      "packageName": "@nextapp/messenger",
+      "projectFolder": "src/modules/messenger"
+    },
+    {
+      "packageName": "@nextapp/channel",
+      "projectFolder": "src/modules/channel"
+    },
     {
       "packageName": "@nextapp/gateway",
       "projectFolder": "src/gateway"

@@ -9,8 +9,6 @@ import { MissingAuthToken } from '../../domain/errors';
 import { AuthToken } from '../../domain/models/auth';
 import { AuthService } from '../../domain/ports/auth.service';
 
-export const API_VERSION = '/api/v1';
-
 export const COOKIE_NAME = 'jwt';
 
 export const asyncHandler =

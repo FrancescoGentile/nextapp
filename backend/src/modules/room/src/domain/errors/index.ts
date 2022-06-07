@@ -106,7 +106,7 @@ export class RoomCreationNotAuthorized extends NextError {
       get_room_type(RoomErrorTypes.ROOM_CREATION_NOT_AUTHORIZED),
       StatusCodes.FORBIDDEN,
       'Missing authorization to create a room',
-      'You have to be a system adiministator to create a room.',
+      'You have to be a system administator to create a room.',
       options
     );
   }
@@ -118,7 +118,7 @@ export class RoomDeletionNotAuthorized extends NextError {
       get_room_type(RoomErrorTypes.ROOM_DELETION_NOT_AUTHORIZED),
       StatusCodes.FORBIDDEN,
       'Missing authorization to delete a room',
-      'You have to be a system adiministator to delete a room.',
+      'You have to be a system administator to delete a room.',
       options
     );
   }
