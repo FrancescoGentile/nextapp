@@ -128,7 +128,7 @@ export class NextEventInfoService implements EventInfoService {
   }
 
   // TODO:
-  public async remove_event(user: UserID, event_id: EventID): Promise<void> {
+  public async delete_event(user: UserID, event_id: EventID): Promise<void> {
     const event = await this.events_repo.get_event(event_id);
     if (event === null) {
       throw new EventNotFound(event_id.to_string());

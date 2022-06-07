@@ -65,7 +65,7 @@ export interface EventInfoService {
    * @param user The user who wants to remove the event
    * @param event The event to remove
    */
-  remove_event(user: UserID, event: EventID): Promise<void>;
+  delete_event(user: UserID, event: EventID): Promise<void>;
 
   // --------------------------------------------------
 

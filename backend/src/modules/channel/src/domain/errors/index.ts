@@ -347,6 +347,7 @@ enum EventErrorTypes {
   EVENT_VIEW_NOT_AUTHORIZED,
   EVENT_PARTICIPANTS_NOT_AUTHORIZED,
   INVALID_INTERVAL,
+  INVALID_ROOM_ID,
 }
 
 function get_event_type(type: EventErrorTypes): string {
@@ -468,6 +469,18 @@ export class InvalidInterval extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid search interval',
       details,
+      options
+    );
+  }
+}
+
+export class InvalidEventRoomID extends NextError {
+  public constructor(link: string, options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.INVALID_ROOM_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid room link',
+      `${link} is not a valid link for a room.`,
       options
     );
   }
