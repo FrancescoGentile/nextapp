@@ -3,7 +3,7 @@
 //
 
 import { UserID } from '@nextapp/common/user';
-import { Booking, BookingID } from '../models/booking';
+import { Booking, BookingID, OrganiserID } from '../models/booking';
 import { SearchOptions } from '../models/search';
 import { RoomID } from '../models/room';
 import { NextInterval } from '../models/interval';
@@ -52,9 +52,20 @@ export interface BookingRepository {
 
   /**
    * Deletes from the repository the booking with the given id and made by the given user.
-   * This method returns false if no booking with the given conditions is found.
+   * This method returns false if no booking is found.
    * @param user_id
    * @param booking_id
    */
   delete_booking(user_id: UserID, booking_id: BookingID): Promise<boolean>;
+
+  /**
+   * Deletes from the repository the booking with the given id and made by the given organiser.
+   * This method returns false if no booking is found.
+   * @param organiser
+   * @param booking_id
+   */
+  delete_organiser_booking(
+    organiser: OrganiserID,
+    booking_id: BookingID
+  ): Promise<boolean>;
 }
