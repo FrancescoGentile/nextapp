@@ -75,17 +75,16 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const isLoggedIn = store.getters.isLoggedIn
-  //const user = store.getters.getUser
+  const role = store.getters.getUserRole
   if (isLoggedIn) {
     if(to.name === "home"){
       next({name: "dashboard"})
     }else{
-      /*
-      if((to.name === "dashboardAdmin" || to.name === "roomDetails") && user.role !== "admin") {
+      if((to.name === "dashboardAdmin" || to.name === "roomDetails") && role !== "admin") {
         next({name: "dashboard"})
       }else{
         next()
-      }*/
+      }
       next()
     }
   } else {

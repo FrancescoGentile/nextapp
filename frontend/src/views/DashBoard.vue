@@ -58,7 +58,11 @@ export default defineComponent({
       console.log(err)
     })
 
-    
+    this.$store.dispatch("setupRole").catch(err=>{
+      console.log(err)
+    })
+
+
   },
   computed: {
     loadedRooms() {
@@ -69,6 +73,9 @@ export default defineComponent({
     },
     loadedUserEvents() {
       return this.$store.getters.getUserEvents
+    },
+    loadedEvent(){
+      return this.$store.getters.getEventDetails
     }
   },
   methods: {
@@ -157,35 +164,43 @@ export default defineComponent({
 
     getPrintableEvents() {
       this.printableEvents = []
-      this.userEvents.forEach(event => {
-        let startTime = new Date(event.start)
-        let endTime = new Date(event.end)
-        let interval = ("0" + startTime.getHours()).slice(-2) + ":" + ("0" + startTime.getMinutes()).slice(-2) + " - " + ("0" + endTime.getHours()).slice(-2) + ":" + ("0" + endTime.getMinutes()).slice(-2)
-        let date = ("0" + startTime.getDate()).slice(-2)
-        let month = startTime.toLocaleString("default", { month: "long" })
-        let room = ""
-        this.rooms.forEach(room => {
-          if (room.self === event.room.self) {
-            room = room.name
+      this.userEvents.forEach(partecipation => {
+        let event = {}
+        this.$store.dispatch("eventDetails", partecipation.event
+        ).then(() => {
+          event = this.loadedEvent
+          let startTime = new Date(event.start)
+          let endTime = new Date(event.end)
+          let interval = ("0" + startTime.getHours()).slice(-2) + ":" + ("0" + startTime.getMinutes()).slice(-2) + " - " + ("0" + endTime.getHours()).slice(-2) + ":" + ("0" + endTime.getMinutes()).slice(-2)
+          let date = ("0" + startTime.getDate()).slice(-2)
+          let month = startTime.toLocaleString("default", { month: "long" })
+          let room = ""
+          this.rooms.forEach(room => {
+            if (room.self === event.room.self) {
+              room = room.name
+            }
+          })
+          let channel = ""
+          this.userChannels.forEach(el => {
+            if (el.self === event.channel.self) {
+              channel = el.name
+            }
+          })
+          let res = {
+            self: event.self,
+            name: event.name,
+            channel: channel,
+            description: event.description,
+            date: date,
+            month: month,
+            time: interval,
+            room: room
           }
+          this.printableEvents.push(res)
+        }).catch(err => {
+          console.log(err)
         })
-        let channel = ""
-        this.userChannels.forEach(el => {
-          if (el.self === event.channel.self) {
-            channel = el.name
-          }
-        })
-        let res = {
-          self: event.self,
-          name: event.name,
-          channel: channel,
-          description: event.description,
-          date: date,
-          month: month,
-          time: interval,
-          room: room
-        }
-        this.printableEvents.push(res)
+
       })
     },
 

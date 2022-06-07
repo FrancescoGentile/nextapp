@@ -13,7 +13,6 @@ export default createStore({
     messagingToken: "",
     logStatus: JSON.parse(localStorage.getItem("logStatus")) || "",
     userRole: JSON.parse(localStorage.getItem("role")) || "",
-    clubAdmin: JSON.parse(localStorage.getItem("admin")) || false,
     user: {},
     userEmails: [],
     users: [],
@@ -27,9 +26,11 @@ export default createStore({
     channels: [],
     userChannels: [],
     channelDetails: [],
+    searchedChannel: {},
     channelNews: [],
     channelEvents: [],
     userEvents: [],
+    eventDetails: {},
     administratedChannels: [],
     channelSubscribers: [],
     userDevices: []
@@ -41,11 +42,8 @@ export default createStore({
     isLoggedIn(state) {
       return !!state.logStatus
     },
-    getUserRole(state){
+    getUserRole(state) {
       return state.userRole
-    },
-    isClubAdmin(state){
-      return !!state.clubAdmin
     },
     getUser(state) {
       return state.user
@@ -80,6 +78,9 @@ export default createStore({
     getUserChannels(state) {
       return state.userChannels
     },
+    getSearchedChannel(state) {
+      return state.searchedChannel
+    },
     getChannelDetails(state) {
       return state.channelDetails
     },
@@ -91,6 +92,9 @@ export default createStore({
     },
     getUserEvents(state) {
       return state.userEvents
+    },
+    getEventDetails(state) {
+      return state.eventDetails
     },
     getAdministratedChannels(state) {
       return state.administratedChannels
@@ -106,11 +110,8 @@ export default createStore({
     setMessagingToken(state, token) {
       state.messagingToken = token
     },
-    setUserRole(state, role){
+    setUserRole(state, role) {
       state.userRole = role
-    },
-    setClubAdmin(state, admin){
-      state.clubAdmin = admin
     },
     setLogin(state) {
       state.logStatus = "logged"
@@ -154,6 +155,9 @@ export default createStore({
     setUserChannels(state, channels) {
       state.userChannels = channels
     },
+    setSearchedChannel(state, channel) {
+      state.searchedChannel = channel
+    },
     setChannelDetails(state, channel) {
       state.channelDetails = channel
     },
@@ -165,6 +169,9 @@ export default createStore({
     },
     setUserEvents(state, events) {
       state.userEvents = events
+    },
+    setEventDetails(state, event) {
+      state.eventDetails = event
     },
     setAdministratedChannels(state, channels) {
       state.administratedChannels = channels
@@ -182,8 +189,10 @@ export default createStore({
         instance.post("login", {
           username: user.username,
           password: user.password
-        }, {headers:{ "Accept": "cookie"},
-          withCredentials: true }
+        }, {
+          headers: { "Accept": "cookie" },
+          withCredentials: true
+        }
         ).then(response => {
           localStorage.setItem("logStatus", JSON.stringify("logged"))
           commit('setLogin')
@@ -195,7 +204,6 @@ export default createStore({
         }).catch(err => {
           localStorage.removeItem('logStatus')
           localStorage.removeItem("role")
-          localStorage.removeItem("admin")
           notify({
             title: "Error",
             text: err.response.data.details
@@ -206,38 +214,19 @@ export default createStore({
       })
     },
 
-    setupRole({commit}){
+    setupRole({ commit }) {
       return new Promise((resolve, reject) => {
         instance.get("users/me", { withCredentials: true }
         ).then(response => {
-          commit("setUserRole", response.data.role)
+          const is_admin = response.data.is_admin
+          if (is_admin) {
+            commit("setUserRole", "admin")
+          } else {
+            commit("setUserRole", "user")
+          }
           localStorage.setItem("role", JSON.stringify(response.data.role))
           resolve(response)
         }).catch(err => {
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
-
-    setupAdmin({commit}){
-      return new Promise((resolve, reject) => {
-        instance.get("users/me/president", { withCredentials: true }
-        ).then(response => {
-          console(response.data)
-          if(response.data === []){
-            this.commit("setClubAdmin", "")
-            localStorage.setItem("admin", JSON.stringify(""))
-          }else{
-            this.commit("setCLubAdmin", "admin")
-            localStorage.setItem("admin", JSON.stringify("admin"))
-          }
-          resolve(response)
-        }).catch(err => {
-          notify({
-            title: "Error",
-            text: err.response.details
-          })
           commit("setError")
           reject(err)
         })
@@ -249,6 +238,7 @@ export default createStore({
         instance.post("logout", {}, { withCredentials: true }
         ).then(response => {
           localStorage.removeItem('logStatus')
+          localStorage.removeItem("role")
           commit('setLogout')
           notify({
             title: "Logout",
@@ -257,6 +247,7 @@ export default createStore({
           resolve(response)
         }).catch(err => {
           localStorage.removeItem('logStatus')
+          localStorage.removeItem("role")
           notify({
             title: "Error",
             text: err.response.data.details
@@ -750,11 +741,11 @@ export default createStore({
       })
     },
 
-    primaryEmail({commit}, email){
-      return new Promise((resolve, reject) =>{
-        instance.patch(email.self,{
+    primaryEmail({ commit }, email) {
+      return new Promise((resolve, reject) => {
+        instance.patch(email.self, {
           main: !email.main
-        }, {withCredentials: true}
+        }, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -851,7 +842,7 @@ export default createStore({
 
     subscribeUserToChannel({ commit }, channel) {
       return new Promise((resolve, reject) => {
-        instance.post("users/me/channels",
+        instance.post("users/me/subscriptions/" + channel.self.replace("/channels/", ""),
           {
             name: channel.name,
             description: channel.description,
@@ -876,7 +867,7 @@ export default createStore({
 
     unsubscribeUserFromChannel({ commit }, channel) {
       return new Promise((resolve, reject) => {
-        instance.delete(channel.self,
+        instance.delete("users/me/subscriptions/" + channel.self.replace("/channels/", ""),
           { withCredentials: true }
         ).then(response => {
           notify({
@@ -895,9 +886,32 @@ export default createStore({
       })
     },
 
-    channelDetails({ commit }, channelId) {
+    banUser({ commit }, { channel, user }) {
       return new Promise((resolve, reject) => {
-        instance.get("channels/" + channelId, { withCredentials: true }
+        instance.get(channel.self + "/subscribers/" + user.self.replace("/users/", ""),
+          { withCredentials: true }
+        ).then(response => {
+          const channel = response.data
+          commit("setChannelDetails", channel)
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    channelDetails({ commit }, channel) {
+      return new Promise((resolve, reject) => {
+        instance.get(channel.self, { withCredentials: true }
         ).then(response => {
           const channel = response.data
           commit("setChannelDetails", channel)
@@ -913,9 +927,26 @@ export default createStore({
       })
     },
 
+    searchChannel({ commit }, name) {
+      return new Promise((resolve, reject) => {
+        instance.get("channels?name=" + name, { withCredentials: true }
+        ).then(response => {
+          commit("setSearchedChannel", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
     channelEvents({ commit }, channelId) {
       return new Promise((resolve, reject) => {
-        instance.get("channels/" + channelId + "/events", { withCredentials: true }
+        instance.get(channelId + "/events", { withCredentials: true }
         ).then(response => {
           commit("setChannelDetails", response.data)
           resolve(response)
@@ -932,7 +963,7 @@ export default createStore({
 
     channelNews({ commit }, channelId) {
       return new Promise((resolve, reject) => {
-        instance.get("channels/" + channelId + "/news", { withCredentials: true }
+        instance.get(channelId + "/news", { withCredentials: true }
         ).then(response => {
           commit("setChannelDetails", response.data)
           resolve(response)
@@ -952,6 +983,23 @@ export default createStore({
         instance.get("users/me/events", { withCredentials: true }
         ).then((response) => {
           commit("setUserEvents", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    eventDetails({ commit }, event) {
+      return new Promise((resolve, reject) => {
+        instance.get(event.self, { withCredentials: true }
+        ).then((response) => {
+          commit("setEventDetails", response.data)
           resolve(response)
         }).catch(err => {
           notify({
@@ -1066,9 +1114,9 @@ export default createStore({
     },
 
     //TODO: subscribers are only ids -> return entire user object instead
-    channelSubscribers({ commit }, channelId) {
+    channelSubscribers({ commit }, channel) {
       return new Promise((resolve, reject) => {
-        instance.get("channels/" + channelId + "/subscribers", { withCredentials: true }
+        instance.get(channel.self + "/subscribers", { withCredentials: true }
         ).then(response => {
           let subscribersId = response.data
           let subscribers = []
@@ -1100,7 +1148,7 @@ export default createStore({
 
     addNews({ commit }, { news, channelId }) {
       return new Promise((resolve, reject) => {
-        instance.post("channels/" + channelId + "/news/", news, { withCredentials: true }
+        instance.post(channelId + "/news/", news, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -1165,7 +1213,7 @@ export default createStore({
 
     addEvent({ commit }, { event, channelId }) {
       return new Promise((resolve, reject) => {
-        instance.post("channels/" + channelId + "/events/", event, { withCredentials: true }
+        instance.post(channelId + "/events/", event, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -1268,7 +1316,7 @@ export default createStore({
           })
 
         })
-      }).catch(err=>{
+      }).catch(err => {
         console.log(err)
       })
 

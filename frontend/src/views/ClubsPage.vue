@@ -10,7 +10,10 @@ export default defineComponent({
     return {
       channels: [],
       userChannels: [],
-      users: []
+      users: [],
+      searchedChannel: "",
+      filteredChannel: "",
+      showSearch: false
     }
   },
 
@@ -23,6 +26,9 @@ export default defineComponent({
     },
     loadedUsers() {
       return this.$store.getters.getUsers
+    },
+    loadedFilteredChannel() {
+      return this.$store.getters.getSearchedChannel
     }
   },
 
@@ -70,6 +76,19 @@ export default defineComponent({
       })
     },
 
+    searchChannel(name) {
+      if (name === "") {
+        this.showSearch = false
+      } else {
+        this.$store.dispatch("searchChannel", name
+        ).then(() => {
+          this.filteredChannel = this.loadedFilteredChannel
+        }).catch(err => {
+          console.log(err)
+        })
+      }
+    },
+
     getAvatar(name) {
       let avatarText = ""
       name.split(" ").forEach(word => {
@@ -109,16 +128,52 @@ export default defineComponent({
 
 <template >
   <div class="container">
-    <div class="text-center mb-2">
-      <h3>Clubs</h3>
+    <div class="row">
+      <div class="col">
+        <h3>Clubs</h3>
+      </div>
+      <div class="col">
+        <div class="input-group">
+          <input v-model="this.searchedChannel" type="search" class="form-control rounded" placeholder="Search"
+            aria-label="Search" aria-describedby="search-addon" />
+          <button @click="searchChannel(this.searchedChannel)" type="button" class="btn btn-primary">Search</button>
+        </div>
+      </div>
+    </div>
+    <!-- search results-->
+    <div v-if="showSearch" class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-lg-row align-items-center">
+          <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar(filteredChannel.name) }}</span>
+          <div class="col-sm-3">
+            <h4 class="h5">{{ filteredChannel.name }}</h4>
+            <span v-for="(admin, i) in this.getAdmins(filteredChannel)" :key="i" class="badge bg-secondary me-1 mb-1">
+              {{ admin.name }}</span>
+          </div>
+          <div class="col-sm-5 py-2 ms-2"> {{ filteredChannel.description }} </div>
+          <div class="col-sm-3 text-lg-end">
+            <div class="btn-group-vertical">
+              <button v-if="isSubscribed(filteredChannel)" @click="unsubscribeFromChannel(filteredChannel)"
+                class="btn btn-primary mb-1"> Unsubscribe </button>
+              <button v-else @click="subscribeToChannel(filteredChannel)" class="btn btn-primary mb-1"> Subscribe
+              </button>
+              <button
+                @click="this.$router.push({ name: 'clubDetails', params: { id: filteredChannel.self, isSubscribed: isSubscribed(filteredChannel) } })"
+                class="btn btn-primary stretched-link">See details</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
     </div>
     <div v-for="channel in this.channels" :key="channel.self" class="card mb-3">
       <div class="card-body">
         <div class="d-flex flex-column flex-lg-row align-items-center">
-          <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar("Channel Name") }}</span>
+          <span class="avatar avatar-text error rounded-3 me-3 mb-2">{{ getAvatar(channel.name) }}</span>
           <div class="col-sm-3">
             <h4 class="h5">{{ channel.name }}</h4>
-            <span v-for="(admin, i) in this.getAdmins(channel)" :key="i" class="badge bg-secondary me-1 mb-1"> {{admin.name}}</span>
+            <span v-for="(admin, i) in this.getAdmins(channel)" :key="i" class="badge bg-secondary me-1 mb-1">
+              {{ admin.name }}</span>
           </div>
           <div class="col-sm-5 py-2 ms-2"> {{ channel.description }} </div>
           <div class="col-sm-3 text-lg-end">
@@ -127,7 +182,7 @@ export default defineComponent({
                 class="btn btn-primary mb-1"> Unsubscribe </button>
               <button v-else @click="subscribeToChannel(channel)" class="btn btn-primary mb-1"> Subscribe </button>
               <button
-                @click="this.$router.push({ name: 'clubDetails', params: { id: 1, isSubscribed: isSubscribed(channel) } })"
+                @click="this.$router.push({ name: 'clubDetails', params: { id: channel.self, isSubscribed: isSubscribed(channel) } })"
                 class="btn btn-primary stretched-link">See details</button>
             </div>
 

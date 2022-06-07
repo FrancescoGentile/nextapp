@@ -62,11 +62,11 @@ export default {
             let start = this.startDate.toISOString()
             let end = this.endDate.toISOString()
             let description = this.chosenEvent.description
-            let channel = "/api/v2/channels/" + this.channelId
-            let roomId = ""
+            let channel = {self: this.channelId}
+            let roomId = {self: ""}
             this.rooms.forEach(room=>{
                 if(room.name === this.chosenEvent.room){
-                    roomId = room.self
+                    roomId.self = room.self
                 }
             })
             const event = {

@@ -7,7 +7,7 @@ export default {
     components: {
         Datepicker
     },
-    props: ["channelId"],
+    props: ["channelId", "channelName"],
     data() {
         return {
             news: [],
@@ -82,9 +82,9 @@ export default {
         addNews() {
             let title = this.chosenNews.title
             let date = this.chosenNews.date.toISOString()
-            let author = this.user.self
+            let author = {self: this.user.self}
             let body = this.chosenNews.body
-            let channel = "/api/v2/channels/" + this.channelId
+            let channel = {self: this.channelId}
 
             const news = {
                 title, author, date, body, channel

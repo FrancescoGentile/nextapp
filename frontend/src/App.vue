@@ -9,9 +9,6 @@ export default defineComponent({
     },
     userRole(){
       return this.$store.getters.getUserRole
-    },
-    clubAdmin(){
-      return this.$store.getters.isClubAdmin
     }
 
   },
@@ -51,7 +48,7 @@ export default defineComponent({
             <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
           </li>
           <li>
-            <router-link to="/dashboardAdmin" class="nav-link">Administration</router-link>
+            <router-link v-if="this.userRole === 'admin'" to="/dashboardAdmin" class="nav-link">Administration</router-link>
           </li>
           <li class="nav-item">
             <router-link to="/clubsAdministration" class="nav-link">Clubs Administration</router-link>
