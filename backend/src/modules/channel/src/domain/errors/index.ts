@@ -4,13 +4,13 @@
 
 import { NextError, StatusCodes } from '@nextapp/common/error';
 import { UserID } from '@nextapp/common/user';
-import { Channel } from '../models/channel';
 
 export { InternalServerError } from '@nextapp/common/error';
 
 // ---------------------------------------------------------------
 // -------------------------- CHANNEL ----------------------------
 // ---------------------------------------------------------------
+
 enum ChannelErrorTypes {
   INVALID_ID = 1,
   INVALID_NAME,
@@ -22,13 +22,13 @@ enum ChannelErrorTypes {
   CHANNEL_DELETION_NOT_AUTHORIZED,
   NO_CHANNEL_AVAILABLE,
   CHANNEL_NAME_NOT_FOUND,
-  PRESIDENT_NOT_USER
+  PRESIDENT_NOT_USER,
 }
 
 function get_channel_type(type: ChannelErrorTypes): string {
-    return `channel-${String(type).padStart(3, '0')}`;
-  }
-  
+  return `channel-${String(type).padStart(3, '0')}`;
+}
+
 export class InvalidChannelID extends NextError {
   public constructor(id: string, options?: ErrorOptions) {
     super(
@@ -56,12 +56,12 @@ export class InvalidChannelName extends NextError {
 }
 
 export class InvalidChannelDescription extends NextError {
-    public constructor(description: string, options?: ErrorOptions) {
-        super(
-        get_channel_type(ChannelErrorTypes.INVALID_DESCRIPTION),
-        StatusCodes.BAD_REQUEST,
-        'Invalid channel description',
-        `${description} does not meet on or both of the following conditions: ` +
+  public constructor(description: string, options?: ErrorOptions) {
+    super(
+      get_channel_type(ChannelErrorTypes.INVALID_DESCRIPTION),
+      StatusCodes.BAD_REQUEST,
+      'Invalid channel description',
+      `${description} does not meet on or both of the following conditions: ` +
         `length between 5 and 300 characters, ` +
         `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
       options
@@ -112,8 +112,8 @@ export class InvalidPresidentsNumber extends NextError {
       StatusCodes.BAD_REQUEST,
       'Invalid number of presidents',
       `You requested ${presidents_number} users to be assigned the role of club president.
-       This number not meet the following conditions: ` +
-        `The number of presidents must be at least ${Channel.MIN_PRESIDENTS} and ${Channel.MAX_PRESIDENTS} at most` +
+       This number does not meet the following conditions: ` +
+        `The number of presidents must be at least 1 and 4 at most` +
         `only lowercase and uppercase Latin letters, Arabic numerals, underscores and dashes.`,
       options
     );
@@ -316,6 +316,147 @@ export class NewsNotFound extends NextError {
   }
 }
 
+// -----------------------------------------------
+// -------------------- EVENT --------------------
+// -----------------------------------------------
+
+enum EventErrorTypes {
+  INVALID_ID = 1,
+  EVENT_NOT_FOUND,
+  INVALID_NAME,
+  INVALID_DESCRIPTION,
+  EVENT_CREATION_NOT_AUTHORIZED,
+  EVENT_DELETION_NOT_AUTHORIZED,
+  EVENT_UPDATE_NOT_AUTHORIZED,
+  EVENT_VIEW_NOT_AUTHORIZED,
+  EVENT_PARTICIPANTS_NOT_AUTHORIZED,
+  INVALID_INTERVAL,
+}
+
+function get_event_type(type: EventErrorTypes): string {
+  return `event-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidEventID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.INVALID_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid event id',
+      `${id} is not a valid id for an event.`,
+      options
+    );
+  }
+}
+
+export class EventNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.EVENT_NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Event not found',
+      `No event with ${id} was found.`,
+      options
+    );
+  }
+}
+
+export class InvalidEventName extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.INVALID_NAME),
+      StatusCodes.BAD_REQUEST,
+      'Invalid event name',
+      `The name of an event cannot be empty or longer than 100 characters.`,
+      options
+    );
+  }
+}
+
+export class InvalidEventDescription extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.INVALID_DESCRIPTION),
+      StatusCodes.BAD_REQUEST,
+      'Invalid event name',
+      `The description of an event cannot be empty or longer than 5000 characters.`,
+      options
+    );
+  }
+}
+
+export class EventCreationNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.EVENT_CREATION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Missing authorization to create an event',
+      `You have to be a channel's president to create an event.`,
+      options
+    );
+  }
+}
+
+export class EventDeletionNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.EVENT_DELETION_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Deletion not authorized',
+      `You have to be a channel's president to delete an event.`,
+      options
+    );
+  }
+}
+
+export class EventUpdateNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.EVENT_UPDATE_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'Update not authorized',
+      `You have to be a channel's president to update an event.`,
+      options
+    );
+  }
+}
+
+export class EventViewNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.EVENT_VIEW_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'View not authorized',
+      `You have to be subscribed to a channel to see its events.`,
+      options
+    );
+  }
+}
+
+export class EventParticipantsNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.EVENT_PARTICIPANTS_NOT_AUTHORIZED),
+      StatusCodes.FORBIDDEN,
+      'View not authorized',
+      `You have to be a president of the channel to views the participants of an event.`,
+      options
+    );
+  }
+}
+
+export class InvalidInterval extends NextError {
+  public constructor(details: any, options?: ErrorOptions) {
+    super(
+      get_event_type(EventErrorTypes.INVALID_INTERVAL),
+      StatusCodes.BAD_REQUEST,
+      'Invalid search interval',
+      details,
+      options
+    );
+  }
+}
+
 // ---------------------------------------------------------------
 // ---------------------------- PRES -----------------------------
 // ---------------------------------------------------------------
@@ -335,6 +476,71 @@ export class UserNotAPresident extends NextError {
       StatusCodes.FORBIDDEN,
       'You do not manage any channel',
       `Cannot find a channel you do manage.`,
+      options
+    );
+  }
+}
+
+// ---------------------------------------------------------------
+// ------------------------ PARTICIPATION ------------------------
+// ---------------------------------------------------------------
+
+enum ParticipationErrorTypes {
+  INVALID_ID = 1,
+  NOT_FOUND,
+  EVENT_FULL,
+  PARTICIPATION_NOT_AUTHORIZED,
+}
+
+function get_participation_type(type: ParticipationErrorTypes): string {
+  return `participation-${String(type).padStart(3, '0')}`;
+}
+
+export class InvalidParticipationID extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_participation_type(ParticipationErrorTypes.INVALID_ID),
+      StatusCodes.BAD_REQUEST,
+      'Invalid pariticipation id',
+      `${id} is not a valid id for a participation.`,
+      options
+    );
+  }
+}
+
+export class ParticipationNotFound extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_participation_type(ParticipationErrorTypes.NOT_FOUND),
+      StatusCodes.NOT_FOUND,
+      'Not found',
+      `No participation with id ${id} was found among your participation`,
+      options
+    );
+  }
+}
+
+export class EventFullyOccupied extends NextError {
+  public constructor(id: string, options?: ErrorOptions) {
+    super(
+      get_participation_type(ParticipationErrorTypes.EVENT_FULL),
+      StatusCodes.CONFLICT,
+      'Event fully booked',
+      `You cannot participate to the event with id ${id} because it is already fully booked.`,
+      options
+    );
+  }
+}
+
+export class ParticipationNotAuthorized extends NextError {
+  public constructor(options?: ErrorOptions) {
+    super(
+      get_participation_type(
+        ParticipationErrorTypes.PARTICIPATION_NOT_AUTHORIZED
+      ),
+      StatusCodes.FORBIDDEN,
+      'Cannot participate',
+      'You cannot participate to ane event of a channel you are not subscribed to.',
       options
     );
   }

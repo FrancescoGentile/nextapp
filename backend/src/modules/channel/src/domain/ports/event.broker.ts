@@ -3,6 +3,10 @@
 //
 
 import {
+  CreateBookingRequestEvent,
+  CreateBookingResponseEvent,
+  DeleteBookingRequestEvent,
+  DeleteBookingResponseEvent,
   SendMessageEvent,
   UserCreatedEvent,
   UserDeletedEvent,
@@ -28,5 +32,21 @@ export interface EventBroker {
     context?: any
   ): void;
 
-  emit_send_message(name: string, event: SendMessageEvent): void;
+  on_create_booking_response(
+    name: string,
+    listener: (event: CreateBookingResponseEvent) => void,
+    context?: any
+  ): void;
+
+  on_delete_booking_response(
+    name: string,
+    listener: (event: DeleteBookingResponseEvent) => void,
+    context?: any
+  ): void;
+
+  emit_create_booking_request(event: CreateBookingRequestEvent): void;
+
+  emit_delete_booking_request(event: DeleteBookingRequestEvent): void;
+
+  emit_send_message(event: SendMessageEvent): void;
 }
