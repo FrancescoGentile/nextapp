@@ -7,23 +7,47 @@ import { NextFunction, Request, Response } from 'express-serve-static-core';
 import { Driver } from 'neo4j-driver';
 import EventEmitter from 'eventemitter3';
 import { UserID } from '@nextapp/common/user';
+import fs from 'fs';
+import { InternalServerError } from '@nextapp/common/error';
+import admin from 'firebase-admin';
 import { init_infrastructure } from '../../src/infrastructure';
 import { init_services } from '../../src/domain/services';
 import { init_rest_api } from '../../src/application/rest';
 
-export async function init_room_module(
+export async function init_messenger_module(
   driver: Driver,
   emitter: EventEmitter
 ): Promise<express.Router> {
-  const { user_repo, room_repo, booking_repo, broker } =
-    await init_infrastructure(driver, emitter);
-  const { room_service, booking_service } = init_services(
-    user_repo,
-    room_repo,
-    booking_repo,
+  if (
+    process.env.FIREBASE_FILE === undefined ||
+    process.env.MAILGUN_KEY === undefined ||
+    process.env.MAILGUN_DOMAIN === undefined
+  ) {
+    throw new InternalServerError('missing environment variables');
+  }
+
+  if (admin.apps.length === 0) {
+    const file = fs.readFileSync(process.env.FIREBASE_FILE);
+    const auth = JSON.parse(file.toString());
+    admin.initializeApp({
+      credential: admin.credential.cert(auth),
+    });
+  }
+
+  const { info_repo, broker, email_sender, notification_sender } =
+    await init_infrastructure(
+      driver,
+      emitter,
+      process.env.MAILGUN_KEY,
+      process.env.MAILGUN_DOMAIN
+    );
+  const info_service = init_services(
+    info_repo,
+    email_sender,
+    notification_sender,
     broker
   );
-  const router = init_rest_api(room_service, booking_service);
+  const router = init_rest_api(info_service);
 
   return router;
 }
@@ -35,14 +59,12 @@ function set_user(user_id: UserID) {
   };
 }
 
-export async function init_app(
-  driver: Driver,
-  emitter: EventEmitter,
-  user_id: UserID
-) {
+export async function init_app(driver: Driver, user_id: UserID) {
+  const emitter = new EventEmitter();
+
   const app = express();
   app.use(set_user(user_id));
-  app.use(await init_room_module(driver, emitter));
+  app.use(await init_messenger_module(driver, emitter));
 
   return app;
 }

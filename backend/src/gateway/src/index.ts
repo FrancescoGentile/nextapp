@@ -9,9 +9,12 @@ import { InternalServerError } from '@nextapp/common/error';
 import { EventEmitter } from 'eventemitter3';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import admin from 'firebase-admin';
 import { InvalidEndpoint } from './errors';
 import { init_user_module } from './user';
 import { init_room_module } from './room';
+import { init_messenger_module } from './messenger';
+import { init_channel_module } from './channel';
 
 async function get_neo4j(): Promise<Driver> {
   const url = process.env.NEO4J_URL;
@@ -31,22 +34,66 @@ async function get_neo4j(): Promise<Driver> {
   return driver;
 }
 
+function init_firebase_admin() {
+  if (admin.apps.length !== 0) {
+    return;
+  }
+
+  if (process.env.FIREBASE_BUCKET === undefined) {
+    throw new InternalServerError('Firebase Bucket not set.');
+  }
+  if (process.env.FIREBASE_CERT === undefined) {
+    throw new InternalServerError('Firebase certificate not set.');
+  }
+
+  const serviceAccount = JSON.parse(process.env.FIREBASE_CERT);
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email,
+      privateKey: serviceAccount.private_key.replace(/\\n/g, '\n'),
+    }),
+    storageBucket: process.env.FIREBASE_BUCKET,
+  });
+}
+
 async function init_gateway(): Promise<express.Router> {
   const driver = await get_neo4j();
   const emitter = new EventEmitter();
+  init_firebase_admin();
 
   const router = express.Router();
-  router.use(cookieParser() as any);
 
-  if (process.env.KEY === undefined) {
+  if (process.env.JWT_KEY === undefined) {
     throw new InternalServerError('Private Key is not set');
   }
 
-  const { routes, auth_middleware } = await init_user_module(driver, emitter, process.env.KEY);
+  if (
+    process.env.MAILGUN_KEY === undefined ||
+    process.env.MAILGUN_DOMAIN === undefined
+  ) {
+    throw new InternalServerError('Mailgun parameters not set.');
+  }
+
+  const { routes, auth_middleware } = await init_user_module(
+    driver,
+    emitter,
+    process.env.JWT_KEY
+  );
   const room_routes = await init_room_module(driver, emitter);
+  const messenger_routes = await init_messenger_module(
+    driver,
+    emitter,
+    process.env.MAILGUN_KEY,
+    process.env.MAILGUN_DOMAIN
+  );
+
+  const channel_routes = await init_channel_module(driver, emitter);
 
   router.use(routes);
   router.use(auth_middleware, room_routes);
+  router.use(auth_middleware, messenger_routes);
+  router.use(auth_middleware, channel_routes);
 
   return router;
 }
@@ -65,10 +112,13 @@ async function start_server(port: number) {
     throw new InternalServerError('Frontend server not set.');
   }
 
-  app.use(cors({
-    origin: [process.env.FRONTEND],
-    credentials: true, 
-  }) as any);
+  app.use(
+    cors({
+      origin: [process.env.FRONTEND],
+      credentials: true,
+    }) as any
+  );
+  app.use(cookieParser() as any);
   app.use(router);
   app.use(invalid_endpoint);
 

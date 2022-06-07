@@ -1,4 +1,3 @@
-/* eslint-disable import/extensions */
 /* eslint-disable no-console */
 //
 //
@@ -8,22 +7,22 @@ import EventEmitter from 'eventemitter3';
 import { Driver } from 'neo4j-driver';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import supertest from 'supertest';
-import { Room } from '../../src/domain/models/room';
+import { Channel } from '../domain/models/channel';
 import { init_app } from './init_app';
 import { init_driver, clear_db, close_driver, populate_db } from './init_db';
 
 let driver: Driver;
 let request: supertest.SuperTest<any>;
 
-let rooms: Room[];
+let channels: Channel[];
 
-// test for simple users
-describe('delete room', () => {
+// set requester to simple user
+describe('delete channel', () => {
   beforeAll(async () => {
     driver = await init_driver();
     clear_db(driver);
     const res = await populate_db(driver);
-    rooms = res.rooms;
+    channels = res.channels;
 
     const emitter = new EventEmitter();
     const app = await init_app(driver, emitter, res.users[1].id);
@@ -35,21 +34,26 @@ describe('delete room', () => {
     await close_driver(driver);
   });
 
-  // ------------------------ RC-1 ------------------------
+  // ------------------------ CR-1 ------------------------
 
-  it('(rd-1) simple user', async () => {
-    const res = await request.delete(`/rooms/${rooms[0].id!.to_string()}`);
+  it('(cr-1) attempt to remove channel made by simple user', async () => {
+    // console.log(`/channels/${channels[1].id!.to_string()}`);
+    const res = await request.delete(
+      `/channels/${channels[1].id!.to_string()}`
+    );
     expect(res.status).toBe(403);
   });
 });
 
-// test for sys-admins
-describe('delete room', () => {
+// ------------------------ CR-2 ------------------------
+
+// set requester to admin
+describe('delete channel', () => {
   beforeAll(async () => {
     driver = await init_driver();
     clear_db(driver);
     const res = await populate_db(driver);
-    rooms = res.rooms;
+    channels = res.channels;
 
     const emitter = new EventEmitter();
     const app = await init_app(driver, emitter, res.users[0].id);
@@ -61,17 +65,18 @@ describe('delete room', () => {
     await close_driver(driver);
   });
 
-  // ------------------------ RC-2 ------------------------
+  it('(cr-2) successful channel removal by sys-admin', async () => {
+    const res = await request.delete(
+      `/channels/${channels[1].id!.to_string()}`
+    );
 
-  it('(rc-2) successful delete', async () => {
-    const res = await request.delete(`/rooms/${rooms[1].id!.to_string()}`);
     expect(res.status).toBe(204);
   });
 
-  // ------------------------ RC-3 ------------------------
+  // ------------------------ CR-3 ------------------------
 
-  it('(rc-2) non existing room', async () => {
-    const res = await request.delete(`/rooms/0000000000`);
+  it('(cr-3) non existing channel', async () => {
+    const res = await request.delete(`/channels/0000000001`);
     expect(res.status).toBe(404);
   });
 });

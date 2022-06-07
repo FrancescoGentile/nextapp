@@ -1,7 +1,7 @@
 {
-  "name": "@nextapp/gateway",
+  "name": "@nextapp/channel",
   "version": "1.0.0",
-  "description": "Module responsible to initialize the backend",
+  "description": "Channel management",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -24,11 +24,10 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "node -r dotenv/config dist/index.js",
-    "start": "node dist/index.js",
+    "build": "tsc --p tsconfig.build.json",
     "lint": "eslint --ignore-path .eslintignore --ext .ts",
-    "format": "prettier --ignore-path .prettierignore --write \"**/*.+(js|ts|json)\""
+    "format": "prettier --ignore-path .prettierignore --write \"**/*.+(js|ts|json)\"",
+    "test": "jest --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -43,24 +42,40 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "prettier": "^2.6.2",
+    "@types/zxcvbn": "^4.4.1",
+    "@types/luxon": "^2.3.2",
     "@types/express": "^4.17.13",
+    "jest": "^28.1.0",
+    "ts-jest": "^28.0.3",
+    "ts-node": "^10.8.0",
+    "@jest/types": "^28.1.0",
+    "@types/jest": "^28.1.0",
+    "@types/supertest": "^2.0.12",
+    "supertest": "^6.2.3",
+    "cookie-parser": "^1.4.6",
     "@types/cookie-parser": "^1.4.3",
-    "@types/express-serve-static-core": "^4.17.28",
-    "@types/cors": "^2.8.12",
-    "dotenv": "^16.0.1"
+    "dotenv": "^16.0.1",
+    "@types/node": "^17.0.39",
+    "@types/express-version-request": "^1.7.1"
   },
   "dependencies": {
-    "express": "^4.18.1",
     "@nextapp/common": "^1.0.0",
-    "@nextapp/user": "^1.0.0",
-    "@nextapp/room": "^1.0.0",
-    "@nextapp/messenger": "^1.0.0",
-    "@nextapp/channel": "^1.0.0",
+    "argon2": "^0.28.5",
+    "zxcvbn": "^4.4.2",
+    "nanoid": "^3.3.4",
+    "otpauth": "^7.1.2",
+    "luxon": "^2.3.2",
     "neo4j-driver": "^4.4.5",
+    "express": "^4.18.1",
+    "node-cache": "^5.1.2",
     "eventemitter3": "^4.0.7",
-    "cookie-parser": "^1.4.6",
+    "typed-emitter": "^2.1.0",
     "express-serve-static-core": "^0.1.1",
-    "cors": "^2.8.5",
-    "firebase-admin": "^10.2.0"
+    "joi": "^17.6.0",
+    "json-joi-converter": "^17.2.1-f",
+    "jsonwebtoken": "^8.5.1",
+    "email-validator": "^2.0.4",
+    "neo4j-driver-core": "^4.4.5",
+    "express-version-request": "^1.7.0"
   }
 }
