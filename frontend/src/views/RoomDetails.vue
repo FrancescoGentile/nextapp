@@ -1,6 +1,7 @@
 <script>
 import {defineComponent} from "vue";
 import {Modal} from "bootstrap";
+
 export default defineComponent({
   name: "RoomDetails",
   props:["id"],
@@ -26,7 +27,7 @@ export default defineComponent({
     this.$store.dispatch("roomDetails", this.id
     ).then(()=>{
       this.room = this.loadedRoom;
-      console.log(this.room)
+      //console.log(this.room)
     }).catch(err=>{
       console.log(err)
     })
@@ -51,8 +52,7 @@ export default defineComponent({
     },
 
     modifyRoom(room) {
-      let roomId = this.getId(room)
-      this.$store.dispatch("modifyRoom", {room, roomId}
+      this.$store.dispatch("modifyRoom", room
       ).then(() => {
         this.room = room
         this.$store.commit("setRoomDetails", this.room)
@@ -114,7 +114,7 @@ export default defineComponent({
           <div class="card-body">
             <div class="text-end mb-2">
               <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modifyRoom"
-                      @click="this.selectedRoom = this.room"> Modify information </button>
+                      @click="selectedRoom= this.room"> Modify information </button>
               <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deleteRoom"> Delete Room </button>
             </div>
             <div class="table-responsive">

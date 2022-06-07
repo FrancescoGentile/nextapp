@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory} from 'vue-router'
 import store from "@/store";
 import HomePage from '../views/HomePage.vue'
 
@@ -38,11 +38,38 @@ const routes = [
     path: "/rooms",
     name: "reservationPage",
     component: () => import("../views/ReservationPage.vue")
+  },
+  {
+    path: "/clubs",
+    name: "clubs",
+    component: () => import("../views/ClubsPage.vue")
+  },
+  {
+    path: "/clubs/:id",
+    name: "clubDetails",
+    component: () => import("../views/ClubDetails.vue"),
+    props: true
+  },
+  {
+    path: "/clubsAdministration",
+    name: "clubsAdministration",
+    component: () => import("../views/ClubsAdministration.vue")
+  },
+  {
+    path: "/recovery",
+    name: "passwordRecovery",
+    component: () => import("../views/PasswordRecoveryPage.vue")
+  },
+  {
+    path:"/notifications",
+    name: "notificationsPage",
+    component: () => import("../views/NotificationsPage.vue")
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
+  base: "/",
   routes
 })
 
@@ -62,7 +89,7 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    if(to.name === "home" || to.name === "login" || to.name === "noAuth" || to.name === "register"){
+    if(to.name === "home" || to.name === "login" || to.name === "noAuth" || to.name === "register" || to.name === "passwordRecovery"){
       next();
     }else{
       next({name: "noAuth"})

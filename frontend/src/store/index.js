@@ -1,20 +1,20 @@
 import { createStore } from 'vuex'
 import axios from "axios"
-import {notify} from "@kyvg/vue3-notification"
+import { notify } from "@kyvg/vue3-notification"
+import { getCurrentToken } from '@/firebase'
 
-//axios.defaults.baseURL = "http://localhost:8080/api/v1/"
-//axios.defaults.headers ['Access-Control-Allow-Origin'] ='http://localhost:8080';
-//axios.defaults.withCredentials = true
-
-const instance= axios.create({
-  baseURL: "http://localhost:8080/api/v1/",
+const instance = axios.create({
+  baseURL: "http://localhost:8080/",
   withCredentials: true
 })
 
 export default createStore({
   state: {
-    logStatus: JSON.parse( localStorage.getItem("logStatus") )|| "",
+    messagingToken: "",
+    logStatus: JSON.parse(localStorage.getItem("logStatus")) || "",
+
     user: {},
+    userEmails: [],
     users: [],
     rooms: [],
     roomDetails: [],
@@ -22,11 +22,28 @@ export default createStore({
     dateReservations: [],
     userReservations: [],
     slots: [],
-    floors: []
+    floors: [],
+    channels: [],
+    userChannels: [],
+    channelDetails: [],
+    searchedChannel: {},
+    channelNews: [],
+    channelEvents: [],
+    userEvents: [],
+    eventDetails: {},
+    administratedChannels: [],
+    channelSubscribers: [],
+    userDevices: []
   },
   getters: {
+    getMessagingToken(state) {
+      return state.messagingToken
+    },
     isLoggedIn(state) {
       return !!state.logStatus
+    },
+    getUserRole(state) {
+      return state.userRole
     },
     getUser(state) {
       return state.user
@@ -40,20 +57,62 @@ export default createStore({
     getRoomDetails(state) {
       return state.roomDetails
     },
-    getDateReservations (state) {
+    getDateReservations(state) {
       return state.dateReservations
     },
-    getUserReservations(state){
+    getUserReservations(state) {
       return state.userReservations
     },
-    getSlots(state){
+    getSlots(state) {
       return state.slots
     },
-    getFloors(state){
+    getFloors(state) {
       return state.floors
+    },
+    getUserEmails(state) {
+      return state.userEmails
+    },
+    getChannels(state) {
+      return state.channels
+    },
+    getUserChannels(state) {
+      return state.userChannels
+    },
+    getSearchedChannel(state) {
+      return state.searchedChannel
+    },
+    getChannelDetails(state) {
+      return state.channelDetails
+    },
+    getChannelEvents(state) {
+      return state.channelEvents
+    },
+    getChannelNews(state) {
+      return state.channelNews
+    },
+    getUserEvents(state) {
+      return state.userEvents
+    },
+    getEventDetails(state) {
+      return state.eventDetails
+    },
+    getAdministratedChannels(state) {
+      return state.administratedChannels
+    },
+    getChannelSubscribers(state) {
+      return state.channelSubscribers
+    },
+    getUserDevices(state) {
+      return state.userDevices
     }
   },
   mutations: {
+    setMessagingToken(state, token) {
+      state.messagingToken = token
+    },
+    setUserRole(state, role) {
+      state.userRole = role
+    },
     setLogin(state) {
       state.logStatus = "logged"
     },
@@ -63,7 +122,7 @@ export default createStore({
     setUsers(state, users) {
       state.users = users
     },
-    setUser(state, user){
+    setUser(state, user) {
       state.user = user
     },
     setError(state, error) {
@@ -75,26 +134,65 @@ export default createStore({
     setRoomDetails(state, room) {
       state.roomDetails = room
     },
-    setUserReservations(state, reservations){
+    setUserReservations(state, reservations) {
       state.userReservations = reservations
     },
-    setDateReservations(state, reservations){
+    setDateReservations(state, reservations) {
       state.dateReservations = reservations
     },
-    setSlots(state, slots){
+    setSlots(state, slots) {
       state.slots = slots
     },
-    setFloors(state, floors){
+    setFloors(state, floors) {
       state.floors = floors
+    },
+    setUserEmails(state, emails) {
+      state.userEmails = emails
+    },
+    setChannels(state, channels) {
+      state.channels = channels
+    },
+    setUserChannels(state, channels) {
+      state.userChannels = channels
+    },
+    setSearchedChannel(state, channel) {
+      state.searchedChannel = channel
+    },
+    setChannelDetails(state, channel) {
+      state.channelDetails = channel
+    },
+    setChannelEvents(state, events) {
+      state.channelEvents = events
+    },
+    setChannelNews(state, news) {
+      state.channelNews = news
+    },
+    setUserEvents(state, events) {
+      state.userEvents = events
+    },
+    setEventDetails(state, event) {
+      state.eventDetails = event
+    },
+    setAdministratedChannels(state, channels) {
+      state.administratedChannels = channels
+    },
+    setChannelSubscribers(state, subscribers) {
+      state.channelSubscribers = subscribers
+    },
+    setUserDevices(state, devices) {
+      state.userDevices = devices
     }
   },
   actions: {
-    login({commit}, user) {
+    login({ commit }, user) {
       return new Promise((resolve, reject) => {
         instance.post("login", {
-            username: user.username,
-            password: user.password
-          },{withCredentials: true}
+          username: user.username,
+          password: user.password
+        }, {
+          headers: { "Accept": "cookie" },
+          withCredentials: true
+        }
         ).then(response => {
           localStorage.setItem("logStatus", JSON.stringify("logged"))
           commit('setLogin')
@@ -105,6 +203,7 @@ export default createStore({
           resolve(response)
         }).catch(err => {
           localStorage.removeItem('logStatus')
+          localStorage.removeItem("role")
           notify({
             title: "Error",
             text: err.response.data.details
@@ -115,11 +214,31 @@ export default createStore({
       })
     },
 
-    logout({commit}) {
+    setupRole({ commit }) {
       return new Promise((resolve, reject) => {
-        instance.post("logout", {},{withCredentials: true}
+        instance.get("users/me", { withCredentials: true }
+        ).then(response => {
+          const is_admin = response.data.is_admin
+          if (is_admin) {
+            commit("setUserRole", "admin")
+          } else {
+            commit("setUserRole", "user")
+          }
+          localStorage.setItem("role", JSON.stringify(response.data.role))
+          resolve(response)
+        }).catch(err => {
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    logout({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.post("logout", {}, { withCredentials: true }
         ).then(response => {
           localStorage.removeItem('logStatus')
+          localStorage.removeItem("role")
           commit('setLogout')
           notify({
             title: "Logout",
@@ -128,6 +247,7 @@ export default createStore({
           resolve(response)
         }).catch(err => {
           localStorage.removeItem('logStatus')
+          localStorage.removeItem("role")
           notify({
             title: "Error",
             text: err.response.data.details
@@ -140,10 +260,10 @@ export default createStore({
     },
 
 
-    addUser({commit}, user) {
+    addUser({ commit }, user) {
       //console.log(user)
       return new Promise((resolve, reject) => {
-        console.log(user)
+        //console.log(user)
         instance.post("users", {
           username: user.username,
           password: user.password,
@@ -172,10 +292,10 @@ export default createStore({
         })
       })
     },
-    //TODO: ask for offset and limit
-    users({commit}) {
+
+    users({ commit }) {
       return new Promise((resolve, reject) => {
-        instance.get("users", {withCredentials: true}
+        instance.get("users", { withCredentials: true }
         ).then(response => {
           let users = response.data
           commit('setUsers', users)
@@ -190,9 +310,9 @@ export default createStore({
       })
     },
 
-    deleteUser({commit}, id) {
+    deleteUser({ commit }, user) {
       return new Promise((resolve, reject) => {
-        instance.delete("users/" + id, {withCredentials: true}
+        instance.delete(user.self, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -210,43 +330,43 @@ export default createStore({
       })
     },
 
-    publicUser({commit}, userId){
-      return new Promise((resolve, reject)=>{
-        instance.get("users/"+userId, {withCredentials: true}
-        ).then(response=>{
-          commit("setUser", response.data)
-          resolve(response)
-        }).catch(err=>{
-          notify({
-            title: "Error",
-            text: err.response.data.details
-          })
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
-
-    privateUser({commit}){
-      return new Promise((resolve, reject)=>{
-        instance.get("users/me", {withCredentials: true}
-        ).then(response=>{
-          commit("setUser", response.data)
-          resolve(response)
-        }).catch(err=>{
-          notify({
-            title: "Error",
-            text: err.response.data.details
-          })
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
-
-    deletePersonalProfile({commit}) {
+    publicUser({ commit }, userId) {
       return new Promise((resolve, reject) => {
-        instance.delete("users/me", {withCredentials: true}
+        instance.get("users/" + userId, { withCredentials: true }
+        ).then(response => {
+          commit("setUser", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    privateUser({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me", { withCredentials: true }
+        ).then(response => {
+          commit("setUser", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deletePersonalProfile({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.delete("users/me", { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -263,7 +383,7 @@ export default createStore({
         })
       })
     },
-    rooms({commit}) {
+    rooms({ commit }) {
       return new Promise((resolve, reject) => {
         instance.get("rooms", {
           method: "get",
@@ -285,9 +405,9 @@ export default createStore({
       })
     },
 
-    addRoom({commit}, room) {
+    addRoom({ commit }, room) {
       return new Promise((resolve, reject) => {
-        instance.post("rooms", room, {withCredentials: true}
+        instance.post("rooms", room, { withCredentials: true }
         ).then(response => {
           resolve(response)
         }).catch(err => {
@@ -301,27 +421,27 @@ export default createStore({
       })
     },
 
-  roomDetails({commit}, roomId) {
-    return new Promise((resolve, reject) => {
-      instance.get("rooms/" + roomId, {withCredentials: true}
-      ).then(response => {
-        const room = response.data
-        commit("setRoomDetails", room)
-        resolve(response)
-      }).catch(err => {
-        notify({
-          title: "Error",
-          text: err.response.data.details
-        })
-        commit("setError")
-        reject(err)
-      })
-    })
-  },
-
-    deleteRoom({commit}, id) {
+    roomDetails({ commit }, room) {
       return new Promise((resolve, reject) => {
-        instance.delete("rooms/" + id, {withCredentials: true}
+        instance.get(room, { withCredentials: true }
+        ).then(response => {
+          const room = response.data
+          commit("setRoomDetails", room)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteRoom({ commit }, room) {
+      return new Promise((resolve, reject) => {
+        instance.delete(room, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -339,14 +459,14 @@ export default createStore({
       })
     },
 
-    modifyRoom({commit}, {room, roomId}) {
-      console.log(room)
+    modifyRoom({ commit }, room) {
+      //console.log(room)
       return new Promise((resolve, reject) => {
-        instance.patch("rooms/"+roomId, {
-                name: room.name,
-                details: room.details,
-                floor: room.floor
-              }, {withCredentials: true}
+        instance.patch(room.self, {
+          name: room.name,
+          details: room.details,
+          floor: room.floor
+        }, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -365,15 +485,15 @@ export default createStore({
     },
 
 
-    roomSlots({commit}, {roomId, filter}){
-      return new Promise((resolve, reject)=>{
-        instance.get("rooms/"+roomId+"/slots?start="+filter.start+"&end="+filter.end, {withCredentials: true}
-        ).then(response=>{
+    roomSlots({ commit }, { room, filter }) {
+      return new Promise((resolve, reject) => {
+        instance.get(room.self + "/slots?start=" + filter.start + "&end=" + filter.end, { withCredentials: true }
+        ).then(response => {
           const intervals = response.data
           //console.log(intervals)
           commit("setDateReservations", intervals)
           resolve(response)
-        }).catch(err=>{
+        }).catch(err => {
           notify({
             title: "Error",
             text: err.response.data.details
@@ -387,62 +507,105 @@ export default createStore({
     bookRoom({ commit }, reservation) {
       return new Promise((resolve, reject) => {
         instance.post("users/me/bookings", {
-          room: {self: reservation.room.self},
+          room: { self: reservation.room.self },
           start: reservation.start,
           end: reservation.end
-        },{withCredentials: true}).then(response => {
+        }, { withCredentials: true }).then(response => {
           notify({
             title: "Success",
             text: "Reservation added"
           })
           resolve(response)
         }).catch(err => {
-           notify({
-            title: "Error",
-            text: err.response.data.details
-          })
-          commit('setError')
-          reject(err)
-        })
-      })
-    },
-
-    reservations({ commit }) {
-      return new Promise((resolve, reject) => {
-        instance.get("http://localhost:3000/reservations", {withCredentials: true}
-        ).then(response => {
-          const reservations = response.data
-          commit('setReservations', reservations)
-
-          resolve(response)
-        }).catch(err => {
           notify({
             title: "Error",
             text: err.response.data.details
           })
           commit('setError')
+          reject(err)
+        })
+      })
+    },
 
-          reject(err)
-        })
-      })
-    },
-    /*
-    slots({commit}){
-      return new Promise((resolve, reject)=>{
-        axios.get("http://localhost:3000/slots"
-        ).then(response=>{
-          commit("setSlots", response.data)
-          resolve(response)
-        }).catch(err=>{
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
-  */
     deleteUserReservation({ commit }, id) {
       return new Promise((resolve, reject) => {
-        instance.delete("users/me/bookings/" + id, {withCredentials: true}
+        instance.delete("users/me/bookings/" + id, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: "Reservation deleted"
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    userReservations({ commit }, filter) {
+      //console.log(filter)
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/bookings?start=" + filter.start + "&end=" + filter.end, { withCredentials: true }
+        ).then(response => {
+          commit("setUserReservations", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    bookingDetails({ commit }, bookingId) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/bookings/" + bookingId, { withCredentials: true }
+        ).then(response => {
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    floors({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("floors", { withCredentials: true }
+        ).then(response => {
+          commit("setFloors", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    changePassword({ commit }, { old_password, new_password }) {
+      return new Promise((resolve, reject) => {
+        //console.log(old_password, new_password)
+        instance.patch("users/me/password",
+          {
+            old_password: old_password,
+            new_password: new_password
+          }, { withCredentials: true }
         ).then(response => {
           notify({
             title: "Success",
@@ -459,76 +622,21 @@ export default createStore({
         })
       })
     },
-    //TODO: time-filter
-    userReservations({commit}, filter){
-      console.log(filter)
-      return new Promise((resolve, reject)=>{
-        instance.get("users/me/bookings?start="+filter.start+"&end="+filter.end, {withCredentials: true}
-        ).then(response=>{
-          commit("setUserReservations", response.data)
-          resolve(response)
-        }).catch(err=>{
-          notify({
-            title: "Error",
-            text: err.response.data.details
-        })
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
 
-    bookingDetails({commit}, bookingId){
-      return new Promise((resolve, reject)=>{
-        instance.get("users/me/bookings/"+bookingId, {withCredentials: true}
-        ).then(response=>{
-          resolve(response)
-        }).catch(err=>{
-          notify({
-            title: "Error",
-            text: err.response.data.details
-          })
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
-
-    floors({commit}){
-      return new Promise((resolve, reject)=>{
-        instance.get("floors", {withCredentials: true}
-        ).then(response=>{
-          commit("setFloors", response.data)
-          resolve(response)
-        }).catch(err=>{
-          notify({
-            title: "Error",
-            text: err.response.data.details
-          })
-          commit("setError")
-          reject(err)
-        })
-      })
-    },
-
-    changePassword({commit}, {old_password, new_password}){
-      return new Promise((resolve, reject)=>{
-        //console.log(old_password, new_password)
-        instance.patch("users/me/password",
-            {
-              old_password: old_password,
-              new_password: new_password
-            }, {withCredentials: true}
-        ).then(response=>{
+    recoverPassword({ commit }, username) {
+      return new Promise((resolve, reject) => {
+        instance.post("forgot-password",
+          { username: username }, { withCredentials: true }
+        ).then(response => {
           notify({
             title: "Success",
             text: response.data
           })
           resolve(response)
-        }).catch(err=>{
+        }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -536,17 +644,17 @@ export default createStore({
       })
     },
 
-    filterRoomsByFloor({commit}, floor){
+    filterRoomsByFloor({ commit }, floor) {
       return new Promise((resolve, reject) => {
-        instance.get("rooms?floor="+floor,
-            {withCredentials: true}
+        instance.get("rooms?floor=" + floor,
+          { withCredentials: true }
         ).then(response => {
           commit("setRooms", response.data)
           resolve(response)
         }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
           })
           commit('setError')
           reject(err)
@@ -554,23 +662,667 @@ export default createStore({
       })
     },
 
-    changeRole({commit}, user){
-      return new Promise((resolve, reject)=>{
-        let userId = user.self.replace("/api/v1/users/", "")
-        instance.patch("users/"+userId,
+    changeRole({ commit }, user) {
+      return new Promise((resolve, reject) => {
+        //let userId = user.self.replace("/users/", "")
+        instance.patch(user.self,
           {
             is_admin: !user.is_admin
-          }, {withCredentials: true}
-        ).then(response=>{
+          }, { withCredentials: true }
+        ).then(response => {
           notify({
             title: "Success",
             text: "Role changed"
           })
           resolve(response)
-        }).catch(err=>{
+        }).catch(err => {
           notify({
             title: "Error",
-            text: err.response.details
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    userEmails({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/emails", { withCredentials: "true" }
+        ).then(response => {
+          commit("setUserEmails", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    channels({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("channels", { withCredentials: true }
+        ).then(response => {
+          commit("setChannels", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    addEmail({ commit }, email) {
+      return new Promise((resolve, reject) => {
+        instance.post("users/me/emails",
+          { email: email }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: "Email added"
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    primaryEmail({ commit }, email) {
+      return new Promise((resolve, reject) => {
+        instance.patch(email.self, {
+          main: !email.main
+        }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+    //TODO: fix method
+    userChannels({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("/users/me/subscribtions", { withCredentials: true }
+        ).then(response => {
+          commit("setUserChannels", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    addChannel({ commit }, channel) {
+      return new Promise((resolve, reject) => {
+        instance.post("channels",
+          {
+            name: channel.name,
+            description: channel.description,
+            presID_array: channel.presID_array
+          }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteChannel({ commit }, channel) {
+      return new Promise((resolve, reject) => {
+        instance.delete(channel.self,
+          { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    subscribeUserToChannel({ commit }, {channel, user}) {
+      return new Promise((resolve, reject) => {
+        instance.post(channel.self + "/subscribers",
+        {
+          self: user.self
+        }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    unsubscribeUserFromChannel({ commit }, channel) {
+      console.log(channel)
+      return new Promise((resolve, reject) => {
+        instance.delete(channel.channel.self + "/subscribers/" + channel.self.replace("/users/me/subscriptions/", ""),
+          { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    banUser({ commit }, { channel, user }) {
+      return new Promise((resolve, reject) => {
+        instance.get(channel.self + "/subscribers/" + user.self.replace("/users/", ""),
+          { withCredentials: true }
+        ).then(response => {
+          const channel = response.data
+          commit("setChannelDetails", channel)
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    channelDetails({ commit }, channel) {
+      return new Promise((resolve, reject) => {
+        instance.get(channel, { withCredentials: true }
+        ).then(response => {
+          const channel = response.data
+          commit("setChannelDetails", channel)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    searchChannel({ commit }, name) {
+      return new Promise((resolve, reject) => {
+        instance.get("channels?name=" + name, { withCredentials: true }
+        ).then(response => {
+          commit("setSearchedChannel", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    channelEvents({ commit }, channelId) {
+      return new Promise((resolve, reject) => {
+        instance.get(channelId + "/events", { withCredentials: true }
+        ).then(response => {
+          commit("setChannelDetails", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    channelNews({ commit }, channelId) {
+      return new Promise((resolve, reject) => {
+        instance.get(channelId + "/news", { withCredentials: true }
+        ).then(response => {
+          commit("setChannelDetails", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    userEvents({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/participations", { withCredentials: true }
+        ).then((response) => {
+          commit("setUserEvents", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    eventDetails({ commit }, event) {
+      return new Promise((resolve, reject) => {
+        instance.get(event.self, { withCredentials: true }
+        ).then((response) => {
+          commit("setEventDetails", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    attendEvent({ commit }, event) {
+      return new Promise((resolve, reject) => {
+        instance.post("users/me/events", event, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    desertEvent({ commit }, event) {
+      return new Promise((resolve, reject) => {
+        instance.delete(event.self, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    administratedChannels({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/president", { withCredentials: true }
+        ).then(response => {
+          commit("setAdministratedChannels", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteEmail({ commit }, id) {
+      return new Promise((resolve, reject) => {
+        instance.delete(id, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    modifyChannel({ commit }, channel) {
+      //console.log(room)
+      return new Promise((resolve, reject) => {
+        instance.patch(channel.self, {
+          name: channel.name,
+          description: channel.description,
+        }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    //TODO: subscribers are only ids -> return entire user object instead
+    channelSubscribers({ commit }, channel) {
+      return new Promise((resolve, reject) => {
+        instance.get(channel.self + "/subscribers", { withCredentials: true }
+        ).then(response => {
+          let subscriptions = response.data
+          let subscribers = []
+          this.dispatch("users"
+          ).then(() => {
+            this.state.users.forEach(user => {
+              subscriptions.forEach(sub => {
+                if (sub.user === user.self) {
+                  subscribers.push(user)
+                }
+              })
+            })
+          }).catch(err => {
+            console.log(err)
+          })
+          commit("setChannelSubscribers", subscribers)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+
+    addNews({ commit }, { news, channelId }) {
+      return new Promise((resolve, reject) => {
+        instance.post(channelId + "/news/", news, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteNews({ commit }, news) {
+      return new Promise((resolve, reject) => {
+        instance.delete(news.self, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    modifyNews({ commit }, news) {
+      //console.log(room)
+      return new Promise((resolve, reject) => {
+        instance.patch(news.self, {
+          title: news.title,
+          date: news.date,
+          body: news.body
+        }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    addEvent({ commit }, { event, channelId }) {
+      return new Promise((resolve, reject) => {
+        instance.post(channelId + "/events/", event, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    deleteEvent({ commit }, event) {
+      return new Promise((resolve, reject) => {
+        instance.delete(event.self, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    modifyEvent({ commit }, event) {
+      return new Promise((resolve, reject) => {
+        instance.patch(event.self, {
+          name: event.name,
+          description: event.description,
+          start: event.start,
+          end: event.end,
+          room: event.room
+        }, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    userDevices({ commit }) {
+      return new Promise((resolve, reject) => {
+        instance.get("users/me/devices", { withCredentials: true }
+        ).then((response) => {
+          commit("setUserDevices", response.data)
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
+          })
+          commit("setError")
+          reject(err)
+        })
+      })
+    },
+
+    addUserDevice({ commit }, device) {
+      getCurrentToken().then(() => {
+        return new Promise((resolve, reject) => {
+          const ch = {
+            name: device.name,
+            token: this.getters.getMessagingToken
+          }
+          instance.post("users/me/devices", ch
+            , { withCredentials: true }
+          ).then(response => {
+            notify({
+              title: "Success",
+              text: "This action may need a page refresh"
+            })
+            resolve(response)
+          }).catch(err => {
+            notify({
+              title: "Error",
+              text: err.response.data.details
+            })
+            commit("setError")
+            reject(err)
+          })
+
+        })
+      }).catch(err => {
+        console.log(err)
+      })
+
+    },
+
+    removeUserDevice({ commit }, device) {
+      return new Promise((resolve, reject) => {
+        instance.delete(device.self, { withCredentials: true }
+        ).then(response => {
+          notify({
+            title: "Success",
+            text: response.data
+          })
+          resolve(response)
+        }).catch(err => {
+          notify({
+            title: "Error",
+            text: err.response.data.details
           })
           commit("setError")
           reject(err)
@@ -578,7 +1330,5 @@ export default createStore({
       })
     }
 
-},
-  modules: {
   }
 })

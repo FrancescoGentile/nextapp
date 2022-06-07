@@ -1,27 +1,26 @@
 <script>
 import { defineComponent } from "vue"
-export default defineComponent({
+import { onMessageListener } from "./firebase";
 
+export default defineComponent({
   computed: {
     isLoggedIn() {
       return this.$store.getters.isLoggedIn;
-    },
+    }
 
   },
-  mounted(){
-    /*this.$store.dispatch("privateUser"
-    ).then(()=>{
-      this.user = this.privateUser
-    }).catch(err=>{
-      console.log(err)
-    })*/
+  created() {
+    onMessageListener().then(payload => {
+      console.log(payload)
+    }).catch(err => console.log('failed: ', err));
+
   },
-  methods:{
-    logout(){
+  methods: {
+    logout() {
       this.$store.dispatch("logout"
-      ).then(()=>{
+      ).then(() => {
         this.$router.push("/")
-      }).catch(err=>{
+      }).catch(err => {
         console.log(err)
       })
     }
@@ -35,7 +34,8 @@ export default defineComponent({
   <nav v-if="isLoggedIn" class="navbar navbar-expand navbar-dark fixed-top bg-dark" aria-label="Second navbar example">
     <div class="container-fluid">
       <router-link to="/" class="navbar-brand">NextApp</router-link>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample02" aria-controls="navbarsExample02" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample02"
+        aria-controls="navbarsExample02" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -44,16 +44,25 @@ export default defineComponent({
           <li class="nav-item">
             <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
           </li>
+          <li>
+            <router-link  to="/dashboardAdmin" class="nav-link">Administration</router-link>
+          </li>
           <li class="nav-item">
-            <router-link to="/dashboardAdmin" class="nav-link">Administration</router-link>
+            <router-link to="/clubsAdministration" class="nav-link">Clubs Administration</router-link>
           </li>
           <li class="nav-item">
             <router-link to="/rooms" class="nav-link">Reservations</router-link>
           </li>
+          <li class="nav-item">
+            <router-link to="/clubs" class="nav-link">Clubs</router-link>
+          </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown" aria-expanded="false">Profile</a>
+            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown"
+              aria-expanded="false">Profile</a>
             <ul class="dropdown-menu" aria-labelledby="dropdown01">
-              <li><router-link class="dropdown-item" to="/settings">Settings</router-link></li>
+              <li>
+                <router-link class="dropdown-item" to="/settings">Settings</router-link>
+              </li>
               <li><a class="dropdown-item" @click="logout()">Logout</a></li>
             </ul>
           </li>
@@ -67,8 +76,9 @@ export default defineComponent({
       <router-link to="/" class="navbar-brand">NextApp</router-link>
     </div>
   </nav>
-  <notifications position="top right" classes="alert alert-primary" />
-  <router-view/>
+
+  <notifications position="top right" classes="alert alert-danger" />
+  <router-view />
 
 </template>
 
@@ -79,6 +89,7 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
 }
+
 a {
   font-weight: bold;
   color: #2c3e50;
@@ -96,6 +107,7 @@ body {
   min-height: 75rem;
   padding-top: 4.5rem;
 }
+
 .btn-primary,
 .btn-primary:hover,
 .btn-primary:active,
@@ -118,11 +130,6 @@ body {
   border-color: red !important;
 }
 
-.alert-primary{
-  border-color: red !important;
-  color: red !important;
-  background-color: white !important;
-}
 
 </style>
 
