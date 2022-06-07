@@ -15,6 +15,7 @@ import { InvalidEndpoint } from './errors';
 import { init_user_module } from './user';
 import { init_room_module } from './room';
 import { init_messenger_module } from './messenger';
+import { init_channel_module } from './channel';
 
 async function get_neo4j(): Promise<Driver> {
   const url = process.env.NEO4J_URL;
@@ -83,9 +84,12 @@ async function init_gateway(): Promise<express.Router> {
     process.env.MAILGUN_DOMAIN
   );
 
+  const channel_routes = await init_channel_module(driver, emitter);
+
   router.use(routes);
   router.use(auth_middleware, room_routes);
   router.use(auth_middleware, messenger_routes);
+  router.use(auth_middleware, channel_routes);
 
   return router;
 }
