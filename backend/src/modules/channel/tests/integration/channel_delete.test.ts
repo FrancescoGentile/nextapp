@@ -34,18 +34,18 @@ describe('delete channel', () => {
     await close_driver(driver);
   });
 
-
   // ------------------------ CR-1 ------------------------
 
   it('(cr-1) attempt to remove channel made by simple user', async () => {
     //console.log(`/channels/${channels[1].id!.to_string()}`);
-    const res = await request
-      .delete(`/channels/${channels[1].id!.to_string()}`);
+    const res = await request.delete(
+      `/channels/${channels[1].id!.to_string()}`
+    );
     expect(res.status).toBe(403);
   });
-})
+});
 
-  // ------------------------ CR-2 ------------------------
+// ------------------------ CR-2 ------------------------
 
 //set requester to admin
 describe('delete channel', () => {
@@ -66,8 +66,9 @@ describe('delete channel', () => {
   });
 
   it('(cr-2) successful channel removal by sys-admin', async () => {
-    const res = await request
-    .delete(`/channels/${channels[1].id!.to_string()}`);
+    const res = await request.delete(
+      `/channels/${channels[1].id!.to_string()}`
+    );
 
     expect(res.status).toBe(204);
   });

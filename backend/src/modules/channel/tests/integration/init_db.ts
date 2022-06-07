@@ -41,18 +41,25 @@ export async function populate_users(driver: Driver): Promise<User[]> {
   return users;
 }
 
-async function populate_channels(driver: Driver, users: User[]): Promise<Channel[]> {
-  const pres_array1: UserID[] = [
-    users[0].id,
-    users[1].id,
-  ];
-  const pres_array2: UserID[] = [
-    users[5].id,
-    users[4].id,
-  ];
+async function populate_channels(
+  driver: Driver,
+  users: User[]
+): Promise<Channel[]> {
+  const pres_array1: UserID[] = [users[0].id, users[1].id];
+  const pres_array2: UserID[] = [users[5].id, users[4].id];
   const channels: Channel[] = [
-    new Channel('Channel1', 'A really cool presentation', pres_array1, ChannelID.from_string('1111111111')),
-    new Channel('Channel2', undefined, pres_array2, ChannelID.from_string('2222222222')),
+    new Channel(
+      'Channel1',
+      'A really cool presentation',
+      pres_array1,
+      ChannelID.from_string('1111111111')
+    ),
+    new Channel(
+      'Channel2',
+      undefined,
+      pres_array2,
+      ChannelID.from_string('2222222222')
+    ),
   ];
 
   for (const channel of channels) {
@@ -60,21 +67,21 @@ async function populate_channels(driver: Driver, users: User[]): Promise<Channel
     const descr =
       channel.description === undefined || channel.description === null
         ? null
-        : channel.description
+        : channel.description;
     try {
       // console.log(channel.id!.to_string() + ', ' + channel.name + ', ' + descr);
       await session.writeTransaction((tx) =>
-      tx.run(
-        `CREATE (c:CHANNEL_Channel {
+        tx.run(
+          `CREATE (c:CHANNEL_Channel {
           id: $id, 
           name: $name,
           description: $description })`,
-        {
-          id: channel.id!.to_string(),
-          name: channel.name,
-          description: descr,
-        }
-      )
+          {
+            id: channel.id!.to_string(),
+            name: channel.name,
+            description: descr,
+          }
+        )
       );
       await session.close();
       session = driver.session();
@@ -85,14 +92,14 @@ async function populate_channels(driver: Driver, users: User[]): Promise<Channel
             `MATCH (u:CHANNEL_User), (c:CHANNEL_Channel)
             WHERE u.id = $user_id AND c.id = $channel_id
             CREATE (u)-[p:CHANNEL_PRESIDENT]->(c)`,
-            { 
+            {
               user_id: pres.to_string(),
-              channel_id: channel.id!.to_string()
+              channel_id: channel.id!.to_string(),
             }
           )
         );
       }
-    } catch(e){
+    } catch (e) {
       console.log(e);
       throw new InternalServerError();
     } finally {
@@ -163,7 +170,7 @@ async function populate_subscriptions(
           }
         )
       );
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       throw new InternalServerError();
     } finally {

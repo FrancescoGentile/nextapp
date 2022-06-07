@@ -37,7 +37,6 @@ describe('create subscription', () => {
   // ------------------------ SC-1 ------------------------
 
   it('(sc-1) subscribe to non-existing channel', async () => {
-
     const res = await request.post(`/channels/0000000001/subscribers`);
 
     expect(res.status).toBe(400);
@@ -46,10 +45,10 @@ describe('create subscription', () => {
   // ------------------------ SC-2 ------------------------
 
   it('(sc-2) successful subscription', async () => {
-    
-    const res = await request.post(`/channels/${channels[1].id!.to_string()}/subscribers`);
+    const res = await request.post(
+      `/channels/${channels[1].id!.to_string()}/subscribers`
+    );
 
     expect(res.status).toBe(201);
   });
-
 });

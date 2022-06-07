@@ -16,7 +16,7 @@ let request: supertest.SuperTest<any>;
 let channels: Channel[];
 let users: User[];
 
-//set requester to simple user
+// set requester to simple user
 describe('create channel', () => {
   beforeAll(async () => {
     driver = await init_driver();
@@ -44,15 +44,14 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'NerdEST',
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(403);
   });
 });
 
-
-//set requester to simple user sys-admins
+// set requester to simple user sys-admins
 describe('create channel', () => {
   beforeAll(async () => {
     driver = await init_driver();
@@ -82,7 +81,7 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: channels[0].name,
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(409);
@@ -97,7 +96,7 @@ describe('create channel', () => {
     ];
     const res = await request.post('/channels').send({
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -113,7 +112,7 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'name',
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -127,7 +126,7 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'a'.repeat(101),
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -141,7 +140,7 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'Is This Valid?',
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -156,7 +155,7 @@ describe('create channel', () => {
     ];
     const res = await request.post('/channels').send({
       name: 'NerdEST',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -172,7 +171,7 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'NerdEST',
       description: 'Un c',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -186,19 +185,18 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'NerdEST',
       description: 'a'.repeat(301),
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
   });
-  
 
   // ------------------------ CC-7 ------------------------
 
   it('(cc-7) presidents not specified', async () => {
     const res = await request.post('/channels').send({
       name: 'NerdEST',
-      description: 'Un club per nerd'
+      description: 'Un club per nerd',
     });
 
     expect(res.status).toBe(400);
@@ -217,7 +215,7 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'NerdEST',
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -228,7 +226,7 @@ describe('create channel', () => {
     const res = await request.post('/channels').send({
       name: 'NerdEST',
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(400);
@@ -240,12 +238,12 @@ describe('create channel', () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
       users[1].id!.to_string(),
-      '0123456789'
+      '0123456789',
     ];
     const res = await request.post('/channels').send({
       name: 'NerdEST',
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(404);
@@ -256,15 +254,14 @@ describe('create channel', () => {
   it('(cc-10) channel successfully created', async () => {
     const presID_array: string[] = [
       users[0].id!.to_string(),
-      users[1].id!.to_string()
+      users[1].id!.to_string(),
     ];
     const res = await request.post('/channels').send({
       name: 'NerdEST',
       description: 'Un club per nerd',
-      presID_array
+      presID_array,
     });
 
     expect(res.status).toBe(201);
   });
-
 });

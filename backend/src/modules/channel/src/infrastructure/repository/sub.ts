@@ -10,11 +10,10 @@ import { SubRepository } from '../../domain/ports/sub.repository';
 import { SearchOptions } from '../../domain/models/search';
 import { Sub, SubID } from '../../domain/models/sub';
 
-
 export class Neo4jSubRepository implements SubRepository {
-    private constructor(private readonly driver: Driver) {}
+  private constructor(private readonly driver: Driver) {}
 
-  public async is_sub(user: UserID, channel: ChannelID): Promise<boolean>{
+  public async is_sub(user: UserID, channel: ChannelID): Promise<boolean> {
     const session = this.driver.session();
     try {
       const res = await session.writeTransaction((tx) =>
@@ -27,9 +26,9 @@ export class Neo4jSubRepository implements SubRepository {
           }
         )
       );
-      
+
       return res.records.length > 0;
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       throw new InternalServerError();
     } finally {
@@ -52,15 +51,15 @@ export class Neo4jSubRepository implements SubRepository {
           {
             user_id: sub.user.to_string(),
             channel_id: sub.channel.to_string(),
-            sub_id: sub.id!.to_string()
+            sub_id: sub.id!.to_string(),
           }
         )
       );
-      
+
       return res.summary.counters.updates().relationshipsCreated > 0
         ? sub.id!
         : undefined;
-    } catch(e) {
+    } catch (e) {
       //console.log(e);
       throw new InternalServerError();
     } finally {
@@ -68,7 +67,10 @@ export class Neo4jSubRepository implements SubRepository {
     }
   }
 
-  public async get_user_subscriptions(user_id : UserID, options: SearchOptions): Promise<Sub[] | null> {
+  public async get_user_subscriptions(
+    user_id: UserID,
+    options: SearchOptions
+  ): Promise<Sub[] | null> {
     const session = this.driver.session();
     try {
       const res = await session.readTransaction((tx) =>
@@ -78,10 +80,10 @@ export class Neo4jSubRepository implements SubRepository {
            ORDER BY chan.id
            SKIP $skip
            LIMIT $limit`,
-          { 
+          {
             id: user_id.to_string(),
             skip: int(options.offset),
-            limit: int(options.limit) 
+            limit: int(options.limit),
           }
         )
       );
@@ -89,7 +91,7 @@ export class Neo4jSubRepository implements SubRepository {
       const subs: Sub[] = res.records.map((record) => ({
         id: SubID.from_string(record.get('sid')),
         channel: ChannelID.from_string(record.get('cid')),
-        user: user_id
+        user: user_id,
       }));
 
       return subs;
@@ -100,7 +102,7 @@ export class Neo4jSubRepository implements SubRepository {
     }
   }
 
-  public async get_subscription_info(sub_id : SubID): Promise<Sub | null> {
+  public async get_subscription_info(sub_id: SubID): Promise<Sub | null> {
     //console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
     const session = this.driver.session();
     try {
@@ -117,19 +119,18 @@ export class Neo4jSubRepository implements SubRepository {
         //console.log("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
         return null;
       }
-      
+
       const record = res.records[0];
-      
-      const to_be_returned =  {
+
+      const to_be_returned = {
         id: SubID.from_string(record.get('sub_id')),
         channel: ChannelID.from_string(record.get('cid')),
-        user: new UserID(record.get('uid'))
+        user: new UserID(record.get('uid')),
       };
 
       //console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
       return to_be_returned;
-      
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       throw new InternalServerError();
     } finally {
@@ -137,7 +138,10 @@ export class Neo4jSubRepository implements SubRepository {
     }
   }
 
-  public async delete_subscriber(user_id: UserID, sub_id: SubID): Promise<boolean>{
+  public async delete_subscriber(
+    user_id: UserID,
+    sub_id: SubID
+  ): Promise<boolean> {
     const session = this.driver.session();
     try {
       const res = await session.writeTransaction((tx) =>
@@ -150,14 +154,14 @@ export class Neo4jSubRepository implements SubRepository {
       );
 
       return res.summary.counters.updates().relationshipsDeleted > 0;
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
     }
   }
-  
+
   public async get_club_subscribers(channel_id: ChannelID): Promise<Sub[]> {
     const session = this.driver.session();
     try {
@@ -177,17 +181,16 @@ export class Neo4jSubRepository implements SubRepository {
         return {
           id,
           channel,
-          user
-        }
-      })
+          user,
+        };
+      });
 
       return subs;
-    } catch(e) {
+    } catch (e) {
       console.log(e);
       throw new InternalServerError();
     } finally {
       await session.close();
     }
   }
-
 }

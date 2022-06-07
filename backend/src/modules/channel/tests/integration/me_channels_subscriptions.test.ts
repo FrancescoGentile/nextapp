@@ -9,7 +9,13 @@ import { Channel } from '../domain/models/channel';
 import { Sub } from '../domain/models/sub';
 import { User } from '../domain/models/user';
 import { init_app } from './init_app';
-import { init_driver, clear_db, close_driver, populate_db, populate_users } from './init_db';
+import {
+  init_driver,
+  clear_db,
+  close_driver,
+  populate_db,
+  populate_users,
+} from './init_db';
 
 let driver: Driver;
 let request: supertest.SuperTest<any>;
@@ -17,7 +23,6 @@ let request: supertest.SuperTest<any>;
 let channels: Channel[];
 let users: User[];
 let subs: Sub[];
-  
 
 describe('me subscriptions', () => {
   beforeAll(async () => {
@@ -32,19 +37,15 @@ describe('me subscriptions', () => {
     const app = await init_app(driver, emitter, res.users[4].id);
     request = supertest(app);
   });
-  
+
   afterAll(async () => {
     await clear_db(driver);
     await close_driver(driver);
   });
 
+  // ------------------------ MCS-1 ------------------------
 
-
- 
-
-// ------------------------ MCS-1 ------------------------
-
-it('(mcs-1) invalid offset: not a number', async () => {
+  it('(mcs-1) invalid offset: not a number', async () => {
     const res = await request.get('/users/me/subscriptions?offset=ab');
     expect(res.status).toBe(400);
   });
@@ -88,24 +89,23 @@ it('(mcs-1) invalid offset: not a number', async () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual([
       {
-        self: "/api/v1/users/me/subscriptions/" + subs[1].id!.to_string(),
+        self: '/api/v1/users/me/subscriptions/' + subs[1].id!.to_string(),
         channel: {
-          self: "/api/v1/channels/" + channels[0].id!.to_string(),
+          self: '/api/v1/channels/' + channels[0].id!.to_string(),
         },
         user: {
-          self: "/api/v1/users/" + users[4].id!.to_string()
-        }
+          self: '/api/v1/users/' + users[4].id!.to_string(),
+        },
       },
       {
-        self: "/api/v1/users/me/subscriptions/" + subs[6].id!.to_string(),
+        self: '/api/v1/users/me/subscriptions/' + subs[6].id!.to_string(),
         channel: {
-          self: "/api/v1/channels/" + channels[1].id!.to_string(),
+          self: '/api/v1/channels/' + channels[1].id!.to_string(),
         },
         user: {
-          self: "/api/v1/users/" + users[4].id!.to_string()
-        }
-      }
+          self: '/api/v1/users/' + users[4].id!.to_string(),
+        },
+      },
     ]);
   });
-
-})
+});

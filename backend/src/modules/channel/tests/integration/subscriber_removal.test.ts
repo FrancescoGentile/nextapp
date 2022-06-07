@@ -41,58 +41,58 @@ describe('ban user', () => {
   // ------------------------ SR-1 ------------------------
 
   it('(sr-1) ban on non-existing channel', async () => {
+    const res = await request.delete(
+      `/channels/0123456789/subscribers/${subs[4].id!.to_string()}`
+    );
 
-    const res = await request
-      .delete(`/channels/0123456789/subscribers/${subs[4].id!.to_string()}`);
-    
     expect(res.status).toBe(404);
   });
 
   // ------------------------ SR-2 ------------------------
 
   it('(sr-2) successful ban', async () => {
-    
-    const res = await request
-      .delete(`/channels/${channels[0].id!.to_string()}/subscribers/${subs[4].id!.to_string()}`);
+    const res = await request.delete(
+      `/channels/${channels[0].id!.to_string()}/subscribers/${subs[4].id!.to_string()}`
+    );
 
     expect(res.status).toBe(204);
   });
-
 });
 
 // set requester to simple subscriber
 describe('unsubscribe', () => {
-    beforeAll(async () => {
-      driver = await init_driver();
-      clear_db(driver);
-      const res = await populate_db(driver);
-      channels = res.channels;
-      users = res.users;
-  
-      const emitter = new EventEmitter();
-      const app = await init_app(driver, emitter, res.users[5].id);
-      request = supertest(app);
-    });
-  
-    afterAll(async () => {
-      await clear_db(driver);
-      await close_driver(driver);
-    });
+  beforeAll(async () => {
+    driver = await init_driver();
+    clear_db(driver);
+    const res = await populate_db(driver);
+    channels = res.channels;
+    users = res.users;
+
+    const emitter = new EventEmitter();
+    const app = await init_app(driver, emitter, res.users[5].id);
+    request = supertest(app);
+  });
+
+  afterAll(async () => {
+    await clear_db(driver);
+    await close_driver(driver);
+  });
 
   // ------------------------ SR-3 ------------------------
 
   it('(sr-3) try to ban user while not president', async () => {
-    
-    const res = await request
-      .delete(`/channels/${channels[0].id!.to_string()}/subscribers/${subs[4].id!.to_string()}`);
+    const res = await request.delete(
+      `/channels/${channels[0].id!.to_string()}/subscribers/${subs[4].id!.to_string()}`
+    );
 
     expect(res.status).toBe(403);
   });
 
   it('(sr-4) user unsubscribe', async () => {
-    const res = await request
-      .delete(`/channels/${channels[0].id!.to_string()}/subscribers/${subs[5].id!.to_string()}`);
+    const res = await request.delete(
+      `/channels/${channels[0].id!.to_string()}/subscribers/${subs[5].id!.to_string()}`
+    );
 
     expect(res.status).toBe(204);
   });
-});  
+});
