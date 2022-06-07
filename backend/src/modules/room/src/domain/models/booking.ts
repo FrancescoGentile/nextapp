@@ -47,13 +47,22 @@ export class BookingID {
   }
 }
 
+export class OrganiserID {
+  public constructor(private readonly id: string) {}
+
+  public to_string(): string {
+    return this.id;
+  }
+}
+
 /**
  * Model that contains info about a booking.
  */
 export interface Booking {
   id?: BookingID;
   room: RoomID;
-  user: UserID;
+  customer: UserID | OrganiserID;
+  seats: number;
   interval: NextInterval;
 }
 
@@ -67,9 +76,11 @@ export interface Booking {
 export function check_availability(
   room: Room,
   current_bookings: Booking[],
-  interval: NextInterval
+  interval: NextInterval,
+  seats: number
 ): boolean {
-  const steps: number[] = [];
+  const slots = interval.interval.length('minutes') / NextInterval.SLOT_LENGTH;
+  const steps: number[] = Array.from({ length: slots }, () => room.seats);
 
   // eslint-disable-next-line no-restricted-syntax
   for (const booking of current_bookings) {
@@ -77,11 +88,11 @@ export function check_availability(
     if (offset !== undefined) {
       for (let index = offset; index < offset + length; index += 1) {
         if (steps[index] === undefined) {
-          steps[index] = room.seats - 1;
-        } else if (steps[index] === 1) {
+          steps[index] = room.seats - booking.seats;
+        } else if (steps[index] - booking.seats < seats) {
           return false;
         } else {
-          steps[index] -= 1;
+          steps[index] -= booking.seats;
         }
       }
     }
@@ -110,7 +121,7 @@ export function get_availability(
     const { offset, length } = interval.overlaps(booking.interval);
     if (offset !== undefined) {
       for (let index = offset; index < offset + length; index += 1) {
-        steps[index] -= 1;
+        steps[index] -= booking.seats;
       }
     }
   }

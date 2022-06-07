@@ -8,15 +8,19 @@ import Joi from 'joi';
 import express from 'express';
 import { DateTime } from 'luxon';
 import { Room, RoomID } from '../../../domain/models/room';
-import { API_VERSION, asyncHandler, validate } from '../utils';
+import { asyncHandler, validate } from '../utils';
 import { SearchOptions } from '../../../domain/models/search';
 import { RoomNotFound } from '../../../domain/errors';
 
 const BASE_PATH = '/rooms';
 
+function id_to_self(id: RoomID): string {
+  return `${BASE_PATH}/${id.to_string()}`;
+}
+
 function room_to_json(room: Room): any {
   return {
-    self: `${API_VERSION}${BASE_PATH}/${room.id!.to_string()}`,
+    self: id_to_self(room.id!),
     name: room.name,
     details: room.details,
     seats: room.seats,
@@ -48,7 +52,9 @@ async function search_rooms(request: Request, response: Response) {
     floor: Joi.number(),
     start: Joi.date(),
     end: Joi.date(),
-  }).with('start', 'end');
+  })
+    .with('start', 'end')
+    .with('end', 'start');
 
   const value = validate(schema, {
     offset: request.query.offset,
@@ -86,8 +92,15 @@ async function get_slots(request: Request, response: Response) {
     end: request.query.end,
   });
 
+  let id: RoomID;
+  try {
+    id = RoomID.from_string(request.params.room_id);
+  } catch {
+    throw new RoomNotFound(request.params.room_id);
+  }
+
   const slots = await request.room_service!.get_available_slots(
-    RoomID.from_string(request.params.room_id),
+    id,
     DateTime.fromJSDate(value.start),
     DateTime.fromJSDate(value.end)
   );
@@ -117,10 +130,7 @@ async function create_room(request: Request, response: Response) {
     new Room(value.name, value.details, value.seats, value.floor)
   );
 
-  response
-    .status(StatusCodes.CREATED)
-    .location(`${API_VERSION}${BASE_PATH}/${id.to_string()}`)
-    .end();
+  response.status(StatusCodes.CREATED).location(id_to_self(id)).end();
 }
 
 async function update_room(request: Request, response: Response) {
