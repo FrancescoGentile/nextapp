@@ -4,7 +4,7 @@
 
 import { NextEvent } from '@nextapp/common/event';
 import { UserID, UserRole } from '@nextapp/common/user';
-import { DateTime } from 'neo4j-driver-core';
+import { DateTime } from 'luxon';
 
 export interface UserCreatedEvent extends NextEvent {
   user_id: UserID;
@@ -34,7 +34,9 @@ export interface CreateBookingRequestEvent extends NextEvent {
 export interface CreateBookingResponseEvent extends NextEvent {
   request_id: string;
   confirmed: boolean;
-  booking_id?: string; // this is set only if confirmed is set to true
+  error?: string; // this is set only if confirmed is false
+  booking_id?: string; // this is set only if confirmed is true
+  seats?: number;
 }
 
 export interface DeleteBookingRequestEvent extends NextEvent {
@@ -46,4 +48,5 @@ export interface DeleteBookingRequestEvent extends NextEvent {
 export interface DeleteBookingResponseEvent extends NextEvent {
   request_id: string;
   confirmed: boolean;
+  error?: string; // this is set only if confirmed is false
 }

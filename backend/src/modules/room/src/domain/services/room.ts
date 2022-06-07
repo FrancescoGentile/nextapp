@@ -144,7 +144,7 @@ export class NextRoomInfoService implements RoomInfoService {
       room.id!,
       interval
     );
-    return check_availability(room, bookings, interval);
+    return check_availability(room, bookings, interval, 1);
   }
 
   public async create_room(admin: UserID, room: Room): Promise<RoomID> {

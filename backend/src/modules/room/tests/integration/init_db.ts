@@ -98,20 +98,23 @@ async function populate_bookings(
   const bookings: Booking[] = [
     {
       id: BookingID.from_string('1111111111'),
-      user: users[0].id,
+      customer: users[0].id,
       room: rooms[0].id!,
+      seats: 1,
       interval: NextInterval.from_dates(base, base.plus({ hours: 5 })),
     },
     {
       id: BookingID.from_string('2222222222'),
-      user: users[1].id,
+      customer: users[1].id,
       room: rooms[0].id!,
+      seats: 1,
       interval: NextInterval.from_dates(base, base.plus({ hours: 3 })),
     },
     {
       id: BookingID.from_string('3333333333'),
-      user: users[2].id,
+      customer: users[2].id,
       room: rooms[1].id!,
+      seats: 1,
       interval: NextInterval.from_dates(
         base.minus({ hours: 4 }),
         base.minus({ hours: 1 })
@@ -119,8 +122,9 @@ async function populate_bookings(
     },
     {
       id: BookingID.from_string('4444444444'),
-      user: users[3].id,
+      customer: users[3].id,
       room: rooms[2].id!,
+      seats: 1,
       interval: NextInterval.from_dates(base, base.plus({ hours: 10 })),
     },
   ];
@@ -132,11 +136,12 @@ async function populate_bookings(
         tx.run(
           `MATCH (u:ROOM_User), (r:ROOM_Room)
            WHERE u.id = $user_id AND r.id = $room_id
-           CREATE (u)-[b:ROOM_BOOKING { id: $booking_id, start: $start, end: $end }]->(r)`,
+           CREATE (u)-[b:ROOM_BOOKING { id: $booking_id, seats: $seats, start: $start, end: $end }]->(r)`,
           {
-            user_id: booking.user.to_string(),
+            user_id: booking.customer.to_string(),
             room_id: booking.room.to_string(),
             booking_id: booking.id!.to_string(),
+            seats: int(booking.seats),
             start: luxon_to_neo4j(booking.interval.start),
             end: luxon_to_neo4j(booking.interval.end),
           }
